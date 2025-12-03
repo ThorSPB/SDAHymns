@@ -566,4 +566,20 @@ public async Task ImportService_ShouldPreserve_RomanianCharacters()
 
 ## Status Updates
 
-- **2025-12-03:** Spec created, ready for implementation
+- **2025-12-03 (Morning):** Spec created and implemented
+  - ✅ XML parsing complete: 1,070 hymns imported from all 5 categories
+  - ✅ All hymn numbers and titles imported correctly
+  - ✅ Romanian characters preserved
+  - ✅ CLI commands working (`import`, `import --stats`)
+
+- **2025-12-03 (Afternoon):** Orphan PPT Import Enhancement
+  - ✅ Discovered 184 PowerPoint files not in XML index
+  - ✅ Installed LibreOffice for PPT→PPTX conversion
+  - ✅ Added DocumentFormat.OpenXml package (v3.3.0)
+  - ✅ Created `PowerPointParserService` with:
+    - PPT to PPTX conversion using LibreOffice
+    - Title extraction from first slide using OpenXML
+    - Batch processing with progress reporting
+  - ✅ Created `import-orphan-ppt` CLI command with dry-run support
+  - ✅ Successfully imported all 184 orphan hymns with extracted titles
+  - **Final Total: 1,254 hymns** (1,070 from XML + 184 from orphan PPTs)

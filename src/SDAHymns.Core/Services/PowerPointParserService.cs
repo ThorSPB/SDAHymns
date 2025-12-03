@@ -34,31 +34,18 @@ public class PowerPointParserService
         try
         {
             // Step 1: Convert PPT to PPTX using LibreOffice
-            Console.WriteLine($"[DEBUG] Converting: {pptFilePath}");
             var pptxPath = await ConvertPptToPptxAsync(pptFilePath);
 
             if (pptxPath == null)
             {
-                Console.WriteLine($"[ERROR] Failed to convert (file not created): {pptFilePath}");
                 return null;
             }
 
-            Console.WriteLine($"[DEBUG] Converted to: {pptxPath}");
-
             // Step 2: Extract text from first slide
             var texts = ExtractFirstSlideText(pptxPath);
-            Console.WriteLine($"[DEBUG] Extracted {texts.Count} text elements: [{string.Join(", ", texts.Select(t => $"\"{t}\""))}]");
 
             // Step 3: Parse hymn number and title
             var result = ParseHymnInfo(texts);
-            if (result == null)
-            {
-                Console.WriteLine($"[ERROR] Failed to parse hymn info from texts");
-            }
-            else
-            {
-                Console.WriteLine($"[DEBUG] Parsed: #{result.Value.hymnNumber} - {result.Value.title}");
-            }
 
             // Clean up temporary PPTX file
             try
@@ -72,10 +59,9 @@ public class PowerPointParserService
 
             return result;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            Console.WriteLine($"Error parsing {pptFilePath}: {ex.Message}");
-            Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            // Silent failure - will be reported by calling code
             return null;
         }
     }
