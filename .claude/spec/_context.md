@@ -26,7 +26,7 @@ This file tracks all specifications and their implementation status.
 | ID | Spec | Status | Notes |
 |----|------|--------|-------|
 | 002 | [Data Layer & EF Core](002-data-layer.md) | ✅ Implemented | All 9 entities, DbContext, migration, 156KB database with seed data |
-| _TBD_ | Hymn Data Import | 📋 Planned | Parse legacy XML, populate database |
+| 003 | [Legacy XML Import](003-legacy-xml-import.md) | ✅ Implemented | 1,070 hymns imported from 5 categories in <10s, CLI command working |
 | _TBD_ | Control Window UI | 📋 Planned | Main application interface |
 | _TBD_ | Display Window | 📋 Planned | Full-screen hymn projection |
 | _TBD_ | Display Profiles | 📋 Planned | Customizable styling system |
@@ -50,7 +50,7 @@ This file tracks all specifications and their implementation status.
 ### Phase 1: Foundation (Current)
 1. ✅ Project structure setup (COMPLETED)
 2. ✅ Data layer and models (COMPLETED)
-3. Legacy XML import functionality
+3. ✅ Legacy XML import functionality (COMPLETED - 1,070 hymns)
 4. Basic hymn display (minimal styling)
 
 ### Phase 2: Core Features
@@ -74,8 +74,13 @@ This file tracks all specifications and their implementation status.
 ## Current Session Focus
 
 **Date:** 2025-12-03
-**Goal:** Set up initial project structure
-**Active Specs:** 001-project-structure.md
+**Goal:** Complete Phase 1 Foundation
+**Completed Today:**
+- ✅ Upgraded to .NET 10 LTS
+- ✅ Spec 001: Project Structure
+- ✅ Spec 002: Data Layer & EF Core
+- ✅ Spec 003: Legacy XML Import (1,070 hymns)
+**Next:** Spec 004 - PowerPoint verse extraction or UI development
 
 ## Notes
 

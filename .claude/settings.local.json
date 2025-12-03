@@ -13,7 +13,8 @@
       "Bash(dotnet tool install:*)",
       "Bash(dotnet ef database update:*)",
       "Bash(dotnet ef:*)",
-      "Bash(sqlite3:*)"
+      "Bash(sqlite3:*)",
+      "Bash(dotnet script:*)"
     ],
     "deny": [],
     "ask": []
