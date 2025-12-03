@@ -31,9 +31,9 @@ SDAHymns is a complete rewrite of a legacy hymn display application, designed to
 
 ## Tech Stack
 
-- **Language:** C# (.NET 8)
+- **Language:** C# (.NET 10 LTS)
 - **UI Framework:** Avalonia UI 11.x (cross-platform XAML)
-- **Database:** SQLite with Entity Framework Core 8.x
+- **Database:** SQLite with Entity Framework Core 10.x
 - **Audio:** NAudio 2.x
 - **CLI:** CommandLineParser 2.x
 - **Testing:** xUnit, FluentAssertions, Moq
@@ -50,7 +50,7 @@ SDAHymns is a complete rewrite of a legacy hymn display application, designed to
 
 ### Prerequisites
 
-- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) or later
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) (LTS release)
 - Git
 - A code editor (Visual Studio 2022, VS Code, or Rider recommended)
 

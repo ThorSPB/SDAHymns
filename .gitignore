@@ -433,3 +433,4 @@ Resources/audio/**/*.opus
 
 # Keep directory structure
 !Resources/audio/**/.gitkeep
+GEMINI.md

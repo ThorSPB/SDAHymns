@@ -1,7 +1,8 @@
 # Spec 002: Data Layer & Entity Framework Core
 
-**Status:** 📋 Planned
+**Status:** ✅ Implemented
 **Created:** 2025-12-03
+**Implemented:** 2025-12-03
 **Dependencies:** 001-project-structure.md
 
 ## Overview

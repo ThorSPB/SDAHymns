@@ -25,7 +25,7 @@ This file tracks all specifications and their implementation status.
 
 | ID | Spec | Status | Notes |
 |----|------|--------|-------|
-| 002 | [Data Layer & EF Core](002-data-layer.md) | 📋 Planned | 9 entity models, DbContext, migrations, seed data |
+| 002 | [Data Layer & EF Core](002-data-layer.md) | ✅ Implemented | All 9 entities, DbContext, migration, 156KB database with seed data |
 | _TBD_ | Hymn Data Import | 📋 Planned | Parse legacy XML, populate database |
 | _TBD_ | Control Window UI | 📋 Planned | Main application interface |
 | _TBD_ | Display Window | 📋 Planned | Full-screen hymn projection |
@@ -49,7 +49,7 @@ This file tracks all specifications and their implementation status.
 
 ### Phase 1: Foundation (Current)
 1. ✅ Project structure setup (COMPLETED)
-2. Data layer and models
+2. ✅ Data layer and models (COMPLETED)
 3. Legacy XML import functionality
 4. Basic hymn display (minimal styling)
 

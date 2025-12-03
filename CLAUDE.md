@@ -30,9 +30,9 @@ This project follows a **specification-driven approach** to manage complexity ac
 
 ## Technology Stack
 
-- **Language:** C# (.NET 8)
+- **Language:** C# (.NET 10 LTS)
 - **UI Framework:** Avalonia UI (cross-platform XAML-based)
-- **Database:** SQLite with Entity Framework Core
+- **Database:** SQLite with Entity Framework Core 10
 - **Audio:** NAudio (piano recording playback)
 - **CLI:** CommandLineParser
 - **Updates:** Velopack (or custom GitHub Releases integration)
