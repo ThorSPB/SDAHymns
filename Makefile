@@ -1,7 +1,7 @@
 # Makefile for SDAHymns
 # Works on Windows (with make installed), Linux, and macOS
 
-.PHONY: help setup restore build test run clean format lint install-hooks
+.PHONY: help setup restore build test run clean format lint install-hooks version-bump release
 
 # Default target
 help:
@@ -26,6 +26,15 @@ help:
 	@echo "Database:"
 	@echo "  make db-update      - Apply database migrations"
 	@echo "  make db-migration   - Create new migration (use NAME=YourMigrationName)"
+	@echo ""
+	@echo "Release Management:"
+	@echo "  make version-bump VERSION=1.0.0  - Bump version and commit"
+	@echo "  make release VERSION=1.0.0       - Create release tag (triggers GitHub Actions)"
+	@echo ""
+	@echo "Publishing:"
+	@echo "  make publish-win    - Build release for Windows"
+	@echo "  make publish-mac    - Build release for macOS ARM64"
+	@echo "  make publish-linux  - Build release for Linux"
 	@echo ""
 	@echo "Cleanup:"
 	@echo "  make clean          - Remove build artifacts"
