@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\SDAHymns.Core\SDAHymns.Core.csproj" />
+    <ProjectReference Include="..\..\src\SDAHymns.Desktop\SDAHymns.Desktop.csproj" />
   </ItemGroup>
 
   <ItemGroup>
