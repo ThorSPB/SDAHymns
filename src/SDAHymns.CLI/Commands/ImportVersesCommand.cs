@@ -160,7 +160,8 @@ public class ImportVersesCommand
 
     private static double GetPercentage(int part, int total)
     {
-        if (total == 0) return 0;
+        if (total == 0)
+            return 0;
         return Math.Round((double)part / total * 100, 1);
     }
 }

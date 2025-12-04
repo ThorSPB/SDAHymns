@@ -1,4 +1,4 @@
-﻿namespace SDAHymns.Core;
+namespace SDAHymns.Core;
 
 public class Class1
 {

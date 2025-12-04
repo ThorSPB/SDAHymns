@@ -183,7 +183,7 @@ public class PowerPointParserService
                 process.Kill();
             }
             catch { /* Ignore if already exited */ }
-            
+
             // Log warning but don't crash the whole app - return null to skip this file
             Console.WriteLine($"   ⚠️ Timeout converting: {Path.GetFileName(pptFilePath)}");
             return null;
@@ -357,14 +357,14 @@ public class PowerPointParserService
 
                 // Extract text from shapes, sorted by Y-position to ensure reading order
                 var texts = new List<string>();
-                
+
                 if (slidePart.Slide.CommonSlideData?.ShapeTree != null)
                 {
                     var shapes = slidePart.Slide.CommonSlideData.ShapeTree.Elements<Shape>()
-                        .Select(s => new 
-                        { 
-                            Shape = s, 
-                            Y = s.ShapeProperties?.Transform2D?.Offset?.Y?.Value ?? 0 
+                        .Select(s => new
+                        {
+                            Shape = s,
+                            Y = s.ShapeProperties?.Transform2D?.Offset?.Y?.Value ?? 0
                         })
                         .OrderBy(x => x.Y);
 
@@ -393,7 +393,7 @@ public class PowerPointParserService
                         }
                     }
                 }
-                
+
                 // Fallback: If no shapes found (e.g. weird layout), try generic descendant search
                 if (!texts.Any())
                 {
@@ -403,14 +403,15 @@ public class PowerPointParserService
                         .ToList();
                 }
 
-                if (!texts.Any()) continue;
+                if (!texts.Any())
+                    continue;
 
                 // Join text intelligently
                 var slideContent = string.Join("\n", texts);
 
                 // Parse the slide
                 var extractedVerseParts = ParseSlideContent(slideContent);
-                
+
                 foreach (var versePart in extractedVerseParts)
                 {
                     if (versePart.Label == "Refren")
@@ -462,7 +463,8 @@ public class PowerPointParserService
 
             foreach (var verse in verses)
             {
-                if (verse.VerseNumber == 0) continue;
+                if (verse.VerseNumber == 0)
+                    continue;
 
                 if (usedNumbers.Contains(verse.VerseNumber))
                 {
@@ -496,11 +498,12 @@ public class PowerPointParserService
             .Select(l => l.Trim())
             .ToList();
 
-        if (!lines.Any()) return results;
+        if (!lines.Any())
+            return results;
 
         // 1. Identify Section Headers
         var splitIndices = new List<int>();
-        
+
         for (int i = 0; i < lines.Count; i++)
         {
             // Chorus header
@@ -520,7 +523,7 @@ public class PowerPointParserService
         {
             splitIndices.Insert(0, 0);
         }
-        
+
         splitIndices.Sort();
 
         // 2. Extract Segments
@@ -529,11 +532,12 @@ public class PowerPointParserService
             int startIndex = splitIndices[k];
             int endIndex = (k + 1 < splitIndices.Count) ? splitIndices[k + 1] : lines.Count;
             int count = endIndex - startIndex;
-            
-            if (count <= 0) continue;
+
+            if (count <= 0)
+                continue;
 
             var segmentLines = lines.GetRange(startIndex, count);
-            
+
             // 3. Process Segment
             ProcessSegment(segmentLines, results);
         }
@@ -543,10 +547,11 @@ public class PowerPointParserService
 
     private void ProcessSegment(List<string> lines, List<VerseData> results)
     {
-        if (!lines.Any()) return;
+        if (!lines.Any())
+            return;
 
         var firstLine = lines[0];
-        
+
         // Case A: Chorus
         if (firstLine.StartsWith("Refren", StringComparison.OrdinalIgnoreCase) && firstLine.Length < 15)
         {
@@ -559,9 +564,9 @@ public class PowerPointParserService
                     VerseNumber = 0,
                     Content = content.Trim(),
                     Label = "Refren",
-                    IsInline = (results.Count > 0 && results.Last().Label == null) 
+                    IsInline = (results.Count > 0 && results.Last().Label == null)
                 });
-                
+
                 if (results.Count > 1 && results[^1].Label == "Refren")
                 {
                     results.Last().IsInline = (results.Count > 1);

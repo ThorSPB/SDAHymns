@@ -40,8 +40,10 @@ public class TestVerseExtractionCommandHandler
         {
             Console.WriteLine(new string('-', 60));
             var flags = new List<string>();
-            if (verse.IsInline) flags.Add("[INLINE]");
-            if (verse.IsContinuation) flags.Add("[CONTINUATION]");
+            if (verse.IsInline)
+                flags.Add("[INLINE]");
+            if (verse.IsContinuation)
+                flags.Add("[CONTINUATION]");
             var flagString = flags.Any() ? " " + string.Join(" ", flags) : "";
 
             if (verse.Label == "Refren")

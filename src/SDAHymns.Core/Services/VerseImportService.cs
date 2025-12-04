@@ -150,7 +150,7 @@ public class VerseImportService : IVerseImportService
         }
 
         var orderedQuery = query.OrderBy(h => h.Number);
-        
+
         // Apply limit if specified
         IQueryable<Hymn> finalQuery = orderedQuery;
         if (limit.HasValue)
@@ -167,7 +167,7 @@ public class VerseImportService : IVerseImportService
             {
                 totalResult.Errors.Add($"No hymns found for category: {categorySlug}");
             }
-            else 
+            else
             {
                 Console.WriteLine($"ℹ️ No hymns found in {categorySlug} starting from #{startFromNumber}");
             }
