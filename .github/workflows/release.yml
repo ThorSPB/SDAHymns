@@ -243,6 +243,13 @@ jobs:
           files: ./Releases/RELEASES
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Upload Velopack JSON Release Index
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.create-release.outputs.version }}
+          files: ./Releases/releases.win.json
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Find and Upload Velopack Setup
         shell: pwsh
         run: |
@@ -342,7 +349,7 @@ jobs:
             --packVersion ${{ needs.create-release.outputs.version }} \
             --packDir ./publish/osx-arm64 \
             --mainExe SDAHymns.Desktop \
-            --outputDir ./Releases/arm64
+            --outputDir ./Releases
 
       - name: Create Velopack Release (x64)
         run: |
@@ -350,11 +357,18 @@ jobs:
             --packVersion ${{ needs.create-release.outputs.version }} \
             --packDir ./publish/osx-x64 \
             --mainExe SDAHymns.Desktop \
-            --outputDir ./Releases/x64
+            --outputDir ./Releases
+
+      - name: Upload Velopack JSON Release Index
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.create-release.outputs.version }}
+          files: ./Releases/releases.osx.json
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Find and Upload Velopack Setup (ARM64)
         run: |
-          PKG_FILE=$(find ./Releases/arm64 -name "*.pkg" | head -n 1)
+          PKG_FILE=$(find ./Releases -name "*-arm64.pkg" | head -n 1)
           if [ -n "$PKG_FILE" ]; then
             echo "ARM64_PKG=$PKG_FILE" >> $GITHUB_ENV
           fi
@@ -369,7 +383,7 @@ jobs:
 
       - name: Find and Upload Velopack Setup (x64)
         run: |
-          PKG_FILE=$(find ./Releases/x64 -name "*.pkg" | head -n 1)
+          PKG_FILE=$(find ./Releases -name "*-x64.pkg" | head -n 1)
           if [ -n "$PKG_FILE" ]; then
             echo "X64_PKG=$PKG_FILE" >> $GITHUB_ENV
           fi
@@ -451,6 +465,13 @@ jobs:
             --packDir ./publish/linux-x64 \
             --mainExe SDAHymns.Desktop \
             --outputDir ./Releases
+
+      - name: Upload Velopack JSON Release Index
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.create-release.outputs.version }}
+          files: ./Releases/releases.linux.json
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Find and Upload Velopack AppImage
         run: |
