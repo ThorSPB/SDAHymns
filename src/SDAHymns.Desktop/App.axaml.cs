@@ -6,6 +6,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using SDAHymns.Core.Data;
 using SDAHymns.Core.Services;
 using SDAHymns.Desktop.ViewModels;
@@ -80,9 +81,11 @@ public partial class App : Application
                         });
                     }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    // Silently fail - update check should never crash the app
+                    // Log the error but don't crash the app
+                    var logger = _serviceProvider.GetService<ILogger<App>>();
+                    logger?.LogWarning(ex, "Background update check failed during app startup");
                 }
             });
         }

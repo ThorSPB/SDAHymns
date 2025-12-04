@@ -206,10 +206,10 @@ public partial class MainWindowViewModel : ViewModelBase
         }
         else
         {
-            // Show error
+            // Show error - keep banner visible so user can retry
             StatusMessage = "Failed to download update. Please try again later.";
             IsDownloadingUpdate = false;
-            IsUpdateAvailable = false;
+            // Note: Keep IsUpdateAvailable = true so the banner stays visible for retry
         }
     }
 

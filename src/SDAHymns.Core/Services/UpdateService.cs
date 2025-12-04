@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Velopack;
 using Velopack.Sources;
 
@@ -15,17 +16,25 @@ public interface IUpdateService
 public class UpdateService : IUpdateService
 {
     private readonly UpdateManager _updateManager;
+    private readonly ILogger<UpdateService>? _logger;
     private UpdateInfo? _pendingUpdate;
 
     public bool IsUpdateAvailable => _pendingUpdate != null;
     public string? LatestVersion => _pendingUpdate?.TargetFullRelease.Version.ToString();
 
-    public UpdateService()
+    /// <summary>
+    /// Creates a new UpdateService
+    /// </summary>
+    /// <param name="logger">Optional logger for diagnostic information</param>
+    /// <param name="githubRepoUrl">GitHub repository URL (e.g., "https://github.com/owner/repo"). If null, uses default.</param>
+    public UpdateService(ILogger<UpdateService>? logger = null, string? githubRepoUrl = null)
     {
+        _logger = logger;
+
         // Configure GitHub Releases source
-        // TODO: Replace with actual GitHub repo URL
+        var repoUrl = githubRepoUrl ?? "https://github.com/ThorSPB/SDAHymns";
         _updateManager = new UpdateManager(
-            new GithubSource("https://github.com/ThorSPB/SDAHymns", null, false)
+            new GithubSource(repoUrl, null, false)
         );
     }
 
@@ -36,9 +45,10 @@ public class UpdateService : IUpdateService
             _pendingUpdate = await _updateManager.CheckForUpdatesAsync();
             return _pendingUpdate;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             // Log error (no internet, GitHub down, etc.)
+            _logger?.LogWarning(ex, "Failed to check for updates. This is expected if there's no internet connection or GitHub is unreachable.");
             // Silently fail - app continues normally
             return null;
         }
@@ -56,9 +66,10 @@ public class UpdateService : IUpdateService
             await _updateManager.DownloadUpdatesAsync(updateInfo, progressAction);
             return true;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             // Log download failure
+            _logger?.LogError(ex, "Failed to download update package. Network issue or corrupted download.");
             return false;
         }
     }
