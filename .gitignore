@@ -418,8 +418,9 @@ FodyWeavers.xsd
 *.msp
 
 Imnuri Azs
-# Generated database
-Resources/hymns.db
+
+# Database (committed to repo - needed for CI/CD)
+# Resources/hymns.db  -- COMMITTED
 Resources/hymns.db-shm
 Resources/hymns.db-wal
 

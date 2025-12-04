@@ -145,3 +145,35 @@ publish-mac:
 publish-linux:
 	@echo "Publishing for Linux..."
 	dotnet publish src/SDAHymns.Desktop -c Release -r linux-x64 --self-contained
+
+# Release Management
+.PHONY: version-bump release
+
+# Bump version and create git tag
+version-bump:
+ifndef VERSION
+	@echo "Error: Please specify version with VERSION=1.0.0"
+	@exit 1
+endif
+	@echo "Bumping version to $(VERSION)..."
+	@sed -i 's/<Version>.*<\/Version>/<Version>$(VERSION)<\/Version>/' Directory.Build.props || \
+	  sed -i '' 's/<Version>.*<\/Version>/<Version>$(VERSION)<\/Version>/' Directory.Build.props
+	git add Directory.Build.props
+	git commit -m "chore: bump version to $(VERSION)"
+	@echo "Version bumped to $(VERSION)"
+	@echo "Next: Run 'make release VERSION=$(VERSION)' to create tag and trigger release"
+
+# Create release tag (triggers GitHub Actions)
+release:
+ifndef VERSION
+	@echo "Error: Please specify version with VERSION=1.0.0"
+	@exit 1
+endif
+	@echo "Creating release tag v$(VERSION)..."
+	git tag v$(VERSION)
+	git push origin main
+	git push origin v$(VERSION)
+	@echo ""
+	@echo "✅ Release v$(VERSION) triggered!"
+	@echo "Check GitHub Actions: https://github.com/your-org/SDAHymns/actions"
+	@echo "Release will be available at: https://github.com/your-org/SDAHymns/releases"
