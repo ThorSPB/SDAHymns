@@ -17,14 +17,26 @@ public class ImportOrphanPptCommand
 
     [Option('p', "ppt-directory", Required = false, HelpText = "Path to PPT directory (defaults to Imnuri Azs/Resurse/Imnuri {category}/ppt)")]
     public string? PptDirectory { get; set; }
+}
 
-    public async Task<int> ExecuteAsync()
+public class ImportOrphanPptCommandHandler
+{
+    private readonly HymnsContext _context;
+    private readonly PowerPointParserService _parser;
+
+    public ImportOrphanPptCommandHandler(HymnsContext context, PowerPointParserService parser)
     {
-        Console.WriteLine($"🔍 Scanning for orphan PPT files in category: {Category}");
+        _context = context;
+        _parser = parser;
+    }
+
+    public async Task<int> ExecuteAsync(ImportOrphanPptCommand options)
+    {
+        Console.WriteLine($"🔍 Scanning for orphan PPT files in category: {options.Category}");
         Console.WriteLine();
 
         // Determine PPT directory
-        var pptDir = PptDirectory ?? GetDefaultPptDirectory(Category);
+        var pptDir = options.PptDirectory ?? GetDefaultPptDirectory(options.Category);
         if (!Directory.Exists(pptDir))
         {
             Console.WriteLine($"❌ Error: PPT directory not found: {pptDir}");
@@ -41,25 +53,17 @@ public class ImportOrphanPptCommand
         Console.WriteLine($"📁 Found {pptFiles.Count} PPT files in directory");
 
         // Get existing hymn numbers from database
-        var solutionRoot = GetSolutionRoot();
-        var dbPath = Path.Combine(solutionRoot, "Resources", "hymns.db");
-
-        var optionsBuilder = new DbContextOptionsBuilder<HymnsContext>();
-        optionsBuilder.UseSqlite($"Data Source={dbPath}");
-
-        await using var context = new HymnsContext(optionsBuilder.Options);
-
-        var category = await context.HymnCategories
-            .FirstOrDefaultAsync(c => c.Slug == Category.ToLowerInvariant());
+        var category = await _context.HymnCategories
+            .FirstOrDefaultAsync(c => c.Slug == options.Category.ToLowerInvariant());
 
         if (category == null)
         {
-            Console.WriteLine($"❌ Error: Category not found in database: {Category}");
+            Console.WriteLine($"❌ Error: Category not found in database: {options.Category}");
             Console.WriteLine("Available categories: crestine, companioni, exploratori, licurici, tineret");
             return 1;
         }
 
-        var existingNumbers = await context.Hymns
+        var existingNumbers = await _context.Hymns
             .Where(h => h.CategoryId == category.Id)
             .Select(h => h.Number)
             .ToListAsync();
@@ -90,7 +94,7 @@ public class ImportOrphanPptCommand
             return 0;
         }
 
-        if (DryRun)
+        if (options.DryRun)
         {
             Console.WriteLine("🔍 DRY RUN - Orphan hymns that would be imported:");
             Console.WriteLine();
@@ -109,13 +113,12 @@ public class ImportOrphanPptCommand
         Console.WriteLine("This may take a few minutes...");
         Console.WriteLine();
 
-        var parser = new PowerPointParserService();
         var progress = new Progress<(int current, int total, string fileName)>(p =>
         {
             Console.Write($"\r⏳ Processing: {p.current}/{p.total} - {p.fileName}".PadRight(80));
         });
 
-        var extractionResults = await parser.ExtractBatchAsync(
+        var extractionResults = await _parser.ExtractBatchAsync(
             orphanFiles.Select(o => o.filePath),
             progress);
 
@@ -168,14 +171,14 @@ public class ImportOrphanPptCommand
 
             hymn.Verses.Add(verse);
 
-            context.Hymns.Add(hymn);
+            _context.Hymns.Add(hymn);
             successCount++;
 
             Console.WriteLine($"✅ #{hymnNumber:D3} - {title}");
         }
 
         // Save to database
-        await context.SaveChangesAsync();
+        await _context.SaveChangesAsync();
 
         Console.WriteLine();
         Console.WriteLine("═══════════════════════════════════════════════════════════");
@@ -210,19 +213,5 @@ public class ImportOrphanPptCommand
 
         var folderName = categoryMap.GetValueOrDefault(category.ToLowerInvariant(), $"Imnuri {category}");
         return Path.Combine("Imnuri Azs", "Resurse", folderName, "ppt");
-    }
-
-    private static string GetSolutionRoot()
-    {
-        var currentDir = Directory.GetCurrentDirectory();
-        while (currentDir != null)
-        {
-            if (File.Exists(Path.Combine(currentDir, "SDAHymns.sln")))
-            {
-                return currentDir;
-            }
-            currentDir = Directory.GetParent(currentDir)?.FullName;
-        }
-        throw new InvalidOperationException("Could not find solution root directory");
     }
 }

@@ -182,9 +182,9 @@ Contributions are welcome! This project aims for industry-standard testing cover
 
 ### Phase 1: Foundation ✅
 - [x] Project structure setup
-- [ ] Data layer and models
-- [ ] Legacy XML import functionality
-- [ ] Basic hymn display
+- [x] Data layer and models
+- [x] Legacy XML import functionality
+- [x] Basic hymn display
 
 ### Phase 2: Core Features
 - [ ] Control window UI

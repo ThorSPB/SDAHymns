@@ -1,6 +1,7 @@
 using CommandLine;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Presentation;
+using SDAHymns.Core.Services;
 
 namespace SDAHymns.CLI.Commands;
 
@@ -9,125 +10,57 @@ public class TestPptCommand
 {
     [Option('f', "file", Required = true, HelpText = "Path to PPT file to analyze")]
     public string FilePath { get; set; } = string.Empty;
+}
 
-    public async Task<int> ExecuteAsync()
+public class TestPptCommandHandler
+{
+    private readonly PowerPointParserService _parser;
+
+    public TestPptCommandHandler(PowerPointParserService parser)
     {
-        Console.WriteLine($"Analyzing PPT file: {FilePath}");
+        _parser = parser;
+    }
+
+    public async Task<int> ExecuteAsync(TestPptCommand options)
+    {
+        Console.WriteLine($"Analyzing PPT file: {options.FilePath}");
         Console.WriteLine();
 
-        // Convert PPT to PPTX first
-        var tempDir = Path.Combine(Path.GetTempPath(), "sdahymns-test");
-        Directory.CreateDirectory(tempDir);
+        // Extract hymn info using the parser service
+        Console.WriteLine("Extracting hymn information...");
+        var hymnInfo = await _parser.ExtractHymnInfoAsync(options.FilePath);
 
-        var fullPath = Path.GetFullPath(FilePath);
-        var fileName = Path.GetFileNameWithoutExtension(fullPath);
-        var pptxPath = Path.Combine(tempDir, $"{fileName}.pptx");
-
-        Console.WriteLine("Converting PPT to PPTX...");
-        var convertResult = await ConvertPptToPptxAsync(fullPath, tempDir);
-
-        if (!convertResult)
+        if (hymnInfo == null)
         {
-            Console.WriteLine("❌ Failed to convert PPT file");
+            Console.WriteLine("❌ Failed to extract hymn information from PPT file");
             return 1;
         }
 
-        Console.WriteLine($"✅ Converted to: {pptxPath}");
+        Console.WriteLine($"✅ Successfully extracted hymn info:");
+        Console.WriteLine($"   Hymn Number: {hymnInfo.Value.hymnNumber}");
+        Console.WriteLine($"   Title: {hymnInfo.Value.title}");
         Console.WriteLine();
 
-        // Analyze slides
-        AnalyzeSlides(pptxPath);
+        // Extract and display verses
+        Console.WriteLine("Extracting verses...");
+        var verses = await _parser.ExtractVersesAsync(options.FilePath);
 
-        // Cleanup
-        try
-        {
-            File.Delete(pptxPath);
-        }
-        catch { }
-
-        return 0;
-    }
-
-    private async Task<bool> ConvertPptToPptxAsync(string pptPath, string outputDir)
-    {
-        var startInfo = new System.Diagnostics.ProcessStartInfo
-        {
-            FileName = @"C:\Program Files\LibreOffice\program\soffice.com",
-            Arguments = $"--headless --convert-to pptx --outdir \"{outputDir}\" \"{pptPath}\"",
-            UseShellExecute = false,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            CreateNoWindow = true
-        };
-
-        using var process = System.Diagnostics.Process.Start(startInfo);
-        if (process == null) return false;
-
-        await process.WaitForExitAsync();
-
-        var expectedOutput = Path.Combine(outputDir, Path.GetFileNameWithoutExtension(pptPath) + ".pptx");
-        return File.Exists(expectedOutput);
-    }
-
-    private void AnalyzeSlides(string pptxPath)
-    {
-        using var doc = PresentationDocument.Open(pptxPath, false);
-        var presentationPart = doc.PresentationPart;
-
-        if (presentationPart == null)
-        {
-            Console.WriteLine("❌ No presentation part found");
-            return;
-        }
-
-        var slideIdList = presentationPart.Presentation.SlideIdList;
-        if (slideIdList == null)
-        {
-            Console.WriteLine("❌ No slides found");
-            return;
-        }
-
-        var slideIds = slideIdList.ChildElements.OfType<SlideId>().ToList();
-        Console.WriteLine($"📊 Total Slides: {slideIds.Count}");
+        Console.WriteLine($"✅ Extracted {verses.Count} verses");
+        Console.WriteLine();
         Console.WriteLine(new string('=', 80));
-        Console.WriteLine();
 
-        for (int i = 0; i < slideIds.Count; i++)
+        foreach (var verse in verses)
         {
-            var slideId = slideIds[i];
-            var slidePart = (SlidePart)presentationPart.GetPartById(slideId.RelationshipId!.Value!);
-
-            Console.WriteLine($"📄 Slide {i + 1}");
+            var label = verse.Label ?? $"Verse {verse.VerseNumber}";
+            Console.WriteLine($"📄 {label} (Display Order: {verse.DisplayOrder})");
             Console.WriteLine(new string('-', 40));
-
-            var textElements = slidePart.Slide.Descendants<DocumentFormat.OpenXml.Drawing.Text>();
-            var texts = textElements
-                .Where(t => !string.IsNullOrWhiteSpace(t.Text))
-                .Select(t => t.Text.Trim())
-                .ToList();
-
-            if (texts.Any())
-            {
-                Console.WriteLine("Text elements found:");
-                foreach (var text in texts)
-                {
-                    Console.WriteLine($"  • {text}");
-                }
-
-                Console.WriteLine();
-                Console.WriteLine("Combined slide text:");
-                var combined = string.Join("\n", texts);
-                Console.WriteLine($"---\n{combined}\n---");
-            }
-            else
-            {
-                Console.WriteLine("  (empty slide)");
-            }
-
+            Console.WriteLine(verse.Content);
             Console.WriteLine();
         }
 
         Console.WriteLine(new string('=', 80));
         Console.WriteLine("✅ Analysis Complete!");
+
+        return 0;
     }
 }

@@ -8,15 +8,24 @@ public class TestVerseExtractionCommand
 {
     [Option('f', "file", Required = true, HelpText = "Path to PPT file")]
     public string FilePath { get; set; } = string.Empty;
+}
 
-    public async Task<int> ExecuteAsync()
+public class TestVerseExtractionCommandHandler
+{
+    private readonly PowerPointParserService _parser;
+
+    public TestVerseExtractionCommandHandler(PowerPointParserService parser)
     {
-        Console.WriteLine($"Testing verse extraction: {FilePath}");
+        _parser = parser;
+    }
+
+    public async Task<int> ExecuteAsync(TestVerseExtractionCommand options)
+    {
+        Console.WriteLine($"Testing verse extraction: {options.FilePath}");
         Console.WriteLine(new string('=', 80));
         Console.WriteLine();
 
-        var parser = new PowerPointParserService();
-        var verses = await parser.ExtractVersesAsync(FilePath);
+        var verses = await _parser.ExtractVersesAsync(options.FilePath);
 
         if (!verses.Any())
         {

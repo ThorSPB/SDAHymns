@@ -25,13 +25,73 @@ public class VerseData
 /// </summary>
 public class PowerPointParserService
 {
-    private const string LibreOfficePath = @"C:\Program Files\LibreOffice\program\soffice.com";
+    private readonly string _libreOfficePath;
     private readonly string _tempDirectory;
 
-    public PowerPointParserService()
+    /// <summary>
+    /// Creates a new PowerPointParserService with auto-detected LibreOffice path
+    /// </summary>
+    public PowerPointParserService() : this(null)
     {
+    }
+
+    /// <summary>
+    /// Creates a new PowerPointParserService with a custom LibreOffice path
+    /// </summary>
+    /// <param name="libreOfficePath">Path to LibreOffice executable, or null to auto-detect</param>
+    public PowerPointParserService(string? libreOfficePath)
+    {
+        _libreOfficePath = libreOfficePath ?? FindLibreOfficePath();
         _tempDirectory = Path.Combine(Path.GetTempPath(), "sdahymns-ppt-parser");
         Directory.CreateDirectory(_tempDirectory);
+    }
+
+    /// <summary>
+    /// Automatically detects LibreOffice installation path based on the operating system
+    /// </summary>
+    private static string FindLibreOfficePath()
+    {
+        var possiblePaths = new List<string>();
+
+        if (OperatingSystem.IsWindows())
+        {
+            possiblePaths.AddRange(new[]
+            {
+                @"C:\Program Files\LibreOffice\program\soffice.com",
+                @"C:\Program Files\LibreOffice\program\soffice.exe",
+                @"C:\Program Files (x86)\LibreOffice\program\soffice.com",
+                @"C:\Program Files (x86)\LibreOffice\program\soffice.exe",
+            });
+        }
+        else if (OperatingSystem.IsMacOS())
+        {
+            possiblePaths.AddRange(new[]
+            {
+                "/Applications/LibreOffice.app/Contents/MacOS/soffice",
+                "/usr/local/bin/soffice",
+            });
+        }
+        else if (OperatingSystem.IsLinux())
+        {
+            possiblePaths.AddRange(new[]
+            {
+                "/usr/bin/soffice",
+                "/usr/local/bin/soffice",
+                "/opt/libreoffice/program/soffice",
+            });
+        }
+
+        foreach (var path in possiblePaths)
+        {
+            if (File.Exists(path))
+            {
+                return path;
+            }
+        }
+
+        throw new InvalidOperationException(
+            $"LibreOffice not found. Searched locations: {string.Join(", ", possiblePaths)}. " +
+            "Please install LibreOffice or provide a custom path.");
     }
 
     /// <summary>
@@ -86,9 +146,9 @@ public class PowerPointParserService
     /// </summary>
     private async Task<string?> ConvertPptToPptxAsync(string pptFilePath)
     {
-        if (!File.Exists(LibreOfficePath))
+        if (!File.Exists(_libreOfficePath))
         {
-            throw new InvalidOperationException($"LibreOffice not found at: {LibreOfficePath}");
+            throw new InvalidOperationException($"LibreOffice not found at: {_libreOfficePath}");
         }
 
         var fullPptPath = Path.GetFullPath(pptFilePath);
@@ -96,7 +156,7 @@ public class PowerPointParserService
 
         var startInfo = new ProcessStartInfo
         {
-            FileName = LibreOfficePath,
+            FileName = _libreOfficePath,
             Arguments = $"--headless --convert-to pptx --outdir \"{outputDir}\" \"{fullPptPath}\"",
             UseShellExecute = false,
             RedirectStandardOutput = true,

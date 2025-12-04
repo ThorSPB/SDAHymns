@@ -1,6 +1,5 @@
 using CommandLine;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using SDAHymns.Core.Data;
 using SDAHymns.Core.Services;
 
@@ -18,32 +17,20 @@ public class ImportOptions
 
 public class ImportCommandHandler
 {
-    public static async Task<int> ExecuteAsync(ImportOptions options)
+    private readonly HymnsContext _context;
+    private readonly ILegacyXmlImportService _importService;
+
+    public ImportCommandHandler(HymnsContext context, ILegacyXmlImportService importService)
     {
-        // Create simple console logger
-        using var loggerFactory = LoggerFactory.Create(builder =>
-        {
-            builder.AddConsole();
-            builder.SetMinimumLevel(LogLevel.Information);
-        });
+        _context = context;
+        _importService = importService;
+    }
 
-        // Setup database context
-        var solutionRoot = GetSolutionRoot();
-        var dbPath = Path.Combine(solutionRoot, "Resources", "hymns.db");
-
-        var optionsBuilder = new DbContextOptionsBuilder<HymnsContext>();
-        optionsBuilder.UseSqlite($"Data Source={dbPath}");
-        optionsBuilder.UseLoggerFactory(loggerFactory);
-
-        await using var context = new HymnsContext(optionsBuilder.Options);
-
-        // Create service
-        var logger = loggerFactory.CreateLogger<LegacyXmlImportService>();
-        var importService = new LegacyXmlImportService(context, logger);
-
+    public async Task<int> ExecuteAsync(ImportOptions options)
+    {
         if (options.ShowStats)
         {
-            return await ShowStatisticsAsync(importService);
+            return await ShowStatisticsAsync();
         }
 
         Console.WriteLine("SDA Hymns - Legacy XML Import");
@@ -56,13 +43,13 @@ public class ImportCommandHandler
         {
             Console.WriteLine($"Importing category: {options.Category}");
             Console.WriteLine();
-            result = await importService.ImportCategoryAsync(options.Category);
+            result = await _importService.ImportCategoryAsync(options.Category);
         }
         else
         {
             Console.WriteLine("Importing all categories...");
             Console.WriteLine();
-            result = await importService.ImportAllCategoriesAsync();
+            result = await _importService.ImportAllCategoriesAsync();
         }
 
         PrintResults(result);
@@ -70,23 +57,23 @@ public class ImportCommandHandler
         // Update last import date
         if (result.IsSuccess && result.ImportedCount > 0)
         {
-            var lastImportSetting = await context.AppSettings
+            var lastImportSetting = await _context.AppSettings
                 .FirstOrDefaultAsync(s => s.Key == "LastDatabaseImportDate");
 
             if (lastImportSetting != null)
             {
                 lastImportSetting.Value = DateTime.UtcNow.ToString("O");
                 lastImportSetting.UpdatedAt = DateTime.UtcNow;
-                await context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
             }
         }
 
         return result.IsSuccess ? 0 : 1;
     }
 
-    private static async Task<int> ShowStatisticsAsync(ILegacyXmlImportService importService)
+    private async Task<int> ShowStatisticsAsync()
     {
-        var stats = await importService.GetImportStatisticsAsync();
+        var stats = await _importService.GetImportStatisticsAsync();
 
         Console.WriteLine("Import Statistics");
         Console.WriteLine("=================");
@@ -113,7 +100,7 @@ public class ImportCommandHandler
         return 0;
     }
 
-    private static void PrintResults(ImportResult result)
+    private void PrintResults(ImportResult result)
     {
         Console.WriteLine();
         Console.WriteLine("Import Results");
@@ -147,19 +134,5 @@ public class ImportCommandHandler
             Console.WriteLine("No new hymns to import.");
             Console.ResetColor();
         }
-    }
-
-    private static string GetSolutionRoot()
-    {
-        var currentDir = Directory.GetCurrentDirectory();
-        while (currentDir != null)
-        {
-            if (File.Exists(Path.Combine(currentDir, "SDAHymns.sln")))
-            {
-                return currentDir;
-            }
-            currentDir = Directory.GetParent(currentDir)?.FullName;
-        }
-        throw new InvalidOperationException("Could not find solution root directory");
     }
 }
