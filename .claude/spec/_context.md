@@ -27,6 +27,7 @@ This file tracks all specifications and their implementation status.
 |----|------|--------|-------|
 | 002 | [Data Layer & EF Core](002-data-layer.md) | ✅ Implemented | All 9 entities, DbContext, migration, 156KB database with seed data |
 | 003 | [Legacy XML Import](003-legacy-xml-import.md) | ✅ Implemented | 1,254 hymns total (1,070 from XML + 184 from orphan PPT files) |
+| 004 | [PowerPoint Verse Extraction](004-powerpoint-verse-extraction.md) | ✅ Implemented | 1,249/1,254 hymns (99.6%) - 4,629 verses imported successfully |
 | _TBD_ | Control Window UI | 📋 Planned | Main application interface |
 | _TBD_ | Display Window | 📋 Planned | Full-screen hymn projection |
 | _TBD_ | Display Profiles | 📋 Planned | Customizable styling system |
@@ -53,7 +54,11 @@ This file tracks all specifications and their implementation status.
 3. ✅ Legacy XML import functionality (COMPLETED - 1,254 hymns)
    - ✅ XML parsing (1,070 hymns)
    - ✅ Orphan PPT import with title extraction (184 hymns)
-4. Basic hymn display (minimal styling)
+4. ✅ PowerPoint verse extraction (4,629 verses from 1,249 hymns) - COMPLETED
+   - ✅ Verse extraction logic with automatic sequential numbering
+   - ✅ Database import service with resumable imports
+   - ✅ Full import complete: 99.6% success rate
+5. Basic hymn display (minimal styling)
 
 ### Phase 2: Core Features
 1. Control window UI (search, select, navigate)
@@ -76,8 +81,8 @@ This file tracks all specifications and their implementation status.
 ## Current Session Focus
 
 **Date:** 2025-12-03
-**Goal:** Complete Phase 1 Foundation
-**Completed Today:**
+**Goal:** Complete Phase 1 Foundation - Data Import
+**Session 1 (Completed):**
 - ✅ Upgraded to .NET 10 LTS
 - ✅ Spec 001: Project Structure
 - ✅ Spec 002: Data Layer & EF Core
@@ -86,7 +91,31 @@ This file tracks all specifications and their implementation status.
   - Built `PowerPointParserService` with PPT→PPTX conversion
   - Created `import-orphan-ppt` CLI command
   - All 1,254 hymns now in database with proper titles
-**Next:** UI development (Control/Display windows) or PowerPoint verse extraction
+
+**Session 2 (Completed - Spec 004):**
+- ✅ Extended `PowerPointParserService` with enhanced verse extraction
+  - `ExtractVersesAsync()` method with multi-segment slide parsing
+  - Handles 4+ different verse/chorus patterns
+  - Automatic sequential verse numbering for unnumbered verses
+  - Y-position-based text extraction for correct reading order
+  - 45-second timeout to prevent LibreOffice hangs
+  - Enhanced chorus deduplication with content comparison
+- ✅ Created `IVerseImportService` and `VerseImportService`
+  - Per-hymn transaction isolation
+  - Resumable imports with `--start-from` parameter
+  - Automatic skip of already-imported hymns
+- ✅ Created `import-verses` CLI command
+  - Full support for category, hymn ID, limit, and start-from options
+  - Progress reporting every 10 hymns
+  - Statistics command
+- ✅ Full import completed: **1,249/1,254 hymns (99.6%) - 4,629 verses**
+  - Crestine: 919/919 (100%) - 3,468 verses
+  - Exploratori: 120/120 (100%) - 390 verses
+  - Licurici: 83/83 (100%) - 315 verses
+  - Tineret: 65/69 (94.2%) - 250 verses
+  - Companioni: 62/63 (98.4%) - 206 verses
+
+**🎯 NEXT SESSION:** Begin Phase 1 final step - Basic hymn display UI
 
 ## Notes
 

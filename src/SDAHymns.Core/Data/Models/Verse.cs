@@ -17,6 +17,8 @@ public class Verse
 
     // Order and display
     public int DisplayOrder { get; set; }  // For custom ordering
+    public bool IsInline { get; set; } // If true, display on same slide as previous verse
+    public bool IsContinuation { get; set; } // If true, this is a continuation of the previous verse (split slide)
 
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }

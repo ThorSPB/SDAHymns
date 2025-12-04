@@ -1,12 +1,27 @@
 using System.Diagnostics;
+using System.Text;
 using System.Text.RegularExpressions;
 using DocumentFormat.OpenXml.Packaging;
-using DocumentFormat.OpenXml.Presentation;
+using DocumentFormat.OpenXml.Presentation; // Using P = DocumentFormat.OpenXml.Presentation;
+using A = DocumentFormat.OpenXml.Drawing; // Using A = DocumentFormat.OpenXml.Drawing;
 
 namespace SDAHymns.Core.Services;
 
 /// <summary>
-/// Service for parsing hymn titles from legacy PowerPoint (.PPT) files
+/// Data structure for extracted verse information
+/// </summary>
+public class VerseData
+{
+    public int VerseNumber { get; set; }
+    public required string Content { get; set; }
+    public string? Label { get; set; }
+    public int DisplayOrder { get; set; }
+    public bool IsInline { get; set; }
+    public bool IsContinuation { get; set; }
+}
+
+/// <summary>
+/// Service for parsing hymn titles and verses from legacy PowerPoint (.PPT) files
 /// </summary>
 public class PowerPointParserService
 {
@@ -95,7 +110,24 @@ public class PowerPointParserService
             return null;
         }
 
-        await process.WaitForExitAsync();
+        try
+        {
+            // Add timeout to prevent hangs (45 seconds)
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(45));
+            await process.WaitForExitAsync(cts.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            try
+            {
+                process.Kill();
+            }
+            catch { /* Ignore if already exited */ }
+            
+            // Log warning but don't crash the whole app - return null to skip this file
+            Console.WriteLine($"   ⚠️ Timeout converting: {Path.GetFileName(pptFilePath)}");
+            return null;
+        }
 
         // Construct expected output path
         var fileName = Path.GetFileNameWithoutExtension(pptFilePath);
@@ -134,7 +166,7 @@ public class PowerPointParserService
         var slidePart = (SlidePart)presentationPart.GetPartById(firstSlideId.RelationshipId.Value);
 
         // Extract all text from the slide
-        var textElements = slidePart.Slide.Descendants<DocumentFormat.OpenXml.Drawing.Text>();
+        var textElements = slidePart.Slide.Descendants<A.Text>();
         foreach (var textElement in textElements)
         {
             if (!string.IsNullOrWhiteSpace(textElement.Text))
@@ -220,5 +252,288 @@ public class PowerPointParserService
         }
 
         return results;
+    }
+
+    /// <summary>
+    /// Extracts all verses from a PPT file (slides 2+)
+    /// </summary>
+    public async Task<List<VerseData>> ExtractVersesAsync(string pptFilePath)
+    {
+        var verses = new List<VerseData>();
+
+        if (!File.Exists(pptFilePath))
+        {
+            throw new FileNotFoundException($"PPT file not found: {pptFilePath}");
+        }
+
+        try
+        {
+            // Convert PPT to PPTX
+            var pptxPath = await ConvertPptToPptxAsync(pptFilePath);
+            if (pptxPath == null)
+            {
+                return verses;
+            }
+
+            // Extract verses from all slides (skip slide 1 = title)
+            using var doc = PresentationDocument.Open(pptxPath, false);
+            var presentationPart = doc.PresentationPart;
+
+            if (presentationPart?.Presentation.SlideIdList == null)
+            {
+                return verses;
+            }
+
+            var slideIds = presentationPart.Presentation.SlideIdList.ChildElements.OfType<SlideId>().ToList();
+
+            // Process slides 2+ (slide 1 is title)
+            var displayOrder = 1;
+            VerseData? lastChorus = null;
+
+            for (int i = 1; i < slideIds.Count; i++)
+            {
+                var slideId = slideIds[i];
+                var slidePart = (SlidePart)presentationPart.GetPartById(slideId.RelationshipId!.Value!);
+
+                // Extract text from shapes, sorted by Y-position to ensure reading order
+                var texts = new List<string>();
+                
+                if (slidePart.Slide.CommonSlideData?.ShapeTree != null)
+                {
+                    var shapes = slidePart.Slide.CommonSlideData.ShapeTree.Elements<Shape>()
+                        .Select(s => new 
+                        { 
+                            Shape = s, 
+                            Y = s.ShapeProperties?.Transform2D?.Offset?.Y?.Value ?? 0 
+                        })
+                        .OrderBy(x => x.Y);
+
+                    foreach (var item in shapes)
+                    {
+                        var paragraphs = item.Shape.Descendants<A.Paragraph>();
+                        foreach (var para in paragraphs)
+                        {
+                            var sb = new StringBuilder();
+                            foreach (var child in para.Elements())
+                            {
+                                if (child is A.Run run)
+                                {
+                                    sb.Append(run.Text?.Text ?? "");
+                                }
+                                else if (child is A.Break)
+                                {
+                                    sb.AppendLine();
+                                }
+                            }
+                            var line = sb.ToString().Trim();
+                            if (!string.IsNullOrWhiteSpace(line))
+                            {
+                                texts.Add(line);
+                            }
+                        }
+                    }
+                }
+                
+                // Fallback: If no shapes found (e.g. weird layout), try generic descendant search
+                if (!texts.Any())
+                {
+                    texts = slidePart.Slide.Descendants<A.Text>()
+                        .Where(t => !string.IsNullOrWhiteSpace(t.Text))
+                        .Select(t => t.Text.Trim())
+                        .ToList();
+                }
+
+                if (!texts.Any()) continue;
+
+                // Join text intelligently
+                var slideContent = string.Join("\n", texts);
+
+                // Parse the slide
+                var extractedVerseParts = ParseSlideContent(slideContent);
+                
+                foreach (var versePart in extractedVerseParts)
+                {
+                    if (versePart.Label == "Refren")
+                    {
+                        // Deduplication logic for chorus:
+                        // Only add if it's the first chorus encountered or if its content is different from the last one
+                        if (lastChorus == null || !string.Equals(lastChorus.Content, versePart.Content, StringComparison.Ordinal))
+                        {
+                            versePart.DisplayOrder = displayOrder;
+                            verses.Add(versePart);
+                            lastChorus = versePart;
+                            displayOrder++;
+                        }
+                        // Else: Skip duplicate chorus
+                    }
+                    else
+                    {
+                        versePart.DisplayOrder = displayOrder;
+                        verses.Add(versePart);
+                        displayOrder++;
+                    }
+                }
+            }
+
+            // Cleanup
+            try
+            {
+                File.Delete(pptxPath);
+            }
+            catch { }
+
+            // Post-processing: Assign sequential verse numbers to unnumbered verses
+            var nextVerseNumber = 1;
+            foreach (var verse in verses)
+            {
+                if (verse.VerseNumber == 0 && verse.Label != "Refren")
+                {
+                    verse.VerseNumber = nextVerseNumber++;
+                }
+                else if (verse.VerseNumber > 0)
+                {
+                    nextVerseNumber = Math.Max(nextVerseNumber, verse.VerseNumber + 1);
+                }
+            }
+
+            // Final safety check: Ensure unique VerseNumbers
+            var usedNumbers = new HashSet<int>();
+            int safeNextNum = verses.Any(v => v.VerseNumber > 0) ? verses.Max(v => v.VerseNumber) + 1 : 1;
+
+            foreach (var verse in verses)
+            {
+                if (verse.VerseNumber == 0) continue;
+
+                if (usedNumbers.Contains(verse.VerseNumber))
+                {
+                    verse.VerseNumber = safeNextNum++;
+                }
+                usedNumbers.Add(verse.VerseNumber);
+            }
+
+            return verses;
+        }
+        catch (Exception)
+        {
+            return verses;
+        }
+    }
+
+    /// <summary>
+    /// Parse slide content into one or more segments (Verse, Chorus, etc.)
+    /// Handles complex slides with multiple sections (e.g. Refren -> Verse -> Refren).
+    /// </summary>
+    private List<VerseData> ParseSlideContent(string slideContent)
+    {
+        var results = new List<VerseData>();
+
+        if (string.IsNullOrWhiteSpace(slideContent))
+        {
+            return results;
+        }
+
+        var lines = slideContent.Split('\n', StringSplitOptions.RemoveEmptyEntries)
+            .Select(l => l.Trim())
+            .ToList();
+
+        if (!lines.Any()) return results;
+
+        // 1. Identify Section Headers
+        var splitIndices = new List<int>();
+        
+        for (int i = 0; i < lines.Count; i++)
+        {
+            // Chorus header
+            if (lines[i].StartsWith("Refren", StringComparison.OrdinalIgnoreCase) && lines[i].Length < 15)
+            {
+                splitIndices.Add(i);
+            }
+            // Verse header (numbered)
+            else if (Regex.IsMatch(lines[i], @"^\d+\."))
+            {
+                splitIndices.Add(i);
+            }
+        }
+
+        // Ensure start of content is covered
+        if (!splitIndices.Contains(0))
+        {
+            splitIndices.Insert(0, 0);
+        }
+        
+        splitIndices.Sort();
+
+        // 2. Extract Segments
+        for (int k = 0; k < splitIndices.Count; k++)
+        {
+            int startIndex = splitIndices[k];
+            int endIndex = (k + 1 < splitIndices.Count) ? splitIndices[k + 1] : lines.Count;
+            int count = endIndex - startIndex;
+            
+            if (count <= 0) continue;
+
+            var segmentLines = lines.GetRange(startIndex, count);
+            
+            // 3. Process Segment
+            ProcessSegment(segmentLines, results);
+        }
+
+        return results;
+    }
+
+    private void ProcessSegment(List<string> lines, List<VerseData> results)
+    {
+        if (!lines.Any()) return;
+
+        var firstLine = lines[0];
+        
+        // Case A: Chorus
+        if (firstLine.StartsWith("Refren", StringComparison.OrdinalIgnoreCase) && firstLine.Length < 15)
+        {
+            // Strip "Refren" line
+            var content = string.Join("\n", lines.Skip(1));
+            if (!string.IsNullOrWhiteSpace(content))
+            {
+                results.Add(new VerseData
+                {
+                    VerseNumber = 0,
+                    Content = content.Trim(),
+                    Label = "Refren",
+                    IsInline = (results.Count > 0 && results.Last().Label == null) 
+                });
+                
+                if (results.Count > 1 && results[^1].Label == "Refren")
+                {
+                    results.Last().IsInline = (results.Count > 1);
+                }
+            }
+            return;
+        }
+
+        // Case B: Numbered Verse
+        var match = Regex.Match(firstLine, @"^(\d+)\.");
+        if (match.Success)
+        {
+            var verseNum = int.Parse(match.Groups[1].Value);
+            var content = string.Join("\n", lines);
+            results.Add(new VerseData
+            {
+                VerseNumber = verseNum,
+                Content = content.Trim(),
+                Label = null,
+                IsContinuation = false
+            });
+            return;
+        }
+
+        // Case C: Continuation / Unnumbered
+        var unnumberedContent = string.Join("\n", lines);
+        results.Add(new VerseData
+        {
+            VerseNumber = 0,
+            Content = unnumberedContent.Trim(),
+            Label = null,
+            IsContinuation = true
+        });
     }
 }
