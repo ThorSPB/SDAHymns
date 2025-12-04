@@ -349,7 +349,7 @@ jobs:
             --packVersion ${{ needs.create-release.outputs.version }} \
             --packDir ./publish/osx-arm64 \
             --mainExe SDAHymns.Desktop \
-            --outputDir ./Releases
+            --outputDir ./Releases/arm64
 
       - name: Create Velopack Release (x64)
         run: |
@@ -357,7 +357,17 @@ jobs:
             --packVersion ${{ needs.create-release.outputs.version }} \
             --packDir ./publish/osx-x64 \
             --mainExe SDAHymns.Desktop \
-            --outputDir ./Releases
+            --outputDir ./Releases/x64
+
+      - name: Merge Velopack Release Indices
+        run: |
+          mkdir -p ./Releases
+          # Merge the two arrays from the JSON files into one
+          cat ./Releases/arm64/releases.osx.json ./Releases/x64/releases.osx.json | jq -s 'add' > ./Releases/releases.osx.json
+          
+          # verify content
+          echo "Merged releases.osx.json content:"
+          cat ./Releases/releases.osx.json
 
       - name: Upload Velopack JSON Release Index
         uses: softprops/action-gh-release@v2
@@ -368,7 +378,7 @@ jobs:
 
       - name: Find and Upload Velopack Setup (ARM64)
         run: |
-          PKG_FILE=$(find ./Releases -name "*-arm64.pkg" | head -n 1)
+          PKG_FILE=$(find ./Releases/arm64 -name "*.pkg" | head -n 1)
           if [ -n "$PKG_FILE" ]; then
             echo "ARM64_PKG=$PKG_FILE" >> $GITHUB_ENV
           fi
@@ -383,7 +393,7 @@ jobs:
 
       - name: Find and Upload Velopack Setup (x64)
         run: |
-          PKG_FILE=$(find ./Releases -name "*-x64.pkg" | head -n 1)
+          PKG_FILE=$(find ./Releases/x64 -name "*.pkg" | head -n 1)
           if [ -n "$PKG_FILE" ]; then
             echo "X64_PKG=$PKG_FILE" >> $GITHUB_ENV
           fi
