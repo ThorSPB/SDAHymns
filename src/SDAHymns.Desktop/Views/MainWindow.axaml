@@ -14,7 +14,7 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <Grid RowDefinitions="Auto,Auto,Auto,*,Auto,Auto" Background="Black">
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,*,Auto,Auto" Background="Black">
         <!-- Update Notification Banner -->
         <Border Grid.Row="0"
                 IsVisible="{Binding IsUpdateAvailable}"
@@ -67,45 +67,30 @@
             </Grid>
         </Border>
 
-        <!-- Top Bar: Hymn Number Input -->
+        <!-- Top Bar: Search & Controls -->
         <Border Grid.Row="1"
                 Background="#1A1A1A"
                 BorderBrush="#333333"
                 BorderThickness="0,0,0,1"
-                Padding="20">
-            <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,*">
-                <TextBlock Grid.Column="0"
-                           Text="Hymn #:"
-                           VerticalAlignment="Center"
-                           FontSize="16"
-                           Foreground="White"
-                           Margin="0,0,10,0"/>
-
-                <TextBox Grid.Column="1"
-                         Width="100"
-                         Text="{Binding HymnNumber}"
-                         VerticalAlignment="Center"
-                         HorizontalContentAlignment="Center"
+                Padding="15">
+            <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto">
+                <TextBox Grid.Column="0"
+                         Text="{Binding SearchQuery}"
+                         Watermark="Search hymns by number or title..."
                          FontSize="16"
                          Background="#2A2A2A"
                          Foreground="White"
                          BorderBrush="#444444"
-                         x:Name="HymnNumberTextBox"/>
+                         Margin="0,0,10,0"/>
 
-                <TextBlock Grid.Column="2"
-                           Text="Category:"
-                           VerticalAlignment="Center"
-                           FontSize="16"
-                           Foreground="White"
-                           Margin="20,0,10,0"/>
-
-                <ComboBox Grid.Column="3"
+                <ComboBox Grid.Column="1"
                           Width="150"
                           SelectedItem="{Binding SelectedCategory}"
                           VerticalAlignment="Center"
                           Background="#2A2A2A"
                           Foreground="White"
-                          BorderBrush="#444444">
+                          BorderBrush="#444444"
+                          Margin="0,0,10,0">
                     <ComboBox.Items>
                         <x:String>crestine</x:String>
                         <x:String>companioni</x:String>
@@ -115,55 +100,120 @@
                     </ComboBox.Items>
                 </ComboBox>
 
-                <Button Grid.Column="4"
-                        Content="Load Hymn"
-                        Command="{Binding LoadHymnCommand}"
-                        Width="120"
+                <Button Grid.Column="2"
+                        Content="{Binding FavoriteIcon}"
+                        Command="{Binding ToggleFavoriteCommand}"
+                        ToolTip.Tip="Toggle Favorite"
+                        Width="50"
                         Height="35"
-                        Margin="20,0,0,0"
-                        Background="#0078D4"
+                        FontSize="18"
+                        Margin="0,0,10,0"
+                        Background="#2A2A2A"
                         Foreground="White"
-                        BorderBrush="#005A9E"/>
+                        BorderBrush="#444444"/>
 
-                <ToggleButton Grid.Column="5"
+                <ToggleButton Grid.Column="3"
                               Content="{Binding AspectRatioLabel}"
                               IsChecked="{Binding IsAspectRatio43}"
-                              Width="120"
+                              Width="100"
                               Height="35"
-                              Margin="10,0,0,0"
+                              Margin="0,0,10,0"
                               Background="#2A2A2A"
                               Foreground="White"
                               BorderBrush="#444444"/>
 
-                <Button Grid.Column="6"
+                <Button Grid.Column="4"
                         Content="{Binding DisplayWindowButtonLabel}"
                         Click="ToggleDisplayWindow_Click"
                         Width="140"
                         Height="35"
-                        Margin="10,0,0,0"
                         Background="#0078D4"
                         Foreground="White"
                         BorderBrush="#005A9E"/>
             </Grid>
         </Border>
 
-        <!-- Hymn Title -->
+        <!-- Recent Hymns -->
         <Border Grid.Row="2"
                 Background="#0D0D0D"
                 BorderBrush="#333333"
                 BorderThickness="0,0,0,1"
-                Padding="20,15">
-            <TextBlock Text="{Binding HymnTitle}"
-                       FontSize="28"
-                       FontWeight="Bold"
-                       HorizontalAlignment="Center"
-                       TextAlignment="Center"
-                       Foreground="White"
-                       TextWrapping="Wrap"/>
+                Padding="15,10">
+            <StackPanel>
+                <TextBlock Text="Recent:"
+                           Foreground="#888888"
+                           FontSize="12"
+                           Margin="0,0,0,5"/>
+                <ItemsControl ItemsSource="{Binding RecentHymns}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="5"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Button Content="{Binding Number}"
+                                    Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).LoadHymnFromRecentCommand}"
+                                    CommandParameter="{Binding}"
+                                    Background="#2A2A2A"
+                                    Foreground="White"
+                                    BorderBrush="#444444"
+                                    Padding="10,5"
+                                    MinWidth="50"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
+
+        <!-- Search Results List -->
+        <ListBox Grid.Row="3"
+                 ItemsSource="{Binding SearchResults}"
+                 SelectedItem="{Binding SelectedSearchResult}"
+                 Background="#0D0D0D"
+                 Foreground="White"
+                 BorderBrush="#333333"
+                 BorderThickness="0,0,0,1"
+                 MaxHeight="200">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Grid.Column="0">
+                            <Run Text="{Binding Number}" FontWeight="Bold"/>
+                            <Run Text=". "/>
+                            <Run Text="{Binding Title}"/>
+                        </TextBlock>
+                        <TextBlock Grid.Column="1"
+                                   Text="{Binding VerseCount, StringFormat='{}{0} verses'}"
+                                   Foreground="#888888"
+                                   Margin="10,0,5,0"/>
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <!-- Selected Hymn Info -->
+        <Border Grid.Row="4"
+                Background="#1A1A1A"
+                BorderBrush="#333333"
+                BorderThickness="0,0,0,1"
+                Padding="15,10">
+            <StackPanel>
+                <TextBlock Text="{Binding HymnTitle}"
+                           FontSize="18"
+                           FontWeight="Bold"
+                           Foreground="White"/>
+                <TextBlock Foreground="#888888" FontSize="14">
+                    <Run Text="{Binding CurrentHymn.Category.Name}"/>
+                    <Run Text=" • "/>
+                    <Run Text="{Binding Verses.Count}"/>
+                    <Run Text=" verses"/>
+                </TextBlock>
+            </StackPanel>
         </Border>
 
         <!-- Verse Content Display - 4:3 Aspect Ratio Container -->
-        <Viewbox Grid.Row="3" Stretch="Uniform">
+        <Viewbox Grid.Row="5" Stretch="Uniform">
             <Border Width="{Binding DisplayWidth}"
                     Height="{Binding DisplayHeight}"
                     Background="Black">
@@ -208,7 +258,7 @@
         </Viewbox>
 
         <!-- Navigation Buttons -->
-        <Border Grid.Row="4"
+        <Border Grid.Row="6"
                 Background="#1A1A1A"
                 BorderBrush="#333333"
                 BorderThickness="0,1,0,1"
@@ -238,7 +288,7 @@
         </Border>
 
         <!-- Status Bar -->
-        <Border Grid.Row="5"
+        <Border Grid.Row="7"
                 Background="#0D0D0D"
                 BorderBrush="#333333"
                 BorderThickness="0,0,0,0"

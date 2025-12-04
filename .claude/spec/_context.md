@@ -29,7 +29,7 @@ This file tracks all specifications and their implementation status.
 | 003 | [Legacy XML Import](003-legacy-xml-import.md) | ✅ Implemented | 1,254 hymns total (1,070 from XML + 184 from orphan PPT files) |
 | 004 | [PowerPoint Verse Extraction](004-powerpoint-verse-extraction.md) | ✅ Implemented | 1,249/1,254 hymns (99.6%) - 4,629 verses imported successfully |
 | 005 | [Basic Hymn Display](005-basic-hymn-display.md) | ✅ Implemented | Dual-window system (control + display), verse navigation, dark theme, auto-scaling |
-| 006 | [Enhanced Control Window](006-enhanced-control-window.md) | 📋 Planned | Full-text search, browse, recent/favorites, keyboard navigation |
+| 006 | [Enhanced Control Window](006-enhanced-control-window.md) | ✅ Implemented | Full-text search, browse, recent/favorites - real-time search, recent hymns bar |
 | 007 | [Display Profiles](007-display-profiles.md) | 📋 Planned | Customizable fonts, colors, backgrounds, effects - preset + custom profiles |
 | 008 | [Keyboard Shortcuts](008-keyboard-shortcuts.md) | 📋 Planned | Global hotkeys, customizable keybindings, shortcut hints |
 | 009 | [Service Planner](009-service-planner.md) | 📋 Planned | Pre-plan services, live mode, templates, PDF export |
@@ -84,7 +84,7 @@ This file tracks all specifications and their implementation status.
 ## Current Session Focus
 
 **Date:** 2025-12-04
-**Goal:** ✅ PHASE 1 COMPLETE - Basic Hymn Display
+**Goal:** 🚧 PHASE 2 IN PROGRESS - Core Features (Spec 006 Complete)
 **Session 1 (2025-12-03 - Completed):**
 - ✅ Upgraded to .NET 10 LTS
 - ✅ Spec 001: Project Structure
@@ -152,7 +152,29 @@ All Phase 1 goals achieved:
 - ✅ Dual-window system ready for projection
 - ✅ Romanian text rendering correctly
 
-**🎯 NEXT SESSION:** Begin Phase 2 Implementation
+**Session 4 (2025-12-04 - Completed - Spec 006):**
+- ✅ Added LastAccessedAt, AccessCount, IsFavorite properties to Hymn model
+- ✅ Created and applied AddHymnUsageTracking migration
+- ✅ Implemented SearchService with search, recent hymns, and favorites
+  - Real-time search by hymn number or title
+  - Category filtering
+  - Recent hymns tracking (top 5)
+  - Favorite hymns toggle
+- ✅ Enhanced MainWindowViewModel with search functionality
+  - Auto-search on query change
+  - Selected result auto-loads hymn
+  - Recent hymns quick access
+- ✅ Redesigned MainWindow.axaml with new layout
+  - Search box with watermark
+  - Recent hymns bar with quick-access buttons
+  - Search results list (max height 200px)
+  - Selected hymn info panel
+  - Favorite star button
+- ✅ Registered SearchService in DI container
+- ✅ Fixed tests to include SearchService mock
+- ✅ Application builds and runs successfully
+
+**🎯 NEXT SESSION:** Continue Phase 2 - Implement Spec 007 (Display Profiles) or Spec 008 (Keyboard Shortcuts)
 
 **All Phase 2 Specs Complete and Ready:**
 - 📋 **Spec 006**: Enhanced Control Window (search, browse, recent/favorites)

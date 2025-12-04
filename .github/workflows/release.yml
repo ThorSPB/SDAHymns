@@ -2,6 +2,8 @@ name: Release
 
 on:
   push:
+    branches:
+      - main
     tags:
       - 'v*.*.*'  # Triggers on version tags like v1.0.0, v1.2.3, etc.
   workflow_dispatch:
@@ -46,53 +48,91 @@ jobs:
       - name: Calculate Next Version
         id: get_version
         run: |
-          if [ "${{ github.event_name }}" = "push" ]; then
-            VERSION=${GITHUB_REF#refs/tags/v}
+          REF="${{ github.ref }}"
+          EVENT="${{ github.event_name }}"
+          
+          # Initialize variables
+          CREATE_TAG="false"
+          VERSION=""
+          PREVIOUS_TAG=""
+          
+          # Check if triggered by a Tag Push
+          if [[ "$REF" == "refs/tags/v"* ]]; then
+            echo "Triggered by tag push."
+            VERSION=${REF#refs/tags/v}
             PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
-            echo "version=$VERSION" >> $GITHUB_OUTPUT
-            echo "previous_tag=$PREVIOUS_TAG" >> $GITHUB_OUTPUT
-            echo "create_tag=false" >> $GITHUB_OUTPUT
+            CREATE_TAG="false" # Tag already exists
+            
           else
-            # Manual Dispatch
-            git fetch --tags
-            LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
-            echo "Latest tag: $LATEST_TAG"            
-            if [ "${{ inputs.bump_type }}" = "manual" ]; then
-              VERSION="${{ inputs.manual_version }}"
-            else
-              # Remove 'v' prefix
-              CLEAN_TAG=${LATEST_TAG#v}
-              # Split into array
-              IFS='.' read -r major minor patch <<< "$CLEAN_TAG"
+            # Triggered by Branch Push (main) or Manual Dispatch
+            echo "Triggered by $EVENT on $REF"
+            
+            BUMP_TYPE="none"
+            
+            if [ "$EVENT" = "workflow_dispatch" ]; then
+              BUMP_TYPE="${{ inputs.bump_type }}"
+            elif [ "$EVENT" = "push" ]; then
+              COMMIT_MSG="${{ github.event.head_commit.message }}"
+              echo "Commit message: $COMMIT_MSG"
               
-              # Default to 0 if missing
-              major=${major:-0}
-              minor=${minor:-0}
-              patch=${patch:-0}
-              
-              if [ "${{ inputs.bump_type }}" = "major" ]; then
-                major=$((major + 1))
-                minor=0
-                patch=0
-              elif [ "${{ inputs.bump_type }}" = "minor" ]; then
-                minor=$((minor + 1))
-                patch=0
-              else
-                # patch
-                patch=$((patch + 1))
+              if [[ "$COMMIT_MSG" == *"[major]"* ]]; then
+                BUMP_TYPE="major"
+              elif [[ "$COMMIT_MSG" == *"[minor]"* ]]; then
+                BUMP_TYPE="minor"
+              elif [[ "$COMMIT_MSG" == *"[patch]"* ]]; then
+                BUMP_TYPE="patch"
               fi
-              VERSION="$major.$minor.$patch"
             fi
             
-            echo "Calculated next version: $VERSION"
-            echo "version=$VERSION" >> $GITHUB_OUTPUT
-            echo "previous_tag=$LATEST_TAG" >> $GITHUB_OUTPUT
-            echo "create_tag=true" >> $GITHUB_OUTPUT
+            echo "Bump Type: $BUMP_TYPE"
+            
+            if [ "$BUMP_TYPE" != "none" ]; then
+              git fetch --tags
+              LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+              PREVIOUS_TAG=$LATEST_TAG
+              echo "Latest tag: $LATEST_TAG"
+              
+              if [ "$BUMP_TYPE" = "manual" ]; then
+                VERSION="${{ inputs.manual_version }}"
+              else
+                # Remove 'v' prefix
+                CLEAN_TAG=${LATEST_TAG#v}
+                # Split into array
+                IFS='.' read -r major minor patch <<< "$CLEAN_TAG"
+                
+                # Default to 0 if missing
+                major=${major:-0}
+                minor=${minor:-0}
+                patch=${patch:-0}
+                
+                if [ "$BUMP_TYPE" = "major" ]; then
+                  major=$((major + 1))
+                  minor=0
+                  patch=0
+                elif [ "$BUMP_TYPE" = "minor" ]; then
+                  minor=$((minor + 1))
+                  patch=0
+                else
+                  # patch
+                  patch=$((patch + 1))
+                fi
+                VERSION="$major.$minor.$patch"
+              fi
+              
+              CREATE_TAG="true"
+              echo "Calculated next version: $VERSION"
+            else
+              echo "No version bump detected. Skipping release creation."
+            fi
           fi
+
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "previous_tag=$PREVIOUS_TAG" >> $GITHUB_OUTPUT
+          echo "create_tag=$CREATE_TAG" >> $GITHUB_OUTPUT
           echo "Final Version: $VERSION"
 
       - name: Create and Push Tag
-        if: steps.get_version.outputs.create_tag == 'true'
+        if: steps.get_version.outputs.create_tag == 'true' && steps.get_version.outputs.version != ''
         run: |
           VERSION="${{ steps.get_version.outputs.version }}"
           TAG="v$VERSION"
@@ -106,6 +146,7 @@ jobs:
 
       - name: Generate release notes
         id: changelog
+        if: steps.get_version.outputs.version != ''
         run: |
           VERSION="${{ steps.get_version.outputs.version }}"
           PREVIOUS_TAG="${{ steps.get_version.outputs.previous_tag }}"
@@ -125,7 +166,7 @@ jobs:
                 echo "" >> release_body.md
                 echo "| Platform                  | Download                                                                         | Type                    |" >> release_body.md
                 echo "| :--- | :----------------- | :----------------------------------------------------------------------------------------------------------|" >> release_body.md
-                echo "| **Windows**               | [**Download Installer (Recommended)**]($BASE_URL/SDAHymns-Setup.exe)             | Auto-updating Installer |" >> release_body.md
+                echo "| **Windows**               | [**Download Installer (Recommended)**]($BASE_URL/SDAHymns-Windows-Setup.exe)             | Auto-updating Installer |" >> release_body.md
                 echo "| **Windows**               | [Portable Zip]($BASE_URL/SDAHymns-v$VERSION-windows-x64.zip)                     | Manual                  |" >> release_body.md
                 echo "| **macOS (Apple Silicon)** | [**Download Installer (Recommended)**]($BASE_URL/SDAHymns-Setup-arm64.pkg)       | Auto-updating Installer |" >> release_body.md
                 echo "| **macOS (Apple Silicon)** | [Portable Zip]($BASE_URL/SDAHymns-v$VERSION-macos-arm64.zip)                     | Manual                  |" >> release_body.md
@@ -140,6 +181,7 @@ jobs:
 
       - name: Create Release
         id: create_release
+        if: steps.get_version.outputs.version != ''
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.get_version.outputs.version }}
@@ -152,6 +194,7 @@ jobs:
   build-windows:
     name: Build Windows
     needs: create-release
+    if: needs.create-release.outputs.version != ''
     runs-on: windows-latest
 
     steps:
@@ -214,6 +257,7 @@ jobs:
         with:
           tag_name: v${{ needs.create-release.outputs.version }}
           files: ${{ env.SETUP_FILE }}
+          asset_name: SDAHymns-Windows-Setup.exe
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Find and Upload Velopack nupkg
@@ -247,6 +291,7 @@ jobs:
   build-macos:
     name: Build macOS
     needs: create-release
+    if: needs.create-release.outputs.version != ''
     runs-on: macos-latest
 
     steps:
@@ -366,6 +411,7 @@ jobs:
   build-linux:
     name: Build Linux
     needs: create-release
+    if: needs.create-release.outputs.version != ''
     runs-on: ubuntu-latest
 
     steps:

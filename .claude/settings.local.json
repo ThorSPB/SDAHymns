@@ -20,7 +20,8 @@
       "Bash(chmod:*)",
       "Bash(bash:*)",
       "Bash(tasklist:*)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(gh issue list:*)"
     ],
     "deny": [],
     "ask": []

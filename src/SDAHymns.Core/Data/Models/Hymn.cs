@@ -21,6 +21,11 @@ public class Hymn
     // Legacy reference (optional)
     public string? LegacyPowerPointPath { get; set; }
 
+    // Usage tracking
+    public DateTime? LastAccessedAt { get; set; }
+    public int AccessCount { get; set; }
+    public bool IsFavorite { get; set; }
+
     // Metadata
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
