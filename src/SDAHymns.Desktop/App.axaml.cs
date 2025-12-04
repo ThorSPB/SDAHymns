@@ -7,6 +7,7 @@ using Avalonia.Threading;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using SDAHymns.Core.Data;
 using SDAHymns.Core.Services;
 using SDAHymns.Desktop.ViewModels;
@@ -45,6 +46,12 @@ public partial class App : Application
                 options.UseSqlite($"Data Source={dbPath}");
             });
 
+            // Configure update options
+            services.Configure<SDAHymns.Core.Services.UpdateOptions>(options =>
+            {
+                options.GitHubRepoUrl = "https://github.com/ThorSPB/SDAHymns";
+            });
+
             // Services
             services.AddScoped<IHymnDisplayService, HymnDisplayService>();
             services.AddSingleton<IUpdateService, UpdateService>();
@@ -64,9 +71,13 @@ public partial class App : Application
             // Check for updates in background (non-blocking)
             Task.Run(async () =>
             {
+                // Create a proper DI scope for the background task
+                await using var scope = _serviceProvider.CreateAsyncScope();
+                var logger = scope.ServiceProvider.GetService<ILogger<App>>();
+
                 try
                 {
-                    var updateService = _serviceProvider.GetRequiredService<IUpdateService>();
+                    var updateService = scope.ServiceProvider.GetRequiredService<IUpdateService>();
                     var updateInfo = await updateService.CheckForUpdatesAsync();
 
                     if (updateInfo != null)
@@ -84,7 +95,6 @@ public partial class App : Application
                 catch (Exception ex)
                 {
                     // Log the error but don't crash the app
-                    var logger = _serviceProvider.GetService<ILogger<App>>();
                     logger?.LogWarning(ex, "Background update check failed during app startup");
                 }
             });

@@ -64,7 +64,7 @@ public class MainWindowViewModelTests
     }
 
     [Fact]
-    public async Task UpdateNowAsync_WithSuccessfulDownload_StartsUpdate()
+    public async Task UpdateNowAsync_WithSuccessfulDownload_CallsApplyUpdatesAndRestart()
     {
         // Arrange
         var viewModel = new MainWindowViewModel(_mockHymnService.Object, _mockUpdateService.Object);
@@ -75,14 +75,20 @@ public class MainWindowViewModelTests
             .Setup(x => x.DownloadUpdatesAsync(It.IsAny<UpdateInfo>(), It.IsAny<IProgress<int>>()))
             .ReturnsAsync(true);
 
-        // Act
-        // Note: This will try to restart the app, which we can't test in unit tests
-        // We're just verifying the command can be invoked
-        var command = viewModel.UpdateNowCommand;
-        command.Should().NotBeNull();
+        _mockUpdateService
+            .Setup(x => x.ApplyUpdatesAndRestart(It.IsAny<UpdateInfo>()));
 
-        // We can't actually execute this without mocking ApplyUpdatesAndRestart
-        // which restarts the application
+        // Act
+        await viewModel.UpdateNowCommand.ExecuteAsync(null);
+
+        // Assert
+        _mockUpdateService.Verify(
+            x => x.DownloadUpdatesAsync(mockUpdateInfo, It.IsAny<IProgress<int>>()),
+            Times.Once);
+
+        _mockUpdateService.Verify(
+            x => x.ApplyUpdatesAndRestart(mockUpdateInfo),
+            Times.Once);
     }
 
     [Fact]

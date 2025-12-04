@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using SDAHymns.Core.Services;
 using Velopack;
@@ -9,6 +10,8 @@ namespace SDAHymns.Tests.Services;
 
 public class UpdateServiceTests
 {
+    private readonly Mock<IOptions<SDAHymns.Core.Services.UpdateOptions>> _mockOptions;
+
     public UpdateServiceTests()
     {
         // Initialize Velopack for testing
@@ -21,12 +24,20 @@ public class UpdateServiceTests
         {
             // Already initialized or not needed in test environment
         }
+
+        // Setup default options mock
+        _mockOptions = new Mock<IOptions<SDAHymns.Core.Services.UpdateOptions>>();
+        _mockOptions.Setup(x => x.Value).Returns(new SDAHymns.Core.Services.UpdateOptions
+        {
+            GitHubRepoUrl = "https://github.com/ThorSPB/SDAHymns"
+        });
     }
+
     [Fact]
-    public void Constructor_WithDefaultParameters_CreatesServiceSuccessfully()
+    public void Constructor_WithDefaultOptions_CreatesServiceSuccessfully()
     {
         // Arrange & Act
-        var service = new UpdateService();
+        var service = new UpdateService(_mockOptions.Object);
 
         // Assert
         service.Should().NotBeNull();
@@ -39,9 +50,14 @@ public class UpdateServiceTests
     {
         // Arrange
         var customUrl = "https://github.com/CustomUser/CustomRepo";
+        var customOptions = new Mock<IOptions<SDAHymns.Core.Services.UpdateOptions>>();
+        customOptions.Setup(x => x.Value).Returns(new SDAHymns.Core.Services.UpdateOptions
+        {
+            GitHubRepoUrl = customUrl
+        });
 
         // Act
-        var service = new UpdateService(githubRepoUrl: customUrl);
+        var service = new UpdateService(customOptions.Object);
 
         // Assert
         service.Should().NotBeNull();
@@ -55,7 +71,7 @@ public class UpdateServiceTests
         var mockLogger = new Mock<ILogger<UpdateService>>();
 
         // Act
-        var service = new UpdateService(mockLogger.Object);
+        var service = new UpdateService(_mockOptions.Object, mockLogger.Object);
 
         // Assert
         service.Should().NotBeNull();
@@ -67,9 +83,14 @@ public class UpdateServiceTests
         // Arrange
         var mockLogger = new Mock<ILogger<UpdateService>>();
         var customUrl = "https://github.com/CustomUser/CustomRepo";
+        var customOptions = new Mock<IOptions<SDAHymns.Core.Services.UpdateOptions>>();
+        customOptions.Setup(x => x.Value).Returns(new SDAHymns.Core.Services.UpdateOptions
+        {
+            GitHubRepoUrl = customUrl
+        });
 
         // Act
-        var service = new UpdateService(mockLogger.Object, customUrl);
+        var service = new UpdateService(customOptions.Object, mockLogger.Object);
 
         // Assert
         service.Should().NotBeNull();
@@ -80,7 +101,7 @@ public class UpdateServiceTests
     {
         // Arrange
         var mockLogger = new Mock<ILogger<UpdateService>>();
-        var service = new UpdateService(mockLogger.Object);
+        var service = new UpdateService(_mockOptions.Object, mockLogger.Object);
 
         // Act
         var result = await service.CheckForUpdatesAsync();
@@ -97,7 +118,12 @@ public class UpdateServiceTests
         // Arrange
         var mockLogger = new Mock<ILogger<UpdateService>>();
         var invalidUrl = "https://github.com/NonExistent/InvalidRepo12345";
-        var service = new UpdateService(mockLogger.Object, invalidUrl);
+        var invalidOptions = new Mock<IOptions<SDAHymns.Core.Services.UpdateOptions>>();
+        invalidOptions.Setup(x => x.Value).Returns(new SDAHymns.Core.Services.UpdateOptions
+        {
+            GitHubRepoUrl = invalidUrl
+        });
+        var service = new UpdateService(invalidOptions.Object, mockLogger.Object);
 
         // Act
         var result = await service.CheckForUpdatesAsync();
@@ -122,7 +148,7 @@ public class UpdateServiceTests
     {
         // Arrange
         var mockLogger = new Mock<ILogger<UpdateService>>();
-        var service = new UpdateService(mockLogger.Object);
+        var service = new UpdateService(_mockOptions.Object, mockLogger.Object);
 
         // Act
         // This will likely throw or return false since updateInfo is null
@@ -143,7 +169,7 @@ public class UpdateServiceTests
     public void IsUpdateAvailable_InitiallyFalse()
     {
         // Arrange
-        var service = new UpdateService();
+        var service = new UpdateService(_mockOptions.Object);
 
         // Act
         var result = service.IsUpdateAvailable;
@@ -156,7 +182,7 @@ public class UpdateServiceTests
     public void LatestVersion_InitiallyNull()
     {
         // Arrange
-        var service = new UpdateService();
+        var service = new UpdateService(_mockOptions.Object);
 
         // Act
         var result = service.LatestVersion;
@@ -169,23 +195,23 @@ public class UpdateServiceTests
     public void Constructor_WithNullLogger_DoesNotThrow()
     {
         // Arrange & Act
-        var act = () => new UpdateService(logger: null);
+        var act = () => new UpdateService(_mockOptions.Object, logger: null);
 
         // Assert
         act.Should().NotThrow();
     }
 
     [Fact]
-    public void Constructor_WithNullGitHubUrl_UsesDefaultUrl()
+    public void Constructor_WithDefaultUrl_UsesConfiguredUrl()
     {
         // Arrange
         var mockLogger = new Mock<ILogger<UpdateService>>();
 
         // Act
-        var service = new UpdateService(mockLogger.Object, githubRepoUrl: null);
+        var service = new UpdateService(_mockOptions.Object, mockLogger.Object);
 
         // Assert
         service.Should().NotBeNull();
-        // If it doesn't throw, it successfully used the default URL
+        // If it doesn't throw, it successfully used the configured URL from options
     }
 }

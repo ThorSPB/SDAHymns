@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Velopack;
 using Velopack.Sources;
 
@@ -25,14 +26,14 @@ public class UpdateService : IUpdateService
     /// <summary>
     /// Creates a new UpdateService
     /// </summary>
+    /// <param name="options">Update configuration options</param>
     /// <param name="logger">Optional logger for diagnostic information</param>
-    /// <param name="githubRepoUrl">GitHub repository URL (e.g., "https://github.com/owner/repo"). If null, uses default.</param>
-    public UpdateService(ILogger<UpdateService>? logger = null, string? githubRepoUrl = null)
+    public UpdateService(IOptions<UpdateOptions> options, ILogger<UpdateService>? logger = null)
     {
         _logger = logger;
 
-        // Configure GitHub Releases source
-        var repoUrl = githubRepoUrl ?? "https://github.com/ThorSPB/SDAHymns";
+        // Configure GitHub Releases source from options
+        var repoUrl = options.Value.GitHubRepoUrl;
         _updateManager = new UpdateManager(
             new GithubSource(repoUrl, null, false)
         );
@@ -56,6 +57,13 @@ public class UpdateService : IUpdateService
 
     public async Task<bool> DownloadUpdatesAsync(UpdateInfo updateInfo, IProgress<int>? progress = null)
     {
+        // Guard clause - validate input
+        if (updateInfo == null)
+        {
+            _logger?.LogWarning("DownloadUpdatesAsync called with null updateInfo");
+            return false;
+        }
+
         try
         {
             // Convert IProgress<int> to Action<int> for Velopack
