@@ -140,15 +140,14 @@ jobs:
 
       - name: Create Release
         id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.get_version.outputs.version }}
-          release_name: SDAHymns v${{ steps.get_version.outputs.version }}
+          name: SDAHymns v${{ steps.get_version.outputs.version }}
           body_path: release_body.md
           draft: false
           prerelease: false
+          token: ${{ secrets.GITHUB_TOKEN }}
 
   build-windows:
     name: Build Windows
@@ -195,14 +194,11 @@ jobs:
             --outputDir ./Releases
 
       - name: Upload Velopack RELEASES file
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
         with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: ./Releases/RELEASES
-          asset_name: RELEASES
-          asset_content_type: text/plain
+          tag_name: v${{ needs.create-release.outputs.version }}
+          files: ./Releases/RELEASES
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Find and Upload Velopack Setup
         shell: pwsh
@@ -213,14 +209,12 @@ jobs:
           }
 
       - name: Upload Velopack Setup.exe
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
+        if: env.SETUP_FILE != ''
         with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: ${{ env.SETUP_FILE }}
-          asset_name: SDAHymns-Setup.exe
-          asset_content_type: application/octet-stream
+          tag_name: v${{ needs.create-release.outputs.version }}
+          files: ${{ env.SETUP_FILE }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Find and Upload Velopack nupkg
         shell: pwsh
@@ -232,28 +226,23 @@ jobs:
           }
 
       - name: Upload Velopack nupkg
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
+        if: env.NUPKG_FILE != ''
         with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: ${{ env.NUPKG_FILE }}
-          asset_name: ${{ env.NUPKG_NAME }}
-          asset_content_type: application/octet-stream
+          tag_name: v${{ needs.create-release.outputs.version }}
+          files: ${{ env.NUPKG_FILE }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create Windows ZIP (fallback)
         run: |
           Compress-Archive -Path ./publish/win-x64/* -DestinationPath ./${{ env.APP_NAME }}-v${{ needs.create-release.outputs.version }}-windows-x64.zip
 
       - name: Upload Windows ZIP Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
         with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: ./${{ env.APP_NAME }}-v${{ needs.create-release.outputs.version }}-windows-x64.zip
-          asset_name: ${{ env.APP_NAME }}-v${{ needs.create-release.outputs.version }}-windows-x64.zip
-          asset_content_type: application/zip
+          tag_name: v${{ needs.create-release.outputs.version }}
+          files: ./${{ env.APP_NAME }}-v${{ needs.create-release.outputs.version }}-windows-x64.zip
+          token: ${{ secrets.GITHUB_TOKEN }}
 
   build-macos:
     name: Build macOS
@@ -327,14 +316,11 @@ jobs:
 
       - name: Upload Velopack Setup (ARM64)
         if: env.ARM64_PKG != ''
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
         with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: ${{ env.ARM64_PKG }}
-          asset_name: SDAHymns-Setup-arm64.pkg
-          asset_content_type: application/octet-stream
+          tag_name: v${{ needs.create-release.outputs.version }}
+          files: ${{ env.ARM64_PKG }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Find and Upload Velopack Setup (x64)
         run: |
@@ -345,14 +331,11 @@ jobs:
 
       - name: Upload Velopack Setup (x64)
         if: env.X64_PKG != ''
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
         with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: ${{ env.X64_PKG }}
-          asset_name: SDAHymns-Setup-x64.pkg
-          asset_content_type: application/octet-stream
+          tag_name: v${{ needs.create-release.outputs.version }}
+          files: ${{ env.X64_PKG }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create macOS ARM64 ZIP
         run: |
@@ -367,24 +350,18 @@ jobs:
           cd ../..
 
       - name: Upload macOS ARM64 Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
         with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: ./${{ env.APP_NAME }}-v${{ needs.create-release.outputs.version }}-macos-arm64.zip
-          asset_name: ${{ env.APP_NAME }}-v${{ needs.create-release.outputs.version }}-macos-arm64.zip
-          asset_content_type: application/zip
+          tag_name: v${{ needs.create-release.outputs.version }}
+          files: ./${{ env.APP_NAME }}-v${{ needs.create-release.outputs.version }}-macos-arm64.zip
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload macOS x64 Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
         with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: ./${{ env.APP_NAME }}-v${{ needs.create-release.outputs.version }}-macos-x64.zip
-          asset_name: ${{ env.APP_NAME }}-v${{ needs.create-release.outputs.version }}-macos-x64.zip
-          asset_content_type: application/zip
+          tag_name: v${{ needs.create-release.outputs.version }}
+          files: ./${{ env.APP_NAME }}-v${{ needs.create-release.outputs.version }}-macos-x64.zip
+          token: ${{ secrets.GITHUB_TOKEN }}
 
   build-linux:
     name: Build Linux
@@ -438,14 +415,11 @@ jobs:
 
       - name: Upload Velopack AppImage
         if: env.APPIMAGE_FILE != ''
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
         with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: ${{ env.APPIMAGE_FILE }}
-          asset_name: SDAHymns-x64.AppImage
-          asset_content_type: application/octet-stream
+          tag_name: v${{ needs.create-release.outputs.version }}
+          files: ${{ env.APPIMAGE_FILE }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create Linux ZIP
         run: |
@@ -454,11 +428,8 @@ jobs:
           cd ../..
 
       - name: Upload Linux Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
         with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: ./${{ env.APP_NAME }}-v${{ needs.create-release.outputs.version }}-linux-x64.tar.gz
-          asset_name: ${{ env.APP_NAME }}-v${{ needs.create-release.outputs.version }}-linux-x64.tar.gz
-          asset_content_type: application/gzip
+          tag_name: v${{ needs.create-release.outputs.version }}
+          files: ./${{ env.APP_NAME }}-v${{ needs.create-release.outputs.version }}-linux-x64.tar.gz
+          token: ${{ secrets.GITHUB_TOKEN }}
