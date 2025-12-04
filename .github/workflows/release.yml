@@ -4,11 +4,21 @@ on:
   push:
     tags:
       - 'v*.*.*'  # Triggers on version tags like v1.0.0, v1.2.3, etc.
-  workflow_dispatch:  # Allows manual trigger from GitHub Actions UI
+  workflow_dispatch:
     inputs:
-      version:
-        description: 'Version number (e.g., 1.0.0)'
+      bump_type:
+        description: 'How to bump the version?'
         required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - manual
+      manual_version:
+        description: 'Manual version (required if bump_type is manual)'
+        required: false
         type: string
 
 permissions:
@@ -33,34 +43,100 @@ jobs:
         with:
           fetch-depth: 0  # Fetch all history for changelog generation
 
-      - name: Get version from tag or input
+      - name: Calculate Next Version
         id: get_version
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            VERSION="${{ github.event.inputs.version }}"
-          else
+          if [ "${{ github.event_name }}" = "push" ]; then
             VERSION=${GITHUB_REF#refs/tags/v}
+            PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            echo "previous_tag=$PREVIOUS_TAG" >> $GITHUB_OUTPUT
+            echo "create_tag=false" >> $GITHUB_OUTPUT
+          else
+            # Manual Dispatch
+            git fetch --tags
+            LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+            echo "Latest tag: $LATEST_TAG"            
+            if [ "${{ inputs.bump_type }}" = "manual" ]; then
+              VERSION="${{ inputs.manual_version }}"
+            else
+              # Remove 'v' prefix
+              CLEAN_TAG=${LATEST_TAG#v}
+              # Split into array
+              IFS='.' read -r major minor patch <<< "$CLEAN_TAG"
+              
+              # Default to 0 if missing
+              major=${major:-0}
+              minor=${minor:-0}
+              patch=${patch:-0}
+              
+              if [ "${{ inputs.bump_type }}" = "major" ]; then
+                major=$((major + 1))
+                minor=0
+                patch=0
+              elif [ "${{ inputs.bump_type }}" = "minor" ]; then
+                minor=$((minor + 1))
+                patch=0
+              else
+                # patch
+                patch=$((patch + 1))
+              fi
+              VERSION="$major.$minor.$patch"
+            fi
+            
+            echo "Calculated next version: $VERSION"
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            echo "previous_tag=$LATEST_TAG" >> $GITHUB_OUTPUT
+            echo "create_tag=true" >> $GITHUB_OUTPUT
           fi
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Version: $VERSION"
+          echo "Final Version: $VERSION"
+
+      - name: Create and Push Tag
+        if: steps.get_version.outputs.create_tag == 'true'
+        run: |
+          VERSION="${{ steps.get_version.outputs.version }}"
+          TAG="v$VERSION"
+          
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          echo "Creating tag $TAG"
+          git tag -a "$TAG" -m "Release $TAG"
+          git push origin "$TAG"
 
       - name: Generate release notes
         id: changelog
         run: |
-          if [ "${{ github.event_name }}" = "push" ]; then
-            # Get commits since last tag
-            PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
-            if [ -z "$PREVIOUS_TAG" ]; then
-              COMMITS=$(git log --pretty=format:"- %s (%h)" HEAD)
-            else
-              COMMITS=$(git log --pretty=format:"- %s (%h)" $PREVIOUS_TAG..HEAD)
-            fi
+          VERSION="${{ steps.get_version.outputs.version }}"
+          PREVIOUS_TAG="${{ steps.get_version.outputs.previous_tag }}"
+
+          # Get commits since last tag
+          if [ -z "$PREVIOUS_TAG" ]; then
+            COMMITS=$(git log --pretty=format:"- %s (%h)" HEAD)
           else
-            COMMITS="Manual release"
+            COMMITS=$(git log --pretty=format:"- %s (%h)" $PREVIOUS_TAG..HEAD)
           fi
 
-          # Save to file for multiline output
-          echo "$COMMITS" > changelog.txt
+                REPO="${{ github.repository }}"
+                BASE_URL="https://github.com/$REPO/releases/download/v$VERSION"
+                
+                # Generate Markdown Body
+                echo "## 🚀 Download SDAHymns v$VERSION" > release_body.md
+                echo "" >> release_body.md
+                echo "| Platform                  | Download                                                                         | Type                    |" >> release_body.md
+                echo "| :--- | :----------------- | :----------------------------------------------------------------------------------------------------------|" >> release_body.md
+                echo "| **Windows**               | [**Download Installer (Recommended)**]($BASE_URL/SDAHymns-Setup.exe)             | Auto-updating Installer |" >> release_body.md
+                echo "| **Windows**               | [Portable Zip]($BASE_URL/SDAHymns-v$VERSION-windows-x64.zip)                     | Manual                  |" >> release_body.md
+                echo "| **macOS (Apple Silicon)** | [**Download Installer (Recommended)**]($BASE_URL/SDAHymns-Setup-arm64.pkg)       | Auto-updating Installer |" >> release_body.md
+                echo "| **macOS (Apple Silicon)** | [Portable Zip]($BASE_URL/SDAHymns-v$VERSION-macos-arm64.zip)                     | Manual                  |" >> release_body.md
+                echo "| **macOS (Intel)**         | [**Download Installer (Recommended)**]($BASE_URL/SDAHymns-Setup-x64.pkg)         | Auto-updating Installer |" >> release_body.md
+                echo "| **macOS (Intel)**         | [Portable Zip]($BASE_URL/SDAHymns-v$VERSION-macos-x64.zip)                       | Manual                  |" >> release_body.md
+                echo "| **Linux**                 | [**Download AppImage  (Recommended)**]($BASE_URL/SDAHymns-x64.AppImage)          | Auto-updating Installer |" >> release_body.md
+                echo "| **Linux**                 | [Portable Tarball]($BASE_URL/SDAHymns-v$VERSION-linux-x64.tar.gz)                | Manual                  |" >> release_body.md
+                echo "" >> release_body.md
+                echo "---" >> release_body.md
+                echo "### 📝 What's New" >> release_body.md
+                echo "$COMMITS" >> release_body.md
 
       - name: Create Release
         id: create_release
@@ -70,7 +146,7 @@ jobs:
         with:
           tag_name: v${{ steps.get_version.outputs.version }}
           release_name: SDAHymns v${{ steps.get_version.outputs.version }}
-          body_path: changelog.txt
+          body_path: release_body.md
           draft: false
           prerelease: false
 
@@ -134,7 +210,6 @@ jobs:
           $setupFile = Get-ChildItem -Path ./Releases -Filter "*Setup.exe" | Select-Object -First 1
           if ($setupFile) {
             echo "SETUP_FILE=$($setupFile.FullName)" >> $env:GITHUB_ENV
-            echo "SETUP_NAME=$($setupFile.Name)" >> $env:GITHUB_ENV
           }
 
       - name: Upload Velopack Setup.exe
@@ -144,7 +219,7 @@ jobs:
         with:
           upload_url: ${{ needs.create-release.outputs.upload_url }}
           asset_path: ${{ env.SETUP_FILE }}
-          asset_name: ${{ env.SETUP_NAME }}
+          asset_name: SDAHymns-Setup.exe
           asset_content_type: application/octet-stream
 
       - name: Find and Upload Velopack nupkg
@@ -224,6 +299,61 @@ jobs:
           cp ./Resources/hymns.db ./publish/osx-arm64/Resources/
           cp ./Resources/hymns.db ./publish/osx-x64/Resources/
 
+      - name: Install Velopack
+        run: dotnet tool install -g vpk
+
+      - name: Create Velopack Release (ARM64)
+        run: |
+          vpk pack --packId ${{ env.APP_NAME }} \
+            --packVersion ${{ needs.create-release.outputs.version }} \
+            --packDir ./publish/osx-arm64 \
+            --mainExe SDAHymns.Desktop \
+            --outputDir ./Releases/arm64
+
+      - name: Create Velopack Release (x64)
+        run: |
+          vpk pack --packId ${{ env.APP_NAME }} \
+            --packVersion ${{ needs.create-release.outputs.version }} \
+            --packDir ./publish/osx-x64 \
+            --mainExe SDAHymns.Desktop \
+            --outputDir ./Releases/x64
+
+      - name: Find and Upload Velopack Setup (ARM64)
+        run: |
+          PKG_FILE=$(find ./Releases/arm64 -name "*.pkg" | head -n 1)
+          if [ -n "$PKG_FILE" ]; then
+            echo "ARM64_PKG=$PKG_FILE" >> $GITHUB_ENV
+          fi
+
+      - name: Upload Velopack Setup (ARM64)
+        if: env.ARM64_PKG != ''
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ${{ env.ARM64_PKG }}
+          asset_name: SDAHymns-Setup-arm64.pkg
+          asset_content_type: application/octet-stream
+
+      - name: Find and Upload Velopack Setup (x64)
+        run: |
+          PKG_FILE=$(find ./Releases/x64 -name "*.pkg" | head -n 1)
+          if [ -n "$PKG_FILE" ]; then
+            echo "X64_PKG=$PKG_FILE" >> $GITHUB_ENV
+          fi
+
+      - name: Upload Velopack Setup (x64)
+        if: env.X64_PKG != ''
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ${{ env.X64_PKG }}
+          asset_name: SDAHymns-Setup-x64.pkg
+          asset_content_type: application/octet-stream
+
       - name: Create macOS ARM64 ZIP
         run: |
           cd ./publish/osx-arm64
@@ -287,6 +417,35 @@ jobs:
         run: |
           mkdir -p ./publish/linux-x64/Resources
           cp ./Resources/hymns.db ./publish/linux-x64/Resources/
+
+      - name: Install Velopack
+        run: dotnet tool install -g vpk
+
+      - name: Create Velopack Release
+        run: |
+          vpk pack --packId ${{ env.APP_NAME }} \
+            --packVersion ${{ needs.create-release.outputs.version }} \
+            --packDir ./publish/linux-x64 \
+            --mainExe SDAHymns.Desktop \
+            --outputDir ./Releases
+
+      - name: Find and Upload Velopack AppImage
+        run: |
+          APPIMAGE=$(find ./Releases -name "*.AppImage" | head -n 1)
+          if [ -n "$APPIMAGE" ]; then
+            echo "APPIMAGE_FILE=$APPIMAGE" >> $GITHUB_ENV
+          fi
+
+      - name: Upload Velopack AppImage
+        if: env.APPIMAGE_FILE != ''
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ${{ env.APPIMAGE_FILE }}
+          asset_name: SDAHymns-x64.AppImage
+          asset_content_type: application/octet-stream
 
       - name: Create Linux ZIP
         run: |
