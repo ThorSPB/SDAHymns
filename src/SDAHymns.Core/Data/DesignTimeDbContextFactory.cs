@@ -6,11 +6,21 @@ public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<HymnsConte
 {
     public HymnsContext CreateDbContext(string[] args)
     {
-        // Get solution root directory (two levels up from project directory)
-        var projectDir = Directory.GetCurrentDirectory();
-        var solutionRoot = Directory.GetParent(projectDir)?.Parent?.FullName
-            ?? throw new InvalidOperationException("Could not find solution root");
-        var dbPath = Path.Combine(solutionRoot, "Resources", "hymns.db");
+        // Find solution root by looking for .sln file
+        var currentDir = new DirectoryInfo(Directory.GetCurrentDirectory());
+        var solutionRoot = currentDir;
+        
+        while (solutionRoot != null && !solutionRoot.GetFiles("*.sln").Any())
+        {
+            solutionRoot = solutionRoot.Parent;
+        }
+
+        if (solutionRoot == null)
+        {
+            throw new InvalidOperationException("Could not find solution root (no .sln file found in parent directories)");
+        }
+
+        var dbPath = Path.Combine(solutionRoot.FullName, "Resources", "hymns.db");
 
         var optionsBuilder = new DbContextOptionsBuilder<HymnsContext>();
         optionsBuilder.UseSqlite($"Data Source={dbPath}");

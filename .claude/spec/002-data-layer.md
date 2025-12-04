@@ -893,7 +893,8 @@ public async Task Hymn_ShouldNotAllow_DuplicateNumberInCategory()
 
 ## Notes
 
-- Use `DateTime.UtcNow` for all timestamps
+- Use `DateTime.UtcNow` for operational timestamps (Created/Updated At)
+- Use a static `DateTime` (e.g., `new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc)`) for seed data to ensure deterministic migrations
 - SQLite connection string: `Data Source=Resources/hymns.db`
 - Ensure proper cascading deletes (Cascade for owned data, Restrict for references)
 - `SelectedVerses` in `ServicePlanItem` stored as JSON array string

@@ -26,4 +26,11 @@
     <ProjectReference Include="..\..\src\SDAHymns.Core\SDAHymns.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="..\..\Resources\hymns.db">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>hymns.db</Link>
+    </None>
+  </ItemGroup>
+
 </Project>
