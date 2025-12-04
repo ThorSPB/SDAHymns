@@ -3,12 +3,14 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using SDAHymns.Core.Data;
 using SDAHymns.Core.Services;
 using SDAHymns.Desktop.ViewModels;
 using SDAHymns.Desktop.Views;
+using Velopack;
 
 namespace SDAHymns.Desktop;
 
@@ -23,6 +25,9 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
+        // Velopack startup hook - MUST be called first
+        VelopackApp.Build().Run();
+
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             // Avoid duplicate validations from both Avalonia and the CommunityToolkit.
@@ -41,16 +46,45 @@ public partial class App : Application
 
             // Services
             services.AddScoped<IHymnDisplayService, HymnDisplayService>();
+            services.AddSingleton<IUpdateService, UpdateService>();
 
             // ViewModels
             services.AddTransient<MainWindowViewModel>();
 
             _serviceProvider = services.BuildServiceProvider();
 
-            desktop.MainWindow = new MainWindow
+            var mainWindow = new MainWindow
             {
                 DataContext = _serviceProvider.GetRequiredService<MainWindowViewModel>()
             };
+
+            desktop.MainWindow = mainWindow;
+
+            // Check for updates in background (non-blocking)
+            Task.Run(async () =>
+            {
+                try
+                {
+                    var updateService = _serviceProvider.GetRequiredService<IUpdateService>();
+                    var updateInfo = await updateService.CheckForUpdatesAsync();
+
+                    if (updateInfo != null)
+                    {
+                        // Dispatch to UI thread to show notification
+                        await Dispatcher.UIThread.InvokeAsync(() =>
+                        {
+                            if (mainWindow.DataContext is MainWindowViewModel viewModel)
+                            {
+                                viewModel.ShowUpdateNotification(updateInfo);
+                            }
+                        });
+                    }
+                }
+                catch (Exception)
+                {
+                    // Silently fail - update check should never crash the app
+                }
+            });
         }
 
         base.OnFrameworkInitializationCompleted();
