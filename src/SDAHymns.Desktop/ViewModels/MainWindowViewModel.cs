@@ -10,6 +10,7 @@ public partial class MainWindowViewModel : ViewModelBase
 {
     private readonly IHymnDisplayService _hymnService;
     private readonly IUpdateService _updateService;
+    private readonly ISearchService _searchService;
 
     [ObservableProperty]
     private Hymn? _currentHymn;
@@ -39,6 +40,19 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isDisplayWindowOpen = false;
 
+    // Search properties
+    [ObservableProperty]
+    private string _searchQuery = string.Empty;
+
+    [ObservableProperty]
+    private System.Collections.ObjectModel.ObservableCollection<HymnSearchResult> _searchResults = new();
+
+    [ObservableProperty]
+    private HymnSearchResult? _selectedSearchResult;
+
+    [ObservableProperty]
+    private List<Hymn> _recentHymns = new();
+
     // Update notification properties
     [ObservableProperty]
     private bool _isUpdateAvailable = false;
@@ -54,10 +68,30 @@ public partial class MainWindowViewModel : ViewModelBase
 
     private UpdateInfo? _pendingUpdate;
 
-    public MainWindowViewModel(IHymnDisplayService hymnService, IUpdateService updateService)
+    public MainWindowViewModel(IHymnDisplayService hymnService, IUpdateService updateService, ISearchService searchService)
     {
         _hymnService = hymnService;
         _updateService = updateService;
+        _searchService = searchService;
+
+        // Initialize search results and recent hymns
+        _ = InitializeAsync();
+    }
+
+    private async Task InitializeAsync()
+    {
+        try
+        {
+            // Load initial search results (all hymns in default category)
+            await PerformSearchAsync();
+
+            // Load recent hymns
+            await LoadRecentHymnsAsync();
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Initialization error: {ex.Message}";
+        }
     }
 
     public string DisplayWindowButtonLabel => IsDisplayWindowOpen ? "Hide Display" : "Show Display";
@@ -179,6 +213,137 @@ public partial class MainWindowViewModel : ViewModelBase
             CurrentVerseIndex--;
         }
     }
+
+    // Search methods
+    partial void OnSearchQueryChanged(string value)
+    {
+        _ = PerformSearchAsync();
+    }
+
+    partial void OnSelectedCategoryChanged(string value)
+    {
+        _ = PerformSearchAsync();
+    }
+
+    private async Task PerformSearchAsync()
+    {
+        try
+        {
+            List<HymnSearchResult> results;
+
+            if (string.IsNullOrWhiteSpace(SearchQuery))
+            {
+                // Show all hymns in category or recent
+                results = await _searchService.SearchHymnsAsync("", SelectedCategory);
+            }
+            else
+            {
+                results = await _searchService.SearchHymnsAsync(SearchQuery, SelectedCategory);
+            }
+
+            // Update ObservableCollection
+            SearchResults.Clear();
+            foreach (var result in results)
+            {
+                SearchResults.Add(result);
+            }
+
+            StatusMessage = $"Found {SearchResults.Count} hymns";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Search error: {ex.Message}";
+        }
+    }
+
+    partial void OnSelectedSearchResultChanged(HymnSearchResult? value)
+    {
+        if (value != null)
+        {
+            _ = LoadAndDisplayHymnAsync(value.Number, value.CategorySlug);
+        }
+    }
+
+    /// <summary>
+    /// Unified helper method for loading and displaying a hymn
+    /// </summary>
+    private async Task LoadAndDisplayHymnAsync(int number, string categorySlug)
+    {
+        try
+        {
+            CurrentHymn = await _hymnService.GetHymnByNumberAsync(number, categorySlug);
+
+            if (CurrentHymn != null)
+            {
+                Verses = await _hymnService.GetVersesForHymnAsync(CurrentHymn.Id);
+                CurrentVerseIndex = 0;
+
+                // Track recent access
+                await _searchService.AddToRecentAsync(CurrentHymn.Id);
+                await LoadRecentHymnsAsync();
+
+                OnPropertyChanged(nameof(CurrentVerseContent));
+                OnPropertyChanged(nameof(CurrentVerseLabel));
+                OnPropertyChanged(nameof(HymnTitle));
+                OnPropertyChanged(nameof(FavoriteIcon));
+                StatusMessage = $"Loaded: {CurrentHymn.Number}. {CurrentHymn.Title}";
+            }
+            else
+            {
+                StatusMessage = $"Hymn {number} not found in {categorySlug}";
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error loading hymn: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    private async Task LoadRecentHymnsAsync()
+    {
+        try
+        {
+            RecentHymns = await _searchService.GetRecentHymnsAsync(5);
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error loading recent hymns: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    private async Task ToggleFavoriteAsync()
+    {
+        if (CurrentHymn != null)
+        {
+            try
+            {
+                await _searchService.ToggleFavoriteAsync(CurrentHymn.Id);
+                CurrentHymn.IsFavorite = !CurrentHymn.IsFavorite;
+                OnPropertyChanged(nameof(FavoriteIcon));
+
+                // Update the favorite status in the search results list
+                var searchResult = SearchResults.FirstOrDefault(r => r.Id == CurrentHymn.Id);
+                if (searchResult != null)
+                {
+                    searchResult.IsFavorite = CurrentHymn.IsFavorite;
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error toggling favorite: {ex.Message}";
+            }
+        }
+    }
+
+    [RelayCommand]
+    private async Task LoadHymnFromRecentAsync(Hymn hymn)
+    {
+        await LoadAndDisplayHymnAsync(hymn.Number, hymn.Category.Slug);
+    }
+
+    public string FavoriteIcon => CurrentHymn?.IsFavorite == true ? "⭐" : "☆";
 
     // Update notification methods
     public void ShowUpdateNotification(UpdateInfo updateInfo)

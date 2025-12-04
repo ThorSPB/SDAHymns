@@ -1,5 +1,4 @@
 using Avalonia.Controls;
-using Avalonia.Input;
 using SDAHymns.Desktop.ViewModels;
 
 namespace SDAHymns.Desktop.Views;
@@ -12,18 +11,26 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
-        // Add KeyDown handler for Enter key
-        HymnNumberTextBox.KeyDown += HymnNumberTextBox_KeyDown;
-
         // Handle window closing to clean up display window
         Closing += MainWindow_Closing;
+
+        // Handle aspect ratio changes
+        DataContextChanged += (s, e) =>
+        {
+            if (DataContext is MainWindowViewModel viewModel)
+            {
+                viewModel.PropertyChanged += ViewModel_PropertyChanged;
+            }
+        };
     }
 
-    private async void HymnNumberTextBox_KeyDown(object? sender, KeyEventArgs e)
+    private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        if (e.Key == Key.Enter && DataContext is MainWindowViewModel viewModel)
+        if (e.PropertyName == nameof(MainWindowViewModel.IsAspectRatio43) && _displayWindow != null)
         {
-            await viewModel.LoadHymnCommand.ExecuteAsync(null);
+            var viewModel = (MainWindowViewModel)sender!;
+            _displayWindow.Width = viewModel.DisplayWidth;
+            _displayWindow.Height = viewModel.DisplayHeight;
         }
     }
 
@@ -34,10 +41,12 @@ public partial class MainWindow : Window
 
         if (_displayWindow == null || !_displayWindow.IsVisible)
         {
-            // Create and show display window
+            // Create and show display window with correct aspect ratio
             _displayWindow = new DisplayWindow
             {
-                DataContext = viewModel
+                DataContext = viewModel,
+                Width = viewModel.DisplayWidth,
+                Height = viewModel.DisplayHeight
             };
 
             _displayWindow.Closed += (s, e) =>

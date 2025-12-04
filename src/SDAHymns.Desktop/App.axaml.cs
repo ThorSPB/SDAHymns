@@ -54,6 +54,7 @@ public partial class App : Application
 
             // Services
             services.AddScoped<IHymnDisplayService, HymnDisplayService>();
+            services.AddScoped<ISearchService, SearchService>();
             services.AddSingleton<IUpdateService, UpdateService>();
 
             // ViewModels
