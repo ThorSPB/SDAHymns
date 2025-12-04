@@ -11,6 +11,9 @@ on:
         required: true
         type: string
 
+permissions:
+  contents: write
+
 env:
   DOTNET_VERSION: '10.0.x'
   PROJECT_PATH: 'src/SDAHymns.Desktop/SDAHymns.Desktop.csproj'
