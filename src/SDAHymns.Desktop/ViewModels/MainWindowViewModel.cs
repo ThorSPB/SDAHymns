@@ -45,7 +45,7 @@ public partial class MainWindowViewModel : ViewModelBase
     private string _searchQuery = string.Empty;
 
     [ObservableProperty]
-    private List<HymnSearchResult> _searchResults = new();
+    private System.Collections.ObjectModel.ObservableCollection<HymnSearchResult> _searchResults = new();
 
     [ObservableProperty]
     private HymnSearchResult? _selectedSearchResult;
@@ -229,14 +229,23 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         try
         {
+            List<HymnSearchResult> results;
+
             if (string.IsNullOrWhiteSpace(SearchQuery))
             {
                 // Show all hymns in category or recent
-                SearchResults = await _searchService.SearchHymnsAsync("", SelectedCategory);
+                results = await _searchService.SearchHymnsAsync("", SelectedCategory);
             }
             else
             {
-                SearchResults = await _searchService.SearchHymnsAsync(SearchQuery, SelectedCategory);
+                results = await _searchService.SearchHymnsAsync(SearchQuery, SelectedCategory);
+            }
+
+            // Update ObservableCollection
+            SearchResults.Clear();
+            foreach (var result in results)
+            {
+                SearchResults.Add(result);
             }
 
             StatusMessage = $"Found {SearchResults.Count} hymns";
@@ -251,15 +260,18 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         if (value != null)
         {
-            _ = LoadHymnFromSearchResultAsync(value);
+            _ = LoadAndDisplayHymnAsync(value.Number, value.CategorySlug);
         }
     }
 
-    private async Task LoadHymnFromSearchResultAsync(HymnSearchResult result)
+    /// <summary>
+    /// Unified helper method for loading and displaying a hymn
+    /// </summary>
+    private async Task LoadAndDisplayHymnAsync(int number, string categorySlug)
     {
         try
         {
-            CurrentHymn = await _hymnService.GetHymnByNumberAsync(result.Number, result.CategorySlug);
+            CurrentHymn = await _hymnService.GetHymnByNumberAsync(number, categorySlug);
 
             if (CurrentHymn != null)
             {
@@ -275,6 +287,10 @@ public partial class MainWindowViewModel : ViewModelBase
                 OnPropertyChanged(nameof(HymnTitle));
                 OnPropertyChanged(nameof(FavoriteIcon));
                 StatusMessage = $"Loaded: {CurrentHymn.Number}. {CurrentHymn.Title}";
+            }
+            else
+            {
+                StatusMessage = $"Hymn {number} not found in {categorySlug}";
             }
         }
         catch (Exception ex)
@@ -307,8 +323,12 @@ public partial class MainWindowViewModel : ViewModelBase
                 CurrentHymn.IsFavorite = !CurrentHymn.IsFavorite;
                 OnPropertyChanged(nameof(FavoriteIcon));
 
-                // Refresh search results to update favorite icon in list
-                await PerformSearchAsync();
+                // Update the favorite status in the search results list
+                var searchResult = SearchResults.FirstOrDefault(r => r.Id == CurrentHymn.Id);
+                if (searchResult != null)
+                {
+                    searchResult.IsFavorite = CurrentHymn.IsFavorite;
+                }
             }
             catch (Exception ex)
             {
@@ -320,29 +340,7 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private async Task LoadHymnFromRecentAsync(Hymn hymn)
     {
-        try
-        {
-            CurrentHymn = await _hymnService.GetHymnByNumberAsync(hymn.Number, hymn.Category.Slug);
-
-            if (CurrentHymn != null)
-            {
-                Verses = await _hymnService.GetVersesForHymnAsync(CurrentHymn.Id);
-                CurrentVerseIndex = 0;
-
-                await _searchService.AddToRecentAsync(CurrentHymn.Id);
-                await LoadRecentHymnsAsync();
-
-                OnPropertyChanged(nameof(CurrentVerseContent));
-                OnPropertyChanged(nameof(CurrentVerseLabel));
-                OnPropertyChanged(nameof(HymnTitle));
-                OnPropertyChanged(nameof(FavoriteIcon));
-                StatusMessage = $"Loaded: {CurrentHymn.Number}. {CurrentHymn.Title}";
-            }
-        }
-        catch (Exception ex)
-        {
-            StatusMessage = $"Error loading hymn: {ex.Message}";
-        }
+        await LoadAndDisplayHymnAsync(hymn.Number, hymn.Category.Slug);
     }
 
     public string FavoriteIcon => CurrentHymn?.IsFavorite == true ? "⭐" : "☆";

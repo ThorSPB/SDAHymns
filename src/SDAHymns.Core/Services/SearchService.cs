@@ -15,14 +15,17 @@ public interface ISearchService
     Task ToggleFavoriteAsync(int hymnId);
 }
 
-public class HymnSearchResult
+public partial class HymnSearchResult : CommunityToolkit.Mvvm.ComponentModel.ObservableObject
 {
     public int Id { get; set; }
     public int Number { get; set; }
     public string Title { get; set; } = string.Empty;
     public string CategoryName { get; set; } = string.Empty;
     public string CategorySlug { get; set; } = string.Empty;
-    public bool IsFavorite { get; set; }
+
+    [CommunityToolkit.Mvvm.ComponentModel.ObservableProperty]
+    private bool _isFavorite;
+
     public int VerseCount { get; set; }
 }
 

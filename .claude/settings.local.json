@@ -21,7 +21,8 @@
       "Bash(bash:*)",
       "Bash(tasklist:*)",
       "Bash(findstr:*)",
-      "Bash(gh issue list:*)"
+      "Bash(gh issue list:*)",
+      "Bash(gh api:*)"
     ],
     "deny": [],
     "ask": []
