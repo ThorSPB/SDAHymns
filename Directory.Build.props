@@ -10,5 +10,13 @@
     <Company>Romanian Seventh Day Adventist Church</Company>
     <Product>SDA Hymns</Product>
     <Copyright>Copyright © 2025 - AGPL-3.0 License</Copyright>
+
+    <!-- Code Analysis -->
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <AnalysisMode>Recommended</AnalysisMode>
+
+    <!-- UTF-8 encoding for Romanian characters -->
+    <Utf8Output>true</Utf8Output>
   </PropertyGroup>
 </Project>
