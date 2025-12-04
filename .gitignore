@@ -416,3 +416,22 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+Imnuri Azs
+
+# Database (committed to repo - needed for CI/CD)
+# Resources/hymns.db  -- COMMITTED
+Resources/hymns.db-shm
+Resources/hymns.db-wal
+
+# User configuration
+Resources/config/user-settings.json
+
+# Audio files (too large, distribute separately)
+Resources/audio/**/*.mp3
+Resources/audio/**/*.opus
+!Resources/audio/**/*.metadata.json
+
+# Keep directory structure
+!Resources/audio/**/.gitkeep
+GEMINI.md

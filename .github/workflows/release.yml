@@ -1,0 +1,243 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Triggers on version tags like v1.0.0, v1.2.3, etc.
+  workflow_dispatch:  # Allows manual trigger from GitHub Actions UI
+    inputs:
+      version:
+        description: 'Version number (e.g., 1.0.0)'
+        required: true
+        type: string
+
+env:
+  DOTNET_VERSION: '10.0.x'
+  PROJECT_PATH: 'src/SDAHymns.Desktop/SDAHymns.Desktop.csproj'
+  APP_NAME: 'SDAHymns'
+
+jobs:
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      version: ${{ steps.get_version.outputs.version }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for changelog generation
+
+      - name: Get version from tag or input
+        id: get_version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION=${GITHUB_REF#refs/tags/v}
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION"
+
+      - name: Generate release notes
+        id: changelog
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            # Get commits since last tag
+            PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+            if [ -z "$PREVIOUS_TAG" ]; then
+              COMMITS=$(git log --pretty=format:"- %s (%h)" HEAD)
+            else
+              COMMITS=$(git log --pretty=format:"- %s (%h)" $PREVIOUS_TAG..HEAD)
+            fi
+          else
+            COMMITS="Manual release"
+          fi
+
+          # Save to file for multiline output
+          echo "$COMMITS" > changelog.txt
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.get_version.outputs.version }}
+          release_name: SDAHymns v${{ steps.get_version.outputs.version }}
+          body_path: changelog.txt
+          draft: false
+          prerelease: false
+
+  build-windows:
+    name: Build Windows
+    needs: create-release
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build Windows x64
+        run: |
+          dotnet publish ${{ env.PROJECT_PATH }} `
+            -c Release `
+            -r win-x64 `
+            --self-contained true `
+            -p:PublishSingleFile=true `
+            -p:IncludeNativeLibrariesForSelfExtract=true `
+            -p:Version=${{ needs.create-release.outputs.version }} `
+            -o ./publish/win-x64
+
+      - name: Copy Resources to publish folder
+        run: |
+          New-Item -ItemType Directory -Force -Path ./publish/win-x64/Resources
+          Copy-Item -Path ./Resources/hymns.db -Destination ./publish/win-x64/Resources/ -Force
+
+      - name: Create Windows ZIP
+        run: |
+          Compress-Archive -Path ./publish/win-x64/* -DestinationPath ./${{ env.APP_NAME }}-v${{ needs.create-release.outputs.version }}-windows-x64.zip
+
+      - name: Upload Windows Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ./${{ env.APP_NAME }}-v${{ needs.create-release.outputs.version }}-windows-x64.zip
+          asset_name: ${{ env.APP_NAME }}-v${{ needs.create-release.outputs.version }}-windows-x64.zip
+          asset_content_type: application/zip
+
+  build-macos:
+    name: Build macOS
+    needs: create-release
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build macOS ARM64 (Apple Silicon)
+        run: |
+          dotnet publish ${{ env.PROJECT_PATH }} \
+            -c Release \
+            -r osx-arm64 \
+            --self-contained true \
+            -p:PublishSingleFile=true \
+            -p:Version=${{ needs.create-release.outputs.version }} \
+            -o ./publish/osx-arm64
+
+      - name: Build macOS x64 (Intel)
+        run: |
+          dotnet publish ${{ env.PROJECT_PATH }} \
+            -c Release \
+            -r osx-x64 \
+            --self-contained true \
+            -p:PublishSingleFile=true \
+            -p:Version=${{ needs.create-release.outputs.version }} \
+            -o ./publish/osx-x64
+
+      - name: Copy Resources to publish folders
+        run: |
+          mkdir -p ./publish/osx-arm64/Resources
+          mkdir -p ./publish/osx-x64/Resources
+          cp ./Resources/hymns.db ./publish/osx-arm64/Resources/
+          cp ./Resources/hymns.db ./publish/osx-x64/Resources/
+
+      - name: Create macOS ARM64 ZIP
+        run: |
+          cd ./publish/osx-arm64
+          zip -r ../../${{ env.APP_NAME }}-v${{ needs.create-release.outputs.version }}-macos-arm64.zip .
+          cd ../..
+
+      - name: Create macOS x64 ZIP
+        run: |
+          cd ./publish/osx-x64
+          zip -r ../../${{ env.APP_NAME }}-v${{ needs.create-release.outputs.version }}-macos-x64.zip .
+          cd ../..
+
+      - name: Upload macOS ARM64 Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ./${{ env.APP_NAME }}-v${{ needs.create-release.outputs.version }}-macos-arm64.zip
+          asset_name: ${{ env.APP_NAME }}-v${{ needs.create-release.outputs.version }}-macos-arm64.zip
+          asset_content_type: application/zip
+
+      - name: Upload macOS x64 Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ./${{ env.APP_NAME }}-v${{ needs.create-release.outputs.version }}-macos-x64.zip
+          asset_name: ${{ env.APP_NAME }}-v${{ needs.create-release.outputs.version }}-macos-x64.zip
+          asset_content_type: application/zip
+
+  build-linux:
+    name: Build Linux
+    needs: create-release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build Linux x64
+        run: |
+          dotnet publish ${{ env.PROJECT_PATH }} \
+            -c Release \
+            -r linux-x64 \
+            --self-contained true \
+            -p:PublishSingleFile=true \
+            -p:Version=${{ needs.create-release.outputs.version }} \
+            -o ./publish/linux-x64
+
+      - name: Copy Resources to publish folder
+        run: |
+          mkdir -p ./publish/linux-x64/Resources
+          cp ./Resources/hymns.db ./publish/linux-x64/Resources/
+
+      - name: Create Linux ZIP
+        run: |
+          cd ./publish/linux-x64
+          tar -czf ../../${{ env.APP_NAME }}-v${{ needs.create-release.outputs.version }}-linux-x64.tar.gz .
+          cd ../..
+
+      - name: Upload Linux Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ./${{ env.APP_NAME }}-v${{ needs.create-release.outputs.version }}-linux-x64.tar.gz
+          asset_name: ${{ env.APP_NAME }}-v${{ needs.create-release.outputs.version }}-linux-x64.tar.gz
+          asset_content_type: application/gzip

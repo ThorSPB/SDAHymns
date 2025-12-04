@@ -1,0 +1,199 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:SDAHymns.Desktop.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+        x:Class="SDAHymns.Desktop.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="SDA Hymns - Display Test"
+        Width="800" Height="600"
+        Background="Black">
+
+    <Design.DataContext>
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+
+    <Grid RowDefinitions="Auto,Auto,*,Auto,Auto" Background="Black">
+        <!-- Top Bar: Hymn Number Input -->
+        <Border Grid.Row="0"
+                Background="#1A1A1A"
+                BorderBrush="#333333"
+                BorderThickness="0,0,0,1"
+                Padding="20">
+            <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,*">
+                <TextBlock Grid.Column="0"
+                           Text="Hymn #:"
+                           VerticalAlignment="Center"
+                           FontSize="16"
+                           Foreground="White"
+                           Margin="0,0,10,0"/>
+
+                <TextBox Grid.Column="1"
+                         Width="100"
+                         Text="{Binding HymnNumber}"
+                         VerticalAlignment="Center"
+                         HorizontalContentAlignment="Center"
+                         FontSize="16"
+                         Background="#2A2A2A"
+                         Foreground="White"
+                         BorderBrush="#444444"
+                         x:Name="HymnNumberTextBox"/>
+
+                <TextBlock Grid.Column="2"
+                           Text="Category:"
+                           VerticalAlignment="Center"
+                           FontSize="16"
+                           Foreground="White"
+                           Margin="20,0,10,0"/>
+
+                <ComboBox Grid.Column="3"
+                          Width="150"
+                          SelectedItem="{Binding SelectedCategory}"
+                          VerticalAlignment="Center"
+                          Background="#2A2A2A"
+                          Foreground="White"
+                          BorderBrush="#444444">
+                    <ComboBox.Items>
+                        <x:String>crestine</x:String>
+                        <x:String>companioni</x:String>
+                        <x:String>exploratori</x:String>
+                        <x:String>licurici</x:String>
+                        <x:String>tineret</x:String>
+                    </ComboBox.Items>
+                </ComboBox>
+
+                <Button Grid.Column="4"
+                        Content="Load Hymn"
+                        Command="{Binding LoadHymnCommand}"
+                        Width="120"
+                        Height="35"
+                        Margin="20,0,0,0"
+                        Background="#0078D4"
+                        Foreground="White"
+                        BorderBrush="#005A9E"/>
+
+                <ToggleButton Grid.Column="5"
+                              Content="{Binding AspectRatioLabel}"
+                              IsChecked="{Binding IsAspectRatio43}"
+                              Width="120"
+                              Height="35"
+                              Margin="10,0,0,0"
+                              Background="#2A2A2A"
+                              Foreground="White"
+                              BorderBrush="#444444"/>
+
+                <Button Grid.Column="6"
+                        Content="{Binding DisplayWindowButtonLabel}"
+                        Click="ToggleDisplayWindow_Click"
+                        Width="140"
+                        Height="35"
+                        Margin="10,0,0,0"
+                        Background="#0078D4"
+                        Foreground="White"
+                        BorderBrush="#005A9E"/>
+            </Grid>
+        </Border>
+
+        <!-- Hymn Title -->
+        <Border Grid.Row="1"
+                Background="#0D0D0D"
+                BorderBrush="#333333"
+                BorderThickness="0,0,0,1"
+                Padding="20,15">
+            <TextBlock Text="{Binding HymnTitle}"
+                       FontSize="28"
+                       FontWeight="Bold"
+                       HorizontalAlignment="Center"
+                       TextAlignment="Center"
+                       Foreground="White"
+                       TextWrapping="Wrap"/>
+        </Border>
+
+        <!-- Verse Content Display - 4:3 Aspect Ratio Container -->
+        <Viewbox Grid.Row="2" Stretch="Uniform">
+            <Border Width="{Binding DisplayWidth}"
+                    Height="{Binding DisplayHeight}"
+                    Background="Black">
+                <Grid RowDefinitions="*,Auto">
+                    <!-- Verse Content -->
+                    <Viewbox Grid.Row="0" Stretch="Uniform" StretchDirection="DownOnly">
+                        <StackPanel VerticalAlignment="Center"
+                                   HorizontalAlignment="Left"
+                                   Width="1000"
+                                   Margin="80,50,80,50">
+                            <!-- Verse Label (e.g., "1.", "Refren") -->
+                            <TextBlock Text="{Binding CurrentVerseLabel}"
+                                      FontSize="28"
+                                      FontWeight="SemiBold"
+                                      HorizontalAlignment="Left"
+                                      Margin="0,0,0,30"
+                                      Foreground="#CCCCCC"/>
+
+                            <!-- Verse Content -->
+                            <TextBlock Text="{Binding CurrentVerseContent}"
+                                      FontSize="48"
+                                      TextWrapping="Wrap"
+                                      TextAlignment="Left"
+                                      LineHeight="65"
+                                      Foreground="White"/>
+                        </StackPanel>
+                    </Viewbox>
+
+                    <!-- Bottom verse indicator -->
+                    <Border Grid.Row="1"
+                            Background="#0D0D0D"
+                            BorderBrush="#333333"
+                            BorderThickness="0,1,0,0"
+                            Padding="15">
+                        <TextBlock Text="{Binding VerseIndicator}"
+                                  FontSize="16"
+                                  HorizontalAlignment="Center"
+                                  Foreground="#888888"/>
+                    </Border>
+                </Grid>
+            </Border>
+        </Viewbox>
+
+        <!-- Navigation Buttons -->
+        <Border Grid.Row="3"
+                Background="#1A1A1A"
+                BorderBrush="#333333"
+                BorderThickness="0,1,0,1"
+                Padding="20">
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center">
+                <Button Content="◀ Previous"
+                        Command="{Binding PreviousVerseCommand}"
+                        Width="140"
+                        Height="45"
+                        FontSize="16"
+                        Margin="10"
+                        Background="#2A2A2A"
+                        Foreground="White"
+                        BorderBrush="#444444"/>
+
+                <Button Content="Next ▶"
+                        Command="{Binding NextVerseCommand}"
+                        Width="140"
+                        Height="45"
+                        FontSize="16"
+                        Margin="10"
+                        Background="#2A2A2A"
+                        Foreground="White"
+                        BorderBrush="#444444"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Status Bar -->
+        <Border Grid.Row="4"
+                Background="#0D0D0D"
+                BorderBrush="#333333"
+                BorderThickness="0,0,0,0"
+                Padding="15,10">
+            <TextBlock Text="{Binding StatusMessage}"
+                      FontSize="14"
+                      Foreground="#888888"/>
+        </Border>
+    </Grid>
+</Window>

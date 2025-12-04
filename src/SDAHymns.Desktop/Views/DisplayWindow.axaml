@@ -1,0 +1,63 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:SDAHymns.Desktop.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+        x:Class="SDAHymns.Desktop.Views.DisplayWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="SDA Hymns - Display"
+        Background="Black"
+        WindowState="Normal"
+        CanResize="True">
+
+    <Design.DataContext>
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+
+    <!-- Clean projection display - just the content -->
+    <Viewbox Stretch="Uniform">
+        <Border Width="{Binding DisplayWidth}"
+                Height="{Binding DisplayHeight}"
+                Background="Black">
+            <Grid RowDefinitions="Auto,*">
+                <!-- Hymn Title -->
+                <Border Grid.Row="0"
+                        Background="Black"
+                        Padding="40,30">
+                    <TextBlock Text="{Binding HymnTitle}"
+                               FontSize="36"
+                               FontWeight="Bold"
+                               HorizontalAlignment="Center"
+                               TextAlignment="Center"
+                               Foreground="White"
+                               TextWrapping="Wrap"/>
+                </Border>
+
+                <!-- Verse Content -->
+                <Viewbox Grid.Row="1" Stretch="Uniform" StretchDirection="DownOnly">
+                    <StackPanel VerticalAlignment="Center"
+                               HorizontalAlignment="Left"
+                               Width="1200"
+                               Margin="100,60,100,60">
+                        <!-- Verse Label (e.g., "1.", "Refren") -->
+                        <TextBlock Text="{Binding CurrentVerseLabel}"
+                                  FontSize="32"
+                                  FontWeight="SemiBold"
+                                  HorizontalAlignment="Left"
+                                  Margin="0,0,0,40"
+                                  Foreground="#CCCCCC"/>
+
+                        <!-- Verse Content -->
+                        <TextBlock Text="{Binding CurrentVerseContent}"
+                                  FontSize="56"
+                                  TextWrapping="Wrap"
+                                  TextAlignment="Left"
+                                  LineHeight="75"
+                                  Foreground="White"/>
+                    </StackPanel>
+                </Viewbox>
+            </Grid>
+        </Border>
+    </Viewbox>
+</Window>
