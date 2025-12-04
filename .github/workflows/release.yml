@@ -107,11 +107,70 @@ jobs:
           New-Item -ItemType Directory -Force -Path ./publish/win-x64/Resources
           Copy-Item -Path ./Resources/hymns.db -Destination ./publish/win-x64/Resources/ -Force
 
-      - name: Create Windows ZIP
+      - name: Install Velopack
+        run: dotnet tool install -g vpk
+
+      - name: Create Velopack Release
+        run: |
+          vpk pack --packId ${{ env.APP_NAME }} `
+            --packVersion ${{ needs.create-release.outputs.version }} `
+            --packDir ./publish/win-x64 `
+            --mainExe SDAHymns.Desktop.exe `
+            --outputDir ./Releases
+
+      - name: Upload Velopack RELEASES file
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ./Releases/RELEASES
+          asset_name: RELEASES
+          asset_content_type: text/plain
+
+      - name: Find and Upload Velopack Setup
+        shell: pwsh
+        run: |
+          $setupFile = Get-ChildItem -Path ./Releases -Filter "*Setup.exe" | Select-Object -First 1
+          if ($setupFile) {
+            echo "SETUP_FILE=$($setupFile.FullName)" >> $env:GITHUB_ENV
+            echo "SETUP_NAME=$($setupFile.Name)" >> $env:GITHUB_ENV
+          }
+
+      - name: Upload Velopack Setup.exe
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ${{ env.SETUP_FILE }}
+          asset_name: ${{ env.SETUP_NAME }}
+          asset_content_type: application/octet-stream
+
+      - name: Find and Upload Velopack nupkg
+        shell: pwsh
+        run: |
+          $nupkgFile = Get-ChildItem -Path ./Releases -Filter "*.nupkg" | Select-Object -First 1
+          if ($nupkgFile) {
+            echo "NUPKG_FILE=$($nupkgFile.FullName)" >> $env:GITHUB_ENV
+            echo "NUPKG_NAME=$($nupkgFile.Name)" >> $env:GITHUB_ENV
+          }
+
+      - name: Upload Velopack nupkg
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ${{ env.NUPKG_FILE }}
+          asset_name: ${{ env.NUPKG_NAME }}
+          asset_content_type: application/octet-stream
+
+      - name: Create Windows ZIP (fallback)
         run: |
           Compress-Archive -Path ./publish/win-x64/* -DestinationPath ./${{ env.APP_NAME }}-v${{ needs.create-release.outputs.version }}-windows-x64.zip
 
-      - name: Upload Windows Release Asset
+      - name: Upload Windows ZIP Release Asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
