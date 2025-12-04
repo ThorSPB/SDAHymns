@@ -182,19 +182,19 @@ Contributions are welcome! This project aims for industry-standard testing cover
 
 ### Phase 1: Foundation ✅
 - [x] Project structure setup
-- [x] Data layer and models
+- [x] Data layer and models (1,254 hymns, 4,629 verses)
 - [x] Legacy XML import functionality
-- [x] Basic hymn display
+- [x] PowerPoint verse extraction
+- [x] Basic hymn display (dual-window system)
 
-### Phase 2: Core Features
-- [ ] Control window UI
-- [ ] Display window with customization
+### Phase 2: Core Features 🚧 In Progress
+- [x] **Enhanced control window** (search, browse, recent/favorites)
 - [ ] Display profiles system
 - [ ] Keyboard shortcuts
+- [ ] Service planner
 
 ### Phase 3: Enhanced Features
 - [ ] Audio playback system
-- [ ] Service planner
 - [ ] Export functionality
 - [ ] Statistics tracking
 

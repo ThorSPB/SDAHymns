@@ -153,9 +153,12 @@ All Phase 1 goals achieved:
 - ✅ Romanian text rendering correctly
 
 **Session 4 (2025-12-04 - Completed - Spec 006):**
+
+**Initial Implementation (PR #9, commit 260fd76):**
 - ✅ Added LastAccessedAt, AccessCount, IsFavorite properties to Hymn model
 - ✅ Created and applied AddHymnUsageTracking migration
-- ✅ Implemented SearchService with search, recent hymns, and favorites
+- ✅ Implemented SearchService with smart search algorithm
+  - Case-insensitive, diacritic-insensitive, punctuation-insensitive search
   - Real-time search by hymn number or title
   - Category filtering
   - Recent hymns tracking (top 5)
@@ -170,23 +173,36 @@ All Phase 1 goals achieved:
   - Search results list (max height 200px)
   - Selected hymn info panel
   - Favorite star button
-- ✅ Registered SearchService in DI container
-- ✅ Fixed tests to include SearchService mock
+- ✅ Display window aspect ratio support (4:3/16:9)
+- ✅ 16 comprehensive SearchService tests (all passing)
 - ✅ Application builds and runs successfully
+
+**Code Review Refactorings (commit fd56ce8):**
+- ✅ Extracted `LoadAndDisplayHymnAsync()` helper method
+  - Eliminated code duplication between load methods
+  - Reduced 67 lines to 35 lines
+- ✅ Changed `SearchResults` to `ObservableCollection<HymnSearchResult>`
+- ✅ Made `HymnSearchResult` observable with `[ObservableProperty]`
+- ✅ Optimized favorite toggle (no more full refresh)
+- ✅ All 44 tests passing
+
+**Technical Decisions:**
+- ⏭️ Skipped database-side filtering optimization (not needed at 1,254 hymns)
+- ⏭️ Skipped ViewModel tests (service layer well-tested)
 
 **🎯 NEXT SESSION:** Continue Phase 2 - Implement Spec 007 (Display Profiles) or Spec 008 (Keyboard Shortcuts)
 
-**All Phase 2 Specs Complete and Ready:**
-- 📋 **Spec 006**: Enhanced Control Window (search, browse, recent/favorites)
+**Phase 2 Progress:**
+- ✅ **Spec 006**: Enhanced Control Window - COMPLETE
 - 📋 **Spec 007**: Display Profiles (customizable fonts/colors/backgrounds)
 - 📋 **Spec 008**: Keyboard Shortcuts (global hotkeys, customization)
 - 📋 **Spec 009**: Service Planner (pre-plan services, live mode)
 
 **Recommended Implementation Order:**
-1. Start with **Spec 006** (Enhanced Control Window) - foundation for all other features
-2. Then **Spec 008** (Keyboard Shortcuts) - integrates with control window
-3. Then **Spec 007** (Display Profiles) - visual customization
-4. Finally **Spec 009** (Service Planner) - advanced workflow feature
+1. ~~**Spec 006** (Enhanced Control Window)~~ ✅ DONE
+2. **Spec 008** (Keyboard Shortcuts) - integrates with control window
+3. **Spec 007** (Display Profiles) - visual customization
+4. **Spec 009** (Service Planner) - advanced workflow feature
 
 **Estimated Effort:**
 - Spec 006: ~3-4 hours (SearchService, UI refactor, recent/favorites)
