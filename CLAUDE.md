@@ -28,6 +28,162 @@ This project follows a **specification-driven approach** to manage complexity ac
 4. **Testing:** Mark as "tested" once verified
 5. **Update `_context.md`:** Keep context file synchronized with spec status
 
+## Issue Tracking & Workflow
+
+This project uses **GitHub Issues** to track all features, bugs, and tasks. Each spec should have a corresponding GitHub issue for visibility and tracking.
+
+### Issue-Driven Development Flow
+
+```
+Spec File → GitHub Issue → Branch → PR → Merge (closes issue)
+```
+
+**Step-by-Step:**
+
+1. **Create Issue** (via gh CLI or web):
+   ```bash
+   gh issue create --title "[Spec 010] Auto-Updates with Velopack" \
+     --body "See .claude/spec/010-auto-updates.md for details" \
+     --label "enhancement"
+   ```
+
+2. **Create Branch** (named after issue):
+   ```bash
+   git checkout -b feature/auto-updates-#6
+   # or
+   git checkout -b fix/verse-display-#15
+   ```
+
+3. **Work on Implementation**:
+   - Follow the spec
+   - Commit regularly with clear messages
+   - Reference issue in commits: `git commit -m "feat: add update check service (#6)"`
+
+4. **Create Pull Request** (closes issue automatically):
+   ```bash
+   gh pr create --title "feat: implement auto-updates with Velopack" \
+     --body "Implements auto-update system with Velopack.
+
+   **Changes:**
+   - Added UpdateService with GitHub Releases integration
+   - Created update notification UI in MainWindow
+   - Modified CI/CD to create Velopack packages
+
+   **Testing:**
+   - Tested update check on startup
+   - Verified delta updates work
+   - Tested on Windows 10 and 11
+
+   Closes #6"
+   ```
+
+5. **Merge PR** → Issue automatically closes
+
+### Closing Multiple Issues in One PR
+
+You can close multiple related issues in a single PR:
+
+```markdown
+## Summary
+Refactored CLI command handlers to use consistent DI pattern.
+
+## Changes
+- Updated ImportCommand to use injected services
+- Updated TestPptCommand to use injected parser
+- Removed duplicate GetSolutionRoot() methods
+
+Closes #10, #11, #12
+```
+
+**Supported Keywords:**
+- `Closes #123` or `Fixes #123` (case-insensitive)
+- Can use on separate lines or comma-separated
+- Works in PR description or commit messages
+
+### Issue Labels (Recommended)
+
+**Standard Labels:**
+- `enhancement` - New features
+- `bug` - Bug fixes
+- `documentation` - Docs updates
+- `spec:XXX` - Links to specific spec (e.g., `spec:006`)
+- `priority: high` / `priority: medium` / `priority: low`
+- `phase:1`, `phase:2`, etc. - Development phase
+
+**Create Labels:**
+```bash
+# Create spec labels
+gh label create "spec:006" --color "0075ca" --description "Related to Spec 006"
+
+# Create priority labels
+gh label create "priority: high" --color "d73a4a" --description "High priority"
+gh label create "priority: medium" --color "fbca04" --description "Medium priority"
+gh label create "priority: low" --color "0e8a16" --description "Low priority"
+```
+
+### Useful gh CLI Commands
+
+```bash
+# List all open issues
+gh issue list
+
+# View specific issue
+gh issue view 6
+
+# Assign issue to yourself
+gh issue edit 6 --add-assignee @me
+
+# Add labels
+gh issue edit 6 --add-label "priority: high,spec:010"
+
+# Close issue manually
+gh issue close 6 --comment "Completed in PR #42"
+
+# Search issues
+gh issue list --label "enhancement"
+gh issue list --state "closed"
+gh issue list --assignee "@me"
+
+# Create issue from template (if you create .github/ISSUE_TEMPLATE/)
+gh issue create --template feature_request.md
+```
+
+### Best Practices
+
+1. **One Issue Per Spec** - Each spec should have exactly one tracking issue
+2. **Reference Issues in Commits** - Use `#123` in commit messages for linkage
+3. **Close Issues via PRs** - Always use "Closes #X" in PR descriptions
+4. **Update Spec Status** - When closing issue, also update spec status in `_context.md`
+5. **Keep Issues Focused** - Large features should be broken into multiple issues
+6. **Use Draft PRs** - Mark PRs as draft while work is in progress
+
+### Example: Full Feature Implementation
+
+```bash
+# 1. Check spec and issue
+cat .claude/spec/010-auto-updates.md
+gh issue view 6
+
+# 2. Create branch
+git checkout -b feature/auto-updates-#6
+
+# 3. Implement (multiple commits)
+git commit -m "feat: add UpdateService with Velopack (#6)"
+git commit -m "feat: add update notification UI (#6)"
+git commit -m "ci: update workflow for Velopack packages (#6)"
+git commit -m "test: add UpdateService tests (#6)"
+
+# 4. Push and create PR
+git push -u origin feature/auto-updates-#6
+gh pr create --title "feat: implement auto-updates with Velopack" \
+  --body "Full implementation of Spec 010.
+
+Closes #6"
+
+# 5. After merge, update spec
+# Edit .claude/spec/_context.md: Change status to ✅ Implemented
+```
+
 ## Technology Stack
 
 - **Language:** C# (.NET 10 LTS)

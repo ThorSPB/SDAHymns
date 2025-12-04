@@ -14,9 +14,61 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <Grid RowDefinitions="Auto,Auto,*,Auto,Auto" Background="Black">
-        <!-- Top Bar: Hymn Number Input -->
+    <Grid RowDefinitions="Auto,Auto,Auto,*,Auto,Auto" Background="Black">
+        <!-- Update Notification Banner -->
         <Border Grid.Row="0"
+                IsVisible="{Binding IsUpdateAvailable}"
+                Background="#2E7D32"
+                BorderBrush="#1B5E20"
+                BorderThickness="0,0,0,1"
+                Padding="15,10">
+            <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10">
+                    <TextBlock Text="🎉"
+                               VerticalAlignment="Center"
+                               FontSize="18"/>
+                    <TextBlock Text="New version available!"
+                               VerticalAlignment="Center"
+                               FontWeight="Bold"
+                               FontSize="14"
+                               Foreground="White"/>
+                    <TextBlock Text="{Binding LatestVersion, StringFormat='v{0}'}"
+                               VerticalAlignment="Center"
+                               FontSize="14"
+                               Foreground="#C8E6C9"/>
+                </StackPanel>
+
+                <ProgressBar Grid.Column="1"
+                             IsVisible="{Binding IsDownloadingUpdate}"
+                             Value="{Binding DownloadProgress}"
+                             Minimum="0"
+                             Maximum="100"
+                             Height="20"
+                             Margin="15,0"
+                             VerticalAlignment="Center"/>
+
+                <Button Grid.Column="2"
+                        Content="Update Now"
+                        Command="{Binding UpdateNowCommand}"
+                        IsEnabled="{Binding !IsDownloadingUpdate}"
+                        Background="#1B5E20"
+                        Foreground="White"
+                        Padding="15,8"
+                        Margin="0,0,10,0"
+                        FontWeight="Bold"/>
+
+                <Button Grid.Column="3"
+                        Content="Later"
+                        Command="{Binding DismissUpdateCommand}"
+                        IsEnabled="{Binding !IsDownloadingUpdate}"
+                        Background="#00000044"
+                        Foreground="White"
+                        Padding="15,8"/>
+            </Grid>
+        </Border>
+
+        <!-- Top Bar: Hymn Number Input -->
+        <Border Grid.Row="1"
                 Background="#1A1A1A"
                 BorderBrush="#333333"
                 BorderThickness="0,0,0,1"
@@ -96,7 +148,7 @@
         </Border>
 
         <!-- Hymn Title -->
-        <Border Grid.Row="1"
+        <Border Grid.Row="2"
                 Background="#0D0D0D"
                 BorderBrush="#333333"
                 BorderThickness="0,0,0,1"
@@ -111,7 +163,7 @@
         </Border>
 
         <!-- Verse Content Display - 4:3 Aspect Ratio Container -->
-        <Viewbox Grid.Row="2" Stretch="Uniform">
+        <Viewbox Grid.Row="3" Stretch="Uniform">
             <Border Width="{Binding DisplayWidth}"
                     Height="{Binding DisplayHeight}"
                     Background="Black">
@@ -156,7 +208,7 @@
         </Viewbox>
 
         <!-- Navigation Buttons -->
-        <Border Grid.Row="3"
+        <Border Grid.Row="4"
                 Background="#1A1A1A"
                 BorderBrush="#333333"
                 BorderThickness="0,1,0,1"
@@ -186,7 +238,7 @@
         </Border>
 
         <!-- Status Bar -->
-        <Border Grid.Row="4"
+        <Border Grid.Row="5"
                 Background="#0D0D0D"
                 BorderBrush="#333333"
                 BorderThickness="0,0,0,0"

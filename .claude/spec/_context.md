@@ -33,9 +33,9 @@ This file tracks all specifications and their implementation status.
 | 007 | [Display Profiles](007-display-profiles.md) | 📋 Planned | Customizable fonts, colors, backgrounds, effects - preset + custom profiles |
 | 008 | [Keyboard Shortcuts](008-keyboard-shortcuts.md) | 📋 Planned | Global hotkeys, customizable keybindings, shortcut hints |
 | 009 | [Service Planner](009-service-planner.md) | 📋 Planned | Pre-plan services, live mode, templates, PDF export |
+| 010 | [Auto-Updates with Velopack](010-auto-updates.md) | 📋 Planned | Seamless updates via GitHub Releases, delta updates, cross-platform |
 | _TBD_ | Audio Playback | 📋 Planned | Piano recording playback |
 | _TBD_ | CLI Interface | 📋 Planned | Command-line tool with IPC |
-| _TBD_ | Auto-Update System | 📋 Planned | Update mechanism |
 | _TBD_ | Export Functionality | 📋 Planned | PDF/image export (individual hymns) |
 | _TBD_ | Statistics Tracking | 📋 Planned | Usage analytics |
 
@@ -72,13 +72,12 @@ This file tracks all specifications and their implementation status.
 
 ### Phase 3: Enhanced Features
 1. Audio playback system
-2. Service planner
-3. Export functionality
-4. Statistics tracking
+2. Export functionality
+3. Statistics tracking
 
 ### Phase 4: Advanced Features
-1. CLI interface with IPC
-2. Auto-update system
+1. **010: Auto-Updates** - *PRIORITIZED* - Implementing early to leverage existing CI/CD and enable dogfooding
+2. CLI interface with IPC
 3. Remote control API
 4. OBS integration
 

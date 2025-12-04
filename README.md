@@ -199,10 +199,12 @@ Contributions are welcome! This project aims for industry-standard testing cover
 - [ ] Statistics tracking
 
 ### Phase 4: Advanced Features
+- [ ] **Auto-update system** (⚡ *Prioritized - In Progress*)
 - [ ] CLI interface with IPC
-- [ ] Auto-update system
 - [ ] Remote control API
 - [ ] OBS integration
+
+> **Note:** Auto-updates (Spec 010) is being implemented early to enable seamless distribution and testing during active development. This leverages the existing GitHub Releases CI/CD pipeline.
 
 ## License
 

@@ -2,12 +2,14 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SDAHymns.Core.Data.Models;
 using SDAHymns.Core.Services;
+using Velopack;
 
 namespace SDAHymns.Desktop.ViewModels;
 
 public partial class MainWindowViewModel : ViewModelBase
 {
     private readonly IHymnDisplayService _hymnService;
+    private readonly IUpdateService _updateService;
 
     [ObservableProperty]
     private Hymn? _currentHymn;
@@ -37,9 +39,25 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isDisplayWindowOpen = false;
 
-    public MainWindowViewModel(IHymnDisplayService hymnService)
+    // Update notification properties
+    [ObservableProperty]
+    private bool _isUpdateAvailable = false;
+
+    [ObservableProperty]
+    private string? _latestVersion;
+
+    [ObservableProperty]
+    private bool _isDownloadingUpdate = false;
+
+    [ObservableProperty]
+    private int _downloadProgress = 0;
+
+    private UpdateInfo? _pendingUpdate;
+
+    public MainWindowViewModel(IHymnDisplayService hymnService, IUpdateService updateService)
     {
         _hymnService = hymnService;
+        _updateService = updateService;
     }
 
     public string DisplayWindowButtonLabel => IsDisplayWindowOpen ? "Hide Display" : "Show Display";
@@ -160,5 +178,44 @@ public partial class MainWindowViewModel : ViewModelBase
         {
             CurrentVerseIndex--;
         }
+    }
+
+    // Update notification methods
+    public void ShowUpdateNotification(UpdateInfo updateInfo)
+    {
+        _pendingUpdate = updateInfo;
+        LatestVersion = updateInfo.TargetFullRelease.Version.ToString();
+        IsUpdateAvailable = true;
+    }
+
+    [RelayCommand]
+    private async Task UpdateNowAsync()
+    {
+        if (_pendingUpdate == null) return;
+
+        IsDownloadingUpdate = true;
+        DownloadProgress = 0;
+
+        var progress = new Progress<int>(p => DownloadProgress = p);
+        var success = await _updateService.DownloadUpdatesAsync(_pendingUpdate, progress);
+
+        if (success)
+        {
+            // Apply and restart
+            _updateService.ApplyUpdatesAndRestart(_pendingUpdate);
+        }
+        else
+        {
+            // Show error - keep banner visible so user can retry
+            StatusMessage = "Failed to download update. Please try again later.";
+            IsDownloadingUpdate = false;
+            // Note: Keep IsUpdateAvailable = true so the banner stays visible for retry
+        }
+    }
+
+    [RelayCommand]
+    private void DismissUpdate()
+    {
+        IsUpdateAvailable = false;
     }
 }
