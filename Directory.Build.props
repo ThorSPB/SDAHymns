@@ -16,6 +16,9 @@
     <AnalysisLevel>latest</AnalysisLevel>
     <AnalysisMode>Recommended</AnalysisMode>
 
+    <!-- Suppress irrelevant code analysis warnings -->
+    <NoWarn>$(NoWarn);CA1860;CA1805;CA1861;CA1848;CA1707;CA1816;CA1862</NoWarn>
+
     <!-- UTF-8 encoding for Romanian characters -->
     <Utf8Output>true</Utf8Output>
   </PropertyGroup>

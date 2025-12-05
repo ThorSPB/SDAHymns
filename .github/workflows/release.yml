@@ -250,12 +250,14 @@ jobs:
           files: ./Releases/releases.win.json
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Find and Upload Velopack Setup
+      - name: Find and Rename Velopack Setup
         shell: pwsh
         run: |
           $setupFile = Get-ChildItem -Path ./Releases -Filter "*Setup.exe" | Select-Object -First 1
           if ($setupFile) {
-            echo "SETUP_FILE=$($setupFile.FullName)" >> $env:GITHUB_ENV
+            $renamedFile = Join-Path (Split-Path $setupFile.FullName) "SDAHymns-Windows-Setup.exe"
+            Move-Item -Path $setupFile.FullName -Destination $renamedFile -Force
+            echo "SETUP_FILE=$renamedFile" >> $env:GITHUB_ENV
           }
 
       - name: Upload Velopack Setup.exe
@@ -264,7 +266,6 @@ jobs:
         with:
           tag_name: v${{ needs.create-release.outputs.version }}
           files: ${{ env.SETUP_FILE }}
-          asset_name: SDAHymns-Windows-Setup.exe
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Find and Upload Velopack nupkg
