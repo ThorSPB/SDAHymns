@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SDAHymns.Core.Services;
@@ -16,10 +17,13 @@ public partial class ShortcutsWindowViewModel : ObservableObject
     private ObservableCollection<ShortcutGroup> _shortcutGroups = [];
 
     [ObservableProperty]
-    private bool _isEditMode = false;
+    private ShortcutDisplay? _listeningShortcut;
 
     [ObservableProperty]
-    private string _editButtonLabel = "Edit Shortcuts";
+    private bool _hasChanges = false;
+
+    [ObservableProperty]
+    private string? _swapMessage;
 
     public ShortcutsWindowViewModel(IHotKeyManager hotKeyManager)
     {
@@ -49,36 +53,36 @@ public partial class ShortcutsWindowViewModel : ObservableObject
         ShortcutGroups = groups;
     }
 
-    [RelayCommand]
-    private void ToggleEditMode()
+    public void StartListening(ShortcutDisplay shortcut)
     {
-        IsEditMode = !IsEditMode;
-        EditButtonLabel = IsEditMode ? "View Mode" : "Edit Shortcuts";
-
-        foreach (var group in ShortcutGroups)
+        // Stop listening to previous
+        if (ListeningShortcut != null)
         {
-            foreach (var shortcut in group.Shortcuts)
-            {
-                shortcut.IsEditing = IsEditMode;
-            }
+            ListeningShortcut.IsListening = false;
         }
+
+        ListeningShortcut = shortcut;
+        shortcut.IsListening = true;
+    }
+
+    public void CaptureKey(string key, string modifiers)
+    {
+        if (ListeningShortcut == null) return;
+
+        var newShortcut = string.IsNullOrEmpty(modifiers) ? key : $"{modifiers}+{key}";
+        ListeningShortcut.Shortcut = newShortcut;
+        ListeningShortcut.IsListening = false;
+        ListeningShortcut = null;
+
+        HasChanges = true;
+        ValidateAndBuildSwapMessage();
     }
 
     [RelayCommand]
     private void SaveChanges()
     {
-        // Validate no conflicts
-        var allShortcuts = ShortcutGroups.SelectMany(g => g.Shortcuts).ToList();
-        var shortcuts = allShortcuts.GroupBy(s => s.Shortcut).Where(g => g.Count() > 1).ToList();
-
-        if (shortcuts.Any())
-        {
-            var conflictingActions = string.Join(", ", shortcuts.First().Select(s => s.ActionName));
-            // Show error - for now just return
-            return;
-        }
-
         // Apply changes to manager
+        var allShortcuts = ShortcutGroups.SelectMany(g => g.Shortcuts).ToList();
         foreach (var shortcut in allShortcuts)
         {
             var gesture = KeyGesture.Parse(shortcut.Shortcut);
@@ -95,8 +99,8 @@ public partial class ShortcutsWindowViewModel : ObservableObject
             _originalShortcuts[shortcut.Action] = KeyGesture.Parse(shortcut.Shortcut);
         }
 
-        // Exit edit mode
-        ToggleEditMode();
+        HasChanges = false;
+        SwapMessage = null;
     }
 
     [RelayCommand]
@@ -110,13 +114,12 @@ public partial class ShortcutsWindowViewModel : ObservableObject
                 if (_originalShortcuts.TryGetValue(shortcut.Action, out var original))
                 {
                     shortcut.Shortcut = original.ToString();
-                    shortcut.ConflictMessage = null;
                 }
             }
         }
 
-        // Exit edit mode
-        ToggleEditMode();
+        HasChanges = false;
+        SwapMessage = null;
     }
 
     [RelayCommand]
@@ -128,32 +131,35 @@ public partial class ShortcutsWindowViewModel : ObservableObject
         LoadShortcuts();
     }
 
-    public void ValidateShortcut(ShortcutDisplay changedShortcut)
+    private void ValidateAndBuildSwapMessage()
     {
-        // Clear all conflict messages first
-        foreach (var group in ShortcutGroups)
-        {
-            foreach (var shortcut in group.Shortcuts)
-            {
-                shortcut.ConflictMessage = null;
-            }
-        }
-
-        // Find duplicates
         var allShortcuts = ShortcutGroups.SelectMany(g => g.Shortcuts).ToList();
         var duplicates = allShortcuts
             .GroupBy(s => s.Shortcut)
             .Where(g => g.Count() > 1 && !string.IsNullOrWhiteSpace(g.Key))
             .ToList();
 
+        if (!duplicates.Any())
+        {
+            SwapMessage = null;
+            return;
+        }
+
+        // Build swap message
+        var sb = new StringBuilder();
+        sb.AppendLine("The following shortcuts will be swapped when you save:");
+        sb.AppendLine();
+
         foreach (var group in duplicates)
         {
-            foreach (var shortcut in group)
+            var shortcuts = group.ToList();
+            for (int i = 0; i < shortcuts.Count - 1; i++)
             {
-                var otherActions = string.Join(", ", group.Where(s => s != shortcut).Select(s => s.ActionName));
-                shortcut.ConflictMessage = $"Conflicts with: {otherActions}";
+                sb.AppendLine($"• '{shortcuts[i].ActionName}' ⇄ '{shortcuts[i + 1].ActionName}' ({group.Key})");
             }
         }
+
+        SwapMessage = sb.ToString();
     }
 }
 
@@ -161,8 +167,6 @@ public record ShortcutGroup(string Category, ObservableCollection<ShortcutDispla
 
 public partial class ShortcutDisplay : ObservableObject
 {
-    private readonly ShortcutsWindowViewModel _parentViewModel;
-
     public string Action { get; }
 
     [ObservableProperty]
@@ -172,22 +176,13 @@ public partial class ShortcutDisplay : ObservableObject
     public string Description { get; }
 
     [ObservableProperty]
-    private bool _isEditing;
-
-    [ObservableProperty]
-    private string? _conflictMessage;
+    private bool _isListening;
 
     public ShortcutDisplay(ShortcutsWindowViewModel parent, string action, string shortcut, string actionName, string description)
     {
-        _parentViewModel = parent;
         Action = action;
         _shortcut = shortcut;
         ActionName = actionName;
         Description = description;
-    }
-
-    partial void OnShortcutChanged(string value)
-    {
-        _parentViewModel?.ValidateShortcut(this);
     }
 }

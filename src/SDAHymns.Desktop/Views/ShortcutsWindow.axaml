@@ -16,21 +16,47 @@
         <vm:ShortcutsWindowViewModel/>
     </Design.DataContext>
 
-    <Grid RowDefinitions="Auto,*,Auto">
+    <Grid RowDefinitions="Auto,Auto,*,Auto">
         <!-- Header -->
         <Border Grid.Row="0"
                 Background="#1A1A1A"
                 BorderBrush="#333333"
                 BorderThickness="0,0,0,1"
                 Padding="20">
-            <TextBlock Text="Keyboard Shortcuts"
-                       FontSize="24"
-                       FontWeight="Bold"
-                       Foreground="White"/>
+            <StackPanel>
+                <TextBlock Text="Keyboard Shortcuts"
+                           FontSize="24"
+                           FontWeight="Bold"
+                           Foreground="White"/>
+                <TextBlock Text="Click any shortcut to rebind it, then press your desired key combination"
+                           FontSize="13"
+                           Foreground="#888888"
+                           Margin="0,5,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Swap Warning Banner -->
+        <Border Grid.Row="1"
+                IsVisible="{Binding SwapMessage, Converter={x:Static ObjectConverters.IsNotNull}}"
+                Background="#FFA726"
+                BorderBrush="#F57C00"
+                BorderThickness="0,0,0,1"
+                Padding="15,10">
+            <StackPanel>
+                <TextBlock Text="⚠ Shortcut Conflicts Detected"
+                           FontWeight="Bold"
+                           FontSize="14"
+                           Foreground="#1A1A1A"
+                           Margin="0,0,0,5"/>
+                <TextBlock Text="{Binding SwapMessage}"
+                           FontSize="12"
+                           Foreground="#1A1A1A"
+                           TextWrapping="Wrap"/>
+            </StackPanel>
         </Border>
 
         <!-- Shortcuts List -->
-        <ScrollViewer Grid.Row="1">
+        <ScrollViewer Grid.Row="2">
             <ItemsControl ItemsSource="{Binding ShortcutGroups}"
                          Margin="20">
                 <ItemsControl.ItemTemplate>
@@ -54,42 +80,51 @@
                                             <Border BorderBrush="#333333"
                                                    BorderThickness="0,0,0,1"
                                                    Padding="15,10">
-                                                <Grid ColumnDefinitions="250,*">
-                                                    <!-- Shortcut Key Display/Edit -->
-                                                    <StackPanel Grid.Column="0">
-                                                        <!-- Read-only mode -->
-                                                        <Border IsVisible="{Binding !IsEditing}"
-                                                               Background="#2A2A2A"
-                                                               BorderBrush="#444444"
-                                                               BorderThickness="1"
-                                                               CornerRadius="4"
-                                                               Padding="10,5"
-                                                               HorizontalAlignment="Left">
+                                                <Grid ColumnDefinitions="230,*">
+                                                    <!-- Shortcut Key Button -->
+                                                    <Button Grid.Column="0"
+                                                           Click="ShortcutButton_Click"
+                                                           HorizontalAlignment="Stretch"
+                                                           HorizontalContentAlignment="Center"
+                                                           BorderThickness="1"
+                                                           CornerRadius="4"
+                                                           Padding="15,8"
+                                                           Width="230">
+                                                        <Button.Styles>
+                                                            <Style Selector="Button">
+                                                                <Setter Property="Background" Value="#2A2A2A"/>
+                                                                <Setter Property="BorderBrush" Value="#444444"/>
+                                                            </Style>
+                                                            <Style Selector="Button[IsPressed=True]">
+                                                                <Setter Property="Background" Value="#0078D4"/>
+                                                                <Setter Property="BorderBrush" Value="#005A9E"/>
+                                                            </Style>
+                                                            <Style Selector="Button:pointerover">
+                                                                <Setter Property="Background" Value="#333333"/>
+                                                                <Setter Property="BorderBrush" Value="#555555"/>
+                                                            </Style>
+                                                        </Button.Styles>
+                                                        <Grid>
+                                                            <!-- Normal state -->
                                                             <TextBlock Text="{Binding Shortcut}"
+                                                                      IsVisible="{Binding !IsListening}"
                                                                       FontFamily="Consolas, Courier New, monospace"
                                                                       FontSize="14"
                                                                       Foreground="#4CAF50"
-                                                                      FontWeight="Bold"/>
-                                                        </Border>
-
-                                                        <!-- Edit mode -->
-                                                        <StackPanel IsVisible="{Binding IsEditing}">
-                                                            <TextBox Text="{Binding Shortcut}"
-                                                                    FontFamily="Consolas, Courier New, monospace"
-                                                                    FontSize="14"
-                                                                    Background="#2A2A2A"
-                                                                    Foreground="#4CAF50"
-                                                                    BorderBrush="#444444"
-                                                                    Watermark="Press keys..."
-                                                                    KeyDown="ShortcutInput_KeyDown"
-                                                                    HorizontalAlignment="Stretch"/>
-                                                            <TextBlock Text="{Binding ConflictMessage}"
-                                                                      IsVisible="{Binding ConflictMessage, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                                                      FontSize="11"
-                                                                      Foreground="#FF5252"
-                                                                      Margin="0,3,0,0"/>
-                                                        </StackPanel>
-                                                    </StackPanel>
+                                                                      FontWeight="Bold"
+                                                                      TextAlignment="Center"
+                                                                      HorizontalAlignment="Center"/>
+                                                            <!-- Listening state -->
+                                                            <TextBlock Text="⌨ Press keys..."
+                                                                      IsVisible="{Binding IsListening}"
+                                                                      FontFamily="Consolas, Courier New, monospace"
+                                                                      FontSize="14"
+                                                                      Foreground="White"
+                                                                      FontWeight="Bold"
+                                                                      TextAlignment="Center"
+                                                                      HorizontalAlignment="Center"/>
+                                                        </Grid>
+                                                    </Button>
 
                                                     <!-- Action Description -->
                                                     <StackPanel Grid.Column="1"
@@ -117,7 +152,7 @@
         </ScrollViewer>
 
         <!-- Footer -->
-        <Border Grid.Row="2"
+        <Border Grid.Row="3"
                 Background="#1A1A1A"
                 BorderBrush="#333333"
                 BorderThickness="0,1,0,0"
@@ -126,19 +161,10 @@
                 <StackPanel Grid.Column="0"
                            Orientation="Horizontal"
                            Spacing="10">
-                    <Button Content="{Binding EditButtonLabel}"
-                            Command="{Binding ToggleEditModeCommand}"
-                            Width="140"
-                            Height="35"
-                            Background="#0078D4"
-                            Foreground="White"
-                            BorderBrush="#005A9E"/>
-
-                    <!-- Edit Mode Buttons -->
-                    <Button Content="Save"
+                    <Button Content="Save Changes"
                             Command="{Binding SaveChangesCommand}"
-                            IsVisible="{Binding IsEditMode}"
-                            Width="100"
+                            IsVisible="{Binding HasChanges}"
+                            Width="140"
                             Height="35"
                             Background="#2E7D32"
                             Foreground="White"
@@ -146,7 +172,7 @@
 
                     <Button Content="Cancel"
                             Command="{Binding CancelChangesCommand}"
-                            IsVisible="{Binding IsEditMode}"
+                            IsVisible="{Binding HasChanges}"
                             Width="100"
                             Height="35"
                             Background="#D32F2F"

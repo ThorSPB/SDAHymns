@@ -190,7 +190,7 @@ Contributions are welcome! This project aims for industry-standard testing cover
 ### Phase 2: Core Features 🚧 In Progress
 - [x] **Enhanced control window** (search, browse, recent/favorites)
 - [ ] Display profiles system
-- [ ] Keyboard shortcuts
+- [x] **Keyboard shortcuts** (F1 overlay, inline editing, auto-swap conflicts)
 - [ ] Service planner
 
 ### Phase 3: Enhanced Features

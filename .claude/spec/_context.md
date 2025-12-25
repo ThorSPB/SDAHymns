@@ -34,7 +34,7 @@ This file tracks all specifications and their implementation status.
 | 008 | [Keyboard Shortcuts](008-keyboard-shortcuts.md) | ✅ Implemented | Global hotkeys, F1 shortcuts overlay, tooltips, 24 tests passing |
 | 009 | [Service Planner](009-service-planner.md) | 📋 Planned | Pre-plan services, live mode, templates, PDF export |
 | 010 | [Auto-Updates with Velopack](010-auto-updates.md) | ✓ Tested | Seamless updates via GitHub Releases, delta updates, cross-platform |
-| _TBD_ | Audio Playback | 📋 Planned | Piano recording playback |
+| 011 | [Audio Playback](011-audio-playback.md) | 📋 Planned | NAudio player, sync/auto-advance, recorder mode, external file support |
 | _TBD_ | CLI Interface | 📋 Planned | Command-line tool with IPC |
 | _TBD_ | Export Functionality | 📋 Planned | PDF/image export (individual hymns) |
 | _TBD_ | Statistics Tracking | 📋 Planned | Usage analytics |
@@ -71,9 +71,9 @@ This file tracks all specifications and their implementation status.
 4. **009: Service Planner** - Pre-plan services, live mode, templates
 
 ### Phase 3: Enhanced Features
-1. Audio playback system
-2. Export functionality
-3. Statistics tracking
+1. **011: Audio Playback** - 📋 Planned (Audio engine, sync, recorder)
+2. Export Functionality
+3. Statistics Tracking
 
 ### Phase 4: Advanced Features
 1. **010: Auto-Updates** - ✅ COMPLETED (Early implementation for dogfooding)
