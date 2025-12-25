@@ -56,13 +56,15 @@ public partial class App : Application
             services.AddScoped<IHymnDisplayService, HymnDisplayService>();
             services.AddScoped<ISearchService, SearchService>();
             services.AddSingleton<IUpdateService, UpdateService>();
+            services.AddSingleton<IHotKeyManager, HotKeyManager>();
 
             // ViewModels
             services.AddTransient<MainWindowViewModel>();
 
             _serviceProvider = services.BuildServiceProvider();
 
-            var mainWindow = new MainWindow
+            var hotKeyManager = _serviceProvider.GetRequiredService<IHotKeyManager>();
+            var mainWindow = new MainWindow(hotKeyManager)
             {
                 DataContext = _serviceProvider.GetRequiredService<MainWindowViewModel>()
             };

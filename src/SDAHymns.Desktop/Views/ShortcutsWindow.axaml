@@ -1,0 +1,176 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:SDAHymns.Desktop.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+        x:Class="SDAHymns.Desktop.Views.ShortcutsWindow"
+        x:DataType="vm:ShortcutsWindowViewModel"
+        Title="Keyboard Shortcuts"
+        Width="800" Height="600"
+        Background="#0D0D0D"
+        Icon="/Assets/avalonia-logo.ico"
+        WindowStartupLocation="CenterOwner">
+
+    <Design.DataContext>
+        <vm:ShortcutsWindowViewModel/>
+    </Design.DataContext>
+
+    <Grid RowDefinitions="Auto,*,Auto">
+        <!-- Header -->
+        <Border Grid.Row="0"
+                Background="#1A1A1A"
+                BorderBrush="#333333"
+                BorderThickness="0,0,0,1"
+                Padding="20">
+            <TextBlock Text="Keyboard Shortcuts"
+                       FontSize="24"
+                       FontWeight="Bold"
+                       Foreground="White"/>
+        </Border>
+
+        <!-- Shortcuts List -->
+        <ScrollViewer Grid.Row="1">
+            <ItemsControl ItemsSource="{Binding ShortcutGroups}"
+                         Margin="20">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Margin="0,0,0,30">
+                            <!-- Category Header -->
+                            <TextBlock Text="{Binding Category}"
+                                      FontSize="18"
+                                      FontWeight="SemiBold"
+                                      Foreground="#0078D4"
+                                      Margin="0,0,0,10"/>
+
+                            <!-- Shortcuts Table -->
+                            <Border Background="#1A1A1A"
+                                   BorderBrush="#333333"
+                                   BorderThickness="1"
+                                   CornerRadius="4">
+                                <ItemsControl ItemsSource="{Binding Shortcuts}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border BorderBrush="#333333"
+                                                   BorderThickness="0,0,0,1"
+                                                   Padding="15,10">
+                                                <Grid ColumnDefinitions="250,*">
+                                                    <!-- Shortcut Key Display/Edit -->
+                                                    <StackPanel Grid.Column="0">
+                                                        <!-- Read-only mode -->
+                                                        <Border IsVisible="{Binding !IsEditing}"
+                                                               Background="#2A2A2A"
+                                                               BorderBrush="#444444"
+                                                               BorderThickness="1"
+                                                               CornerRadius="4"
+                                                               Padding="10,5"
+                                                               HorizontalAlignment="Left">
+                                                            <TextBlock Text="{Binding Shortcut}"
+                                                                      FontFamily="Consolas, Courier New, monospace"
+                                                                      FontSize="14"
+                                                                      Foreground="#4CAF50"
+                                                                      FontWeight="Bold"/>
+                                                        </Border>
+
+                                                        <!-- Edit mode -->
+                                                        <StackPanel IsVisible="{Binding IsEditing}">
+                                                            <TextBox Text="{Binding Shortcut}"
+                                                                    FontFamily="Consolas, Courier New, monospace"
+                                                                    FontSize="14"
+                                                                    Background="#2A2A2A"
+                                                                    Foreground="#4CAF50"
+                                                                    BorderBrush="#444444"
+                                                                    Watermark="Press keys..."
+                                                                    KeyDown="ShortcutInput_KeyDown"
+                                                                    HorizontalAlignment="Stretch"/>
+                                                            <TextBlock Text="{Binding ConflictMessage}"
+                                                                      IsVisible="{Binding ConflictMessage, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                                      FontSize="11"
+                                                                      Foreground="#FF5252"
+                                                                      Margin="0,3,0,0"/>
+                                                        </StackPanel>
+                                                    </StackPanel>
+
+                                                    <!-- Action Description -->
+                                                    <StackPanel Grid.Column="1"
+                                                               Margin="20,0,0,0">
+                                                        <TextBlock Text="{Binding ActionName}"
+                                                                  FontSize="14"
+                                                                  FontWeight="SemiBold"
+                                                                  Foreground="White"/>
+                                                        <TextBlock Text="{Binding Description}"
+                                                                  FontSize="12"
+                                                                  Foreground="#888888"
+                                                                  TextWrapping="Wrap"
+                                                                  Margin="0,3,0,0"/>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Border>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <!-- Footer -->
+        <Border Grid.Row="2"
+                Background="#1A1A1A"
+                BorderBrush="#333333"
+                BorderThickness="0,1,0,0"
+                Padding="20">
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Grid.Column="0"
+                           Orientation="Horizontal"
+                           Spacing="10">
+                    <Button Content="{Binding EditButtonLabel}"
+                            Command="{Binding ToggleEditModeCommand}"
+                            Width="140"
+                            Height="35"
+                            Background="#0078D4"
+                            Foreground="White"
+                            BorderBrush="#005A9E"/>
+
+                    <!-- Edit Mode Buttons -->
+                    <Button Content="Save"
+                            Command="{Binding SaveChangesCommand}"
+                            IsVisible="{Binding IsEditMode}"
+                            Width="100"
+                            Height="35"
+                            Background="#2E7D32"
+                            Foreground="White"
+                            BorderBrush="#1B5E20"/>
+
+                    <Button Content="Cancel"
+                            Command="{Binding CancelChangesCommand}"
+                            IsVisible="{Binding IsEditMode}"
+                            Width="100"
+                            Height="35"
+                            Background="#D32F2F"
+                            Foreground="White"
+                            BorderBrush="#B71C1C"/>
+
+                    <Button Content="Reset to Defaults"
+                            Command="{Binding ResetToDefaultsCommand}"
+                            Width="150"
+                            Height="35"
+                            Background="#2A2A2A"
+                            Foreground="White"
+                            BorderBrush="#444444"/>
+                </StackPanel>
+
+                <Button Grid.Column="1"
+                        Content="Close"
+                        Click="CloseButton_Click"
+                        Width="100"
+                        Height="35"
+                        Background="#2A2A2A"
+                        Foreground="White"
+                        BorderBrush="#444444"/>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

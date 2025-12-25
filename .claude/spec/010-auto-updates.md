@@ -1,7 +1,8 @@
 # Spec 010: Auto-Updates with Velopack
 
-**Status:** 📋 Planned
+**Status:** ✓ Tested
 **Created:** 2025-12-04
+**Implemented:** 2025-12-26 (Commit 4e3ec7d)
 **Dependencies:** 001-project-structure.md
 
 ## Overview
@@ -505,3 +506,4 @@ Download the latest `SDAHymnsSetup.exe` from [Releases](https://github.com/YOUR-
 ## Status Updates
 
 - **2025-12-04:** Spec created, ready for implementation
+- **2025-12-26:** Implemented and tested (Commit 4e3ec7d). Validated with Velopack integration, UpdateService, and unit tests.

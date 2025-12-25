@@ -75,8 +75,9 @@
                 Padding="15">
             <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto">
                 <TextBox Grid.Column="0"
+                         x:Name="SearchTextBox"
                          Text="{Binding SearchQuery}"
-                         Watermark="Search hymns by number or title..."
+                         Watermark="Search hymns by number or title... (Ctrl+F to focus)"
                          FontSize="16"
                          Background="#2A2A2A"
                          Foreground="White"
@@ -103,7 +104,7 @@
                 <Button Grid.Column="2"
                         Content="{Binding FavoriteIcon}"
                         Command="{Binding ToggleFavoriteCommand}"
-                        ToolTip.Tip="Toggle Favorite"
+                        ToolTip.Tip="Toggle Favorite (Ctrl+D)"
                         Width="50"
                         Height="35"
                         FontSize="18"
@@ -125,6 +126,7 @@
                 <Button Grid.Column="4"
                         Content="{Binding DisplayWindowButtonLabel}"
                         Click="ToggleDisplayWindow_Click"
+                        ToolTip.Tip="Toggle Display Window (F5)"
                         Width="140"
                         Height="35"
                         Background="#0078D4"
@@ -267,6 +269,7 @@
                         HorizontalAlignment="Center">
                 <Button Content="◀ Previous"
                         Command="{Binding PreviousVerseCommand}"
+                        ToolTip.Tip="Previous Verse (←, PageUp, Shift+Space)"
                         Width="140"
                         Height="45"
                         FontSize="16"
@@ -277,6 +280,7 @@
 
                 <Button Content="Next ▶"
                         Command="{Binding NextVerseCommand}"
+                        ToolTip.Tip="Next Verse (→, PageDown, Space)"
                         Width="140"
                         Height="45"
                         FontSize="16"
@@ -293,9 +297,17 @@
                 BorderBrush="#333333"
                 BorderThickness="0,0,0,0"
                 Padding="15,10">
-            <TextBlock Text="{Binding StatusMessage}"
-                      FontSize="14"
-                      Foreground="#888888"/>
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0"
+                          Text="{Binding StatusMessage}"
+                          FontSize="14"
+                          Foreground="#888888"/>
+                <TextBlock Grid.Column="1"
+                          Text="Press F1 for keyboard shortcuts"
+                          FontSize="12"
+                          Foreground="#666666"
+                          FontStyle="Italic"/>
+            </Grid>
         </Border>
     </Grid>
 </Window>

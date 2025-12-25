@@ -31,9 +31,9 @@ This file tracks all specifications and their implementation status.
 | 005 | [Basic Hymn Display](005-basic-hymn-display.md) | ✅ Implemented | Dual-window system (control + display), verse navigation, dark theme, auto-scaling |
 | 006 | [Enhanced Control Window](006-enhanced-control-window.md) | ✅ Implemented | Full-text search, browse, recent/favorites - real-time search, recent hymns bar |
 | 007 | [Display Profiles](007-display-profiles.md) | 📋 Planned | Customizable fonts, colors, backgrounds, effects - preset + custom profiles |
-| 008 | [Keyboard Shortcuts](008-keyboard-shortcuts.md) | 📋 Planned | Global hotkeys, customizable keybindings, shortcut hints |
+| 008 | [Keyboard Shortcuts](008-keyboard-shortcuts.md) | ✅ Implemented | Global hotkeys, F1 shortcuts overlay, tooltips, 24 tests passing |
 | 009 | [Service Planner](009-service-planner.md) | 📋 Planned | Pre-plan services, live mode, templates, PDF export |
-| 010 | [Auto-Updates with Velopack](010-auto-updates.md) | 📋 Planned | Seamless updates via GitHub Releases, delta updates, cross-platform |
+| 010 | [Auto-Updates with Velopack](010-auto-updates.md) | ✓ Tested | Seamless updates via GitHub Releases, delta updates, cross-platform |
 | _TBD_ | Audio Playback | 📋 Planned | Piano recording playback |
 | _TBD_ | CLI Interface | 📋 Planned | Command-line tool with IPC |
 | _TBD_ | Export Functionality | 📋 Planned | PDF/image export (individual hymns) |
@@ -76,7 +76,7 @@ This file tracks all specifications and their implementation status.
 3. Statistics tracking
 
 ### Phase 4: Advanced Features
-1. **010: Auto-Updates** - *PRIORITIZED* - Implementing early to leverage existing CI/CD and enable dogfooding
+1. **010: Auto-Updates** - ✅ COMPLETED (Early implementation for dogfooding)
 2. CLI interface with IPC
 3. Remote control API
 4. OBS integration
@@ -190,12 +190,39 @@ All Phase 1 goals achieved:
 - ⏭️ Skipped database-side filtering optimization (not needed at 1,254 hymns)
 - ⏭️ Skipped ViewModel tests (service layer well-tested)
 
-**🎯 NEXT SESSION:** Continue Phase 2 - Implement Spec 007 (Display Profiles) or Spec 008 (Keyboard Shortcuts)
+**Session 5 (2025-12-26 - Completed - Spec 008):**
+- ✅ Created `HotKeyManager` service with string-based key handling (UI-agnostic Core layer)
+- ✅ Implemented `KeyGesture` record with parsing and formatting
+- ✅ Registered 20+ default keyboard shortcuts across 4 categories (Global, Navigation, Search, Display)
+- ✅ Integrated keyboard handlers into MainWindow with Avalonia→string conversion
+- ✅ Created `ShortcutsWindow` with F1 shortcut to display all available shortcuts
+- ✅ Added keyboard shortcut tooltips to all buttons for discoverability
+- ✅ Added "Press F1 for keyboard shortcuts" hint in status bar
+- ✅ Implemented JSON persistence for custom keyboard shortcuts (save/load)
+- ✅ Added conflict detection for duplicate key bindings
+- ✅ Wrote 24 comprehensive unit tests for HotKeyManager (all passing)
+- ✅ Context-aware shortcuts (arrow keys navigate search vs verses based on focus)
+- ✅ Support for Ctrl+1-5 to load recent hymns
+- ✅ **Enhanced ShortcutsWindow with inline editing UI:**
+  - Toggle between view/edit mode
+  - Live key capture in TextBoxes (press keys to assign)
+  - Real-time conflict detection with red warnings
+  - Save/Cancel/Reset to Defaults buttons
+  - All shortcuts editable without touching JSON
+- ✅ All 68 tests passing (24 new + 44 existing)
+
+**Technical Decisions:**
+- Used string-based keys in Core to avoid Avalonia dependency (UI-agnostic design)
+- Inline editing in F1 window instead of separate dialog (better UX)
+- Shortcuts are case-insensitive for better UX
+- Real-time validation prevents saving conflicting shortcuts
+
+**🎯 NEXT SESSION:** Continue Phase 2 - Implement Spec 007 (Display Profiles)
 
 **Phase 2 Progress:**
 - ✅ **Spec 006**: Enhanced Control Window - COMPLETE
 - 📋 **Spec 007**: Display Profiles (customizable fonts/colors/backgrounds)
-- 📋 **Spec 008**: Keyboard Shortcuts (global hotkeys, customization)
+- ✅ **Spec 008**: Keyboard Shortcuts - COMPLETE
 - 📋 **Spec 009**: Service Planner (pre-plan services, live mode)
 
 **Recommended Implementation Order:**
