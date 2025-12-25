@@ -24,7 +24,9 @@
       "Bash(gh issue list:*)",
       "Bash(gh api:*)",
       "Bash(gh issue view:*)",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "Bash(gh run view:*)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []

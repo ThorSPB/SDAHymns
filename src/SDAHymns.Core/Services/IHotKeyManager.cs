@@ -55,7 +55,7 @@ public record KeyGesture(string Key, string Modifiers)
             }
         }
 
-        var modifiers = string.Join("+", modifiersList);
+        var modifiers = string.Join("+", modifiersList.OrderBy(m => m));
         return new KeyGesture(key, modifiers);
     }
 }

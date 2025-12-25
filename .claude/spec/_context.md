@@ -35,6 +35,7 @@ This file tracks all specifications and their implementation status.
 | 009 | [Service Planner](009-service-planner.md) | 📋 Planned | Pre-plan services, live mode, templates, PDF export |
 | 010 | [Auto-Updates with Velopack](010-auto-updates.md) | ✓ Tested | Seamless updates via GitHub Releases, delta updates, cross-platform |
 | 011 | [Audio Playback](011-audio-playback.md) | 📋 Planned | NAudio player, sync/auto-advance, recorder mode, external file support |
+| 012 | [Statistics Tracking](012-statistics-tracking.md) | 📋 Planned | Usage analytics, dashboard, reporting, "forgotten hymns" discovery |
 | _TBD_ | CLI Interface | 📋 Planned | Command-line tool with IPC |
 | _TBD_ | Export Functionality | 📋 Planned | PDF/image export (individual hymns) |
 | _TBD_ | Statistics Tracking | 📋 Planned | Usage analytics |
@@ -72,8 +73,8 @@ This file tracks all specifications and their implementation status.
 
 ### Phase 3: Enhanced Features
 1. **011: Audio Playback** - 📋 Planned (Audio engine, sync, recorder)
-2. Export Functionality
-3. Statistics Tracking
+2. **012: Statistics Tracking** - 📋 Planned (Usage analytics, dashboard, reporting)
+3. Export Functionality
 
 ### Phase 4: Advanced Features
 1. **010: Auto-Updates** - ✅ COMPLETED (Early implementation for dogfooding)

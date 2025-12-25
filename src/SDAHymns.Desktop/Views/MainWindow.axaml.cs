@@ -200,7 +200,7 @@ public partial class MainWindow : Window
         if (modifiers.HasFlag(KeyModifiers.Meta))
             parts.Add("Meta");
 
-        return string.Join("+", parts);
+        return string.Join("+", parts.OrderBy(p => p));
     }
 
     private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)

@@ -57,7 +57,7 @@ public partial class ShortcutsWindow : Window
         if (e.KeyModifiers.HasFlag(KeyModifiers.Meta))
             parts.Add("Meta");
 
-        var modifiers = string.Join("+", parts);
+        var modifiers = string.Join("+", parts.OrderBy(p => p));
         var key = e.Key.ToString();
 
         // Capture the key
