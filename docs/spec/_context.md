@@ -39,8 +39,16 @@ This file tracks all specifications and their implementation status.
 | 013 | [Export Functionality](013-export-functionality.md) | 📋 Planned | [#14](https://github.com/ThorSPB/SDAHymns/issues/14) | PDF generation (QuestPDF), Image rendering (WYSIWYG), batch export |
 | 014 | [Audio Download & Settings](014-audio-download-settings.md) | ✅ Implemented | [#18](https://github.com/ThorSPB/SDAHymns/issues/18) | Settings UI, download manager, library management (manifest generation pending) |
 | ~~014~~ 015 | [CLI Interface](014-cli-interface.md) | 📋 Planned | [#15](https://github.com/ThorSPB/SDAHymns/issues/15) | Dual-mode (Direct/Control), IPC via Named Pipes, Headless display mode |
-| ~~015~~ 016 | [Remote Control API](015-remote-control-api.md) | 📋 Planned | [#16](https://github.com/ThorSPB/SDAHymns/issues/16) | Embedded Kestrel server, SignalR sync, mobile-first Vue.js web app |
 | 016 | [OBS Integration](016-obs-integration.md) | 📋 Planned | [#17](https://github.com/ThorSPB/SDAHymns/issues/17) | Window capture optimization, Browser Source, OBS WebSocket automation |
+
+### UI/UX & Polish
+
+| ID | Spec | Status | Issue | Notes |
+|----|------|--------|-------|-------|
+| 017 | [UI/UX Overhaul](017-ui-ux-overhaul.md) | 📋 Planned | [#20](https://github.com/ThorSPB/SDAHymns/issues/20) | Modern design system, animations, themes, icon integration, card layouts |
+| 018 | [Enhanced Slide Formatting](018-enhanced-slide-formatting.md) | 📋 Planned | [#21](https://github.com/ThorSPB/SDAHymns/issues/21) | Verse number styling, chorus differentiation, smart layout, transitions |
+| 019 | [Compact Remote Widget](019-compact-remote-widget.md) | 📋 Planned | [#22](https://github.com/ThorSPB/SDAHymns/issues/22) | Widget-style default GUI, custom chrome, lockable position, borderless display |
+| ~~015~~ 020 | [Remote Control API](015-remote-control-api.md) | 📋 Planned | [#16](https://github.com/ThorSPB/SDAHymns/issues/16) | Embedded Kestrel server, SignalR sync, mobile-first Vue.js web app |
 
 ## Implementation Order
 
@@ -75,8 +83,13 @@ This file tracks all specifications and their implementation status.
 ### Phase 4: Advanced Features
 1. **010: Auto-Updates** - ✅ COMPLETED (Early implementation for dogfooding)
 2. **014: CLI Interface** - 📋 Planned (IPC control, headless mode, automation)
-3. **015: Remote Control API** - 📋 Planned (Web server, SignalR, mobile web app)
-4. **016: OBS Integration** - 📋 Planned (Window capture, browser source, automation)
+3. **016: OBS Integration** - 📋 Planned (Window capture, browser source, automation)
+
+### Phase 5: UI/UX Refinement & Polish
+1. **017: UI/UX Overhaul** - 📋 Planned (Modern design, animations, themes, icon system)
+2. **018: Enhanced Slide Formatting** - 📋 Planned (Verse numbers, chorus styling, transitions, multi-column)
+3. **019: Compact Remote Widget** - 📋 Planned (Widget-style default GUI, custom chrome, lockable, borderless display)
+4. **015: Remote Control API** - 📋 Planned (Web server, SignalR, mobile web app)
 
 ## Current Session Focus
 
@@ -294,6 +307,36 @@ All Phase 1 goals achieved:
 - ✅ Updated all specs and _context.md
 
 **🎯 NEXT SESSION:** Begin Spec 009 (Service Planner) or Spec 012/013 (Statistics/Export)
+
+**Session 8 (2025-12-26 - Phase 5 Planning):**
+- ✅ Created **Phase 5: UI/UX Refinement & Polish**
+- ✅ Created **Spec 017:** UI/UX Overhaul & Modernization [#20](https://github.com/ThorSPB/SDAHymns/issues/20)
+  - Modern design system (color palette, typography, spacing)
+  - Icon system integration (Fluent/Material icons)
+  - Smooth animations and transitions
+  - Card-based layouts with elevation
+  - Dark/Light theme system
+  - Toast notifications
+  - MainWindow redesign with two-column layout
+- ✅ Created **Spec 018:** Enhanced Hymn Slide Formatting [#21](https://github.com/ThorSPB/SDAHymns/issues/21)
+  - 5 verse number styles (Badge, Large Decorative, Inline, etc.)
+  - 5 chorus formatting options (Indent, Italic, Background, etc.)
+  - Smart text layout with hyphenation
+  - Multi-column layout support
+  - Slide metadata display (hymn number, verse indicator)
+  - 5 transition effects (Fade, Slide, Dissolve, etc.)
+  - Typography enhancements (line height, letter spacing)
+- ✅ Created **Spec 019:** Compact Remote Control Widget [#22](https://github.com/ThorSPB/SDAHymns/issues/22)
+  - Widget-style default GUI (280x520px, bottom-right corner)
+  - Custom window chrome (no standard title bar/buttons)
+  - Position management (dragable, lockable, persistent)
+  - Always on top toggle
+  - Essential controls (hymn input, number pad, navigation)
+  - Borderless fullscreen DisplayWindow on projector
+  - Multi-monitor support with projector selection
+  - MainWindow becomes "Advanced Mode" for configuration
+- ✅ Moved **Spec 015** (Remote Control API) into Phase 5 as **Spec 020**
+- 📋 **NEXT:** Begin implementation (recommended: Spec 019 first for immediate UX improvement)
 
 **Phase 2 Progress:**
 - ✅ **Spec 006**: Enhanced Control Window - COMPLETE

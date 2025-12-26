@@ -99,7 +99,7 @@ SDAHymns/
 │   ├── audio/                  # Piano recordings (by category)
 │   ├── config/                 # Configuration files
 │   └── legacy/                 # Legacy app (reference only)
-├── .claude/
+├── docs/
 │   └── spec/                   # Specification files
 ├── CLAUDE.md                   # Developer guidance for Claude Code
 ├── README.md                   # This file
@@ -110,9 +110,9 @@ SDAHymns/
 
 ### Spec-Driven Development
 
-This project follows a specification-driven approach. All features are documented in `.claude/spec/` before implementation:
+This project follows a specification-driven approach. All features are documented in `docs/spec/` before implementation:
 
-- **Check `.claude/spec/_context.md`** for current project status
+- **Check `docs/spec/_context.md`** for current project status
 - Each spec defines requirements, implementation details, and acceptance criteria
 - Specs are tracked through statuses: Planned → In Progress → Implemented → Tested
 
@@ -158,7 +158,7 @@ Contributions are welcome! This project aims for industry-standard testing cover
 
 ### Development Workflow
 
-1. Check `.claude/spec/_context.md` for current priorities
+1. Check `docs/spec/_context.md` for current priorities
 2. Create a feature branch: `git checkout -b feature/your-feature`
 3. Write tests first (TDD approach)
 4. Implement the feature
@@ -176,8 +176,8 @@ Contributions are welcome! This project aims for industry-standard testing cover
 ## Documentation
 
 - **[CLAUDE.md](CLAUDE.md)** - Comprehensive developer guide and architecture documentation
-- **[Spec Context](.claude/spec/_context.md)** - Current project status and spec tracking
-- **[Spec 001](.claude/spec/001-project-structure.md)** - Project structure specification
+- **[Spec Context](docs/spec/_context.md)** - Current project status and spec tracking
+- **[Spec 001](docs/spec/001-project-structure.md)** - Project structure specification
 
 ## Roadmap
 
@@ -203,8 +203,13 @@ Contributions are welcome! This project aims for industry-standard testing cover
 ### Phase 4: Advanced Features 🚧 In Progress
 - [x] **Auto-update system** (Velopack, GitHub Releases, delta updates)
 - [ ] CLI interface with IPC
-- [ ] Remote control API
 - [ ] OBS integration
+
+### Phase 5: UI/UX Refinement & Polish 📋 Planned
+- [ ] **UI/UX Overhaul** (Modern design system, animations, themes, icons)
+- [ ] **Enhanced Slide Formatting** (Verse numbers, chorus styling, transitions, multi-column)
+- [ ] **Compact Remote Widget** (Widget-style default GUI, custom chrome, borderless display)
+- [ ] **Remote Control API** (Web-based mobile control, SignalR, Vue.js interface)
 
 ## License
 

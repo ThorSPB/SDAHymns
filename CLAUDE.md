@@ -12,17 +12,17 @@ SDAHymns is a modern, cross-platform desktop application for displaying hymns in
 
 This project follows a **specification-driven approach** to manage complexity across multiple development sessions:
 
-- **Spec files** are located in `.claude/spec/`
+- **Spec files** are located in `docs/spec/`
 - Each spec defines a feature, component, or system in detail
 - Specs include implementation status, acceptance criteria, and technical details
-- **`.claude/spec/_context.md`** tracks all specs and their current status
+- **`docs/spec/_context.md`** tracks all specs and their current status
 - **Always check `_context.md` first** to understand what's planned, in-progress, or completed
 - Update spec status as work progresses
 - Reference related specs for cross-cutting concerns
 
 ### Spec Workflow
 
-1. **Planning:** Create new spec file in `.claude/spec/` with detailed requirements
+1. **Planning:** Create new spec file in `docs/spec/` with detailed requirements
 2. **Implementation:** Follow spec, update status to "in-progress"
 3. **Completion:** Mark as "implemented", add notes about deviations
 4. **Testing:** Mark as "tested" once verified
@@ -43,7 +43,7 @@ Spec File → GitHub Issue → Branch → PR → Merge (closes issue)
 1. **Create Issue** (via gh CLI or web):
    ```bash
    gh issue create --title "[Spec 010] Auto-Updates with Velopack" \
-     --body "See .claude/spec/010-auto-updates.md for details" \
+     --body "See docs/spec/010-auto-updates.md for details" \
      --label "enhancement"
    ```
 
