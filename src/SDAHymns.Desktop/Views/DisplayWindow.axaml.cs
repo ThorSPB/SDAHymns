@@ -1,7 +1,9 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Media;
 using SDAHymns.Core.Data.Models;
+using SDAHymns.Desktop.ViewModels;
 
 namespace SDAHymns.Desktop.Views;
 
@@ -10,6 +12,50 @@ public partial class DisplayWindow : Window
     public DisplayWindow()
     {
         InitializeComponent();
+
+        // Add keyboard shortcuts for presentation control (PowerPoint-style)
+        KeyDown += DisplayWindow_KeyDown;
+    }
+
+    private void DisplayWindow_KeyDown(object? sender, KeyEventArgs e)
+    {
+        if (DataContext is not MainWindowViewModel viewModel)
+            return;
+
+        switch (e.Key)
+        {
+            // Next verse: Space, Right Arrow, Down Arrow, Page Down, Enter
+            case Key.Space:
+            case Key.Right:
+            case Key.Down:
+            case Key.PageDown:
+            case Key.Enter:
+                if (viewModel.NextVerseCommand.CanExecute(null))
+                {
+                    viewModel.NextVerseCommand.Execute(null);
+                    e.Handled = true;
+                }
+                break;
+
+            // Previous verse: Left Arrow, Up Arrow, Page Up, Backspace
+            case Key.Left:
+            case Key.Up:
+            case Key.PageUp:
+            case Key.Back:
+                if (viewModel.PreviousVerseCommand.CanExecute(null))
+                {
+                    viewModel.PreviousVerseCommand.Execute(null);
+                    e.Handled = true;
+                }
+                break;
+
+            // Close/Blank: Escape, B (for blank)
+            case Key.Escape:
+            case Key.B:
+                Close();
+                e.Handled = true;
+                break;
+        }
     }
 
     /// <summary>

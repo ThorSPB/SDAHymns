@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using SDAHymns.Core.Data;
 using SDAHymns.Core.Data.Models;
+using SDAHymns.Core.Models;
+using System.Text.Json;
 
 namespace SDAHymns.Core.Services;
 
@@ -160,6 +162,57 @@ public class SettingsService : ISettingsService
         var settings = await GetAppSettingsAsync();
         settings.LastWindowSize = size;
         await UpdateAppSettingsAsync(settings);
+    }
+
+    public RemoteWidgetSettings LoadRemoteWidgetSettings()
+    {
+        var appSettings = _context.AppSettings.Find(1);
+
+        if (appSettings?.RemoteWidgetSettingsJson == null)
+        {
+            // Return default settings
+            return new RemoteWidgetSettings();
+        }
+
+        try
+        {
+            var settings = JsonSerializer.Deserialize<RemoteWidgetSettings>(appSettings.RemoteWidgetSettingsJson);
+            return settings ?? new RemoteWidgetSettings();
+        }
+        catch
+        {
+            // If deserialization fails, return default
+            return new RemoteWidgetSettings();
+        }
+    }
+
+    public void SaveRemoteWidgetSettings(RemoteWidgetSettings settings)
+    {
+        var appSettings = _context.AppSettings.Find(1);
+
+        if (appSettings == null)
+        {
+            // Create default app settings if none exist
+            appSettings = new AppSettings
+            {
+                Id = 1,
+                AudioLibraryPath = GetDefaultAudioLibraryPath(),
+                AudioAutoPlayDelay = 5,
+                GlobalVolume = 0.8f,
+                AutoAdvanceEnabled = false,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+            _context.AppSettings.Add(appSettings);
+        }
+
+        appSettings.RemoteWidgetSettingsJson = JsonSerializer.Serialize(settings);
+        appSettings.UpdatedAt = DateTime.UtcNow;
+
+        _context.SaveChanges();
+
+        // Update cache if settings were cached
+        _cachedSettings = appSettings;
     }
 
     private static string GetDefaultAudioLibraryPath()

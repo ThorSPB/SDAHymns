@@ -67,19 +67,43 @@ public partial class App : Application
             // ViewModels
             services.AddTransient<MainWindowViewModel>();
             services.AddTransient<SettingsWindowViewModel>();
+            services.AddTransient<RemoteWidgetViewModel>();
 
             _serviceProvider = services.BuildServiceProvider();
 
-            var hotKeyManager = _serviceProvider.GetRequiredService<IHotKeyManager>();
-            var mainWindow = new MainWindow(hotKeyManager)
+            // Check launch mode - default to RemoteWidget
+            var args = Environment.GetCommandLineArgs();
+            bool advancedMode = args.Contains("--advanced");
+
+            if (advancedMode)
             {
-                DataContext = _serviceProvider.GetRequiredService<MainWindowViewModel>()
-            };
+                // Launch full MainWindow in advanced mode
+                var hotKeyManager = _serviceProvider.GetRequiredService<IHotKeyManager>();
+                var mainWindow = new MainWindow(hotKeyManager)
+                {
+                    DataContext = _serviceProvider.GetRequiredService<MainWindowViewModel>()
+                };
 
-            // Provide service provider to main window for creating child windows
-            mainWindow.SetServiceProvider(_serviceProvider);
+                // Provide service provider to main window for creating child windows
+                mainWindow.SetServiceProvider(_serviceProvider);
 
-            desktop.MainWindow = mainWindow;
+                desktop.MainWindow = mainWindow;
+            }
+            else
+            {
+                // Launch compact RemoteWidget (default)
+                var remoteWidget = new RemoteWidget
+                {
+                    DataContext = _serviceProvider.GetRequiredService<RemoteWidgetViewModel>()
+                };
+
+                // Provide service provider for creating child windows
+                remoteWidget.SetServiceProvider(_serviceProvider);
+
+                desktop.MainWindow = remoteWidget;
+            }
+
+            var mainWin = desktop.MainWindow;
 
             // Check for updates in background (non-blocking)
             Task.Run(async () =>
@@ -98,7 +122,7 @@ public partial class App : Application
                         // Dispatch to UI thread to show notification
                         await Dispatcher.UIThread.InvokeAsync(() =>
                         {
-                            if (mainWindow.DataContext is MainWindowViewModel viewModel)
+                            if (mainWin.DataContext is MainWindowViewModel viewModel)
                             {
                                 viewModel.ShowUpdateNotification(updateInfo);
                             }

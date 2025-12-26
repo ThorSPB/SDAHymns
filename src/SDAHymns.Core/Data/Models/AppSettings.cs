@@ -18,6 +18,7 @@ public class AppSettings
     // Window State
     public string? LastWindowPosition { get; set; }  // JSON: { "x": 100, "y": 200 }
     public string? LastWindowSize { get; set; }  // JSON: { "width": 800, "height": 600 }
+    public string? RemoteWidgetSettingsJson { get; set; }  // JSON: RemoteWidgetSettings
 
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
