@@ -28,7 +28,8 @@
       "Bash(gh run view:*)",
       "Bash(grep:*)",
       "Bash(git add:*)",
-      "Bash(gh pr create:*)"
+      "Bash(gh pr create:*)",
+      "Bash(gh issue create:*)"
     ],
     "deny": [],
     "ask": []

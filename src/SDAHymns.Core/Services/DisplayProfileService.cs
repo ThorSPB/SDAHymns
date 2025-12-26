@@ -34,7 +34,7 @@ public class DisplayProfileService : IDisplayProfileService
     public async Task<DisplayProfile> GetActiveProfileAsync()
     {
         // Try to get the active profile ID from AppSettings
-        var setting = await _context.AppSettings
+        var setting = await _context.AppSettingsKeyValue
             .FirstOrDefaultAsync(s => s.Key == ActiveProfileIdKey);
 
         if (setting != null && int.TryParse(setting.Value, out int profileId))
@@ -100,7 +100,7 @@ public class DisplayProfileService : IDisplayProfileService
             throw new InvalidOperationException($"Profile with ID {id} not found");
 
         // Update or create the setting
-        var setting = await _context.AppSettings
+        var setting = await _context.AppSettingsKeyValue
             .FirstOrDefaultAsync(s => s.Key == ActiveProfileIdKey);
 
         if (setting != null)
@@ -118,7 +118,7 @@ public class DisplayProfileService : IDisplayProfileService
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
-            _context.AppSettings.Add(setting);
+            _context.AppSettingsKeyValue.Add(setting);
         }
 
         await _context.SaveChangesAsync();

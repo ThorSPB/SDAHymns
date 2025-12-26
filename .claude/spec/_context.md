@@ -17,38 +17,29 @@ This file tracks all specifications and their implementation status.
 
 ### Infrastructure
 
-| ID | Spec | Status | Notes |
-|----|------|--------|-------|
-| 001 | [Project Structure](001-project-structure.md) | ✅ Implemented | Solution with 4 projects, all dependencies configured |
+| ID | Spec | Status | Issue | Notes |
+|----|------|--------|-------|-------|
+| 001 | [Project Structure](001-project-structure.md) | ✅ Implemented | - | Solution with 4 projects, all dependencies configured |
 
 ### Core Features
 
-| ID | Spec | Status | Notes |
-|----|------|--------|-------|
-| 002 | [Data Layer & EF Core](002-data-layer.md) | ✅ Implemented | All 9 entities, DbContext, migration, 156KB database with seed data |
-| 003 | [Legacy XML Import](003-legacy-xml-import.md) | ✅ Implemented | 1,254 hymns total (1,070 from XML + 184 from orphan PPT files) |
-| 004 | [PowerPoint Verse Extraction](004-powerpoint-verse-extraction.md) | ✅ Implemented | 1,249/1,254 hymns (99.6%) - 4,629 verses imported successfully |
-| 005 | [Basic Hymn Display](005-basic-hymn-display.md) | ✅ Implemented | Dual-window system (control + display), verse navigation, dark theme, auto-scaling |
-| 006 | [Enhanced Control Window](006-enhanced-control-window.md) | ✅ Implemented | Full-text search, browse, recent/favorites - real-time search, recent hymns bar |
-| 007 | [Display Profiles](007-display-profiles.md) | ✅ Implemented | 6 preset profiles, full editor UI, background images, 19 tests passing |
-| 008 | [Keyboard Shortcuts](008-keyboard-shortcuts.md) | ✅ Implemented | Global hotkeys, F1 shortcuts overlay, tooltips, 24 tests passing |
-| 009 | [Service Planner](009-service-planner.md) | 📋 Planned | Pre-plan services, live mode, templates, PDF export |
-| 010 | [Auto-Updates with Velopack](010-auto-updates.md) | ✓ Tested | Seamless updates via GitHub Releases, delta updates, cross-platform |
-| 011 | [Audio Playback](011-audio-playback.md) | 📋 Planned | NAudio player, sync/auto-advance, recorder mode, external file support |
-| 012 | [Statistics Tracking](012-statistics-tracking.md) | 📋 Planned | Usage analytics, dashboard, reporting, "forgotten hymns" discovery |
-| 013 | [Export Functionality](013-export-functionality.md) | 📋 Planned | PDF generation (QuestPDF), Image rendering (WYSIWYG), batch export |
-| 014 | [CLI Interface](014-cli-interface.md) | 📋 Planned | Dual-mode (Direct/Control), IPC via Named Pipes, Headless display mode |
-| 015 | [Remote Control API](015-remote-control-api.md) | 📋 Planned | Embedded Kestrel server, SignalR sync, mobile-first Vue.js web app |
-| 016 | [OBS Integration](016-obs-integration.md) | 📋 Planned | Window capture optimization, Browser Source, OBS WebSocket automation |
-| _TBD_ | Export Functionality | 📋 Planned | PDF/image export (individual hymns) |
-| _TBD_ | Statistics Tracking | 📋 Planned | Usage analytics |
-
-### Advanced Features
-
-| ID | Spec | Status | Notes |
-|----|------|--------|-------|
-| _TBD_ | Remote Control API | 📋 Planned | HTTP API for remote control |
-| _TBD_ | OBS Integration | 📋 Planned | WebSocket/browser source |
+| ID | Spec | Status | Issue | Notes |
+|----|------|--------|-------|-------|
+| 002 | [Data Layer & EF Core](002-data-layer.md) | ✅ Implemented | - | All 9 entities, DbContext, migration, 156KB database with seed data |
+| 003 | [Legacy XML Import](003-legacy-xml-import.md) | ✅ Implemented | - | 1,254 hymns total (1,070 from XML + 184 from orphan PPT files) |
+| 004 | [PowerPoint Verse Extraction](004-powerpoint-verse-extraction.md) | ✅ Implemented | - | 1,249/1,254 hymns (99.6%) - 4,629 verses imported successfully |
+| 005 | [Basic Hymn Display](005-basic-hymn-display.md) | ✅ Implemented | - | Dual-window system (control + display), verse navigation, dark theme, auto-scaling |
+| 006 | [Enhanced Control Window](006-enhanced-control-window.md) | ✅ Implemented | [#2](https://github.com/ThorSPB/SDAHymns/issues/2) | Full-text search, browse, recent/favorites - real-time search, recent hymns bar |
+| 007 | [Display Profiles](007-display-profiles.md) | ✅ Implemented | [#3](https://github.com/ThorSPB/SDAHymns/issues/3) | 6 preset profiles, full editor UI, background images, 19 tests passing |
+| 008 | [Keyboard Shortcuts](008-keyboard-shortcuts.md) | ✅ Implemented | [#4](https://github.com/ThorSPB/SDAHymns/issues/4) | Global hotkeys, F1 shortcuts overlay, tooltips, 24 tests passing |
+| 009 | [Service Planner](009-service-planner.md) | 📋 Planned | [#5](https://github.com/ThorSPB/SDAHymns/issues/5) | Pre-plan services, live mode, templates, PDF export |
+| 010 | [Auto-Updates with Velopack](010-auto-updates.md) | ✓ Tested | [#6](https://github.com/ThorSPB/SDAHymns/issues/6) | Seamless updates via GitHub Releases, delta updates, cross-platform |
+| 011 | [Audio Playback](011-audio-playback.md) | 📋 Planned | [#12](https://github.com/ThorSPB/SDAHymns/issues/12) | NAudio player, sync/auto-advance, recorder mode, external file support |
+| 012 | [Statistics Tracking](012-statistics-tracking.md) | 📋 Planned | [#13](https://github.com/ThorSPB/SDAHymns/issues/13) | Usage analytics, dashboard, reporting, "forgotten hymns" discovery |
+| 013 | [Export Functionality](013-export-functionality.md) | 📋 Planned | [#14](https://github.com/ThorSPB/SDAHymns/issues/14) | PDF generation (QuestPDF), Image rendering (WYSIWYG), batch export |
+| 014 | [CLI Interface](014-cli-interface.md) | 📋 Planned | [#15](https://github.com/ThorSPB/SDAHymns/issues/15) | Dual-mode (Direct/Control), IPC via Named Pipes, Headless display mode |
+| 015 | [Remote Control API](015-remote-control-api.md) | 📋 Planned | [#16](https://github.com/ThorSPB/SDAHymns/issues/16) | Embedded Kestrel server, SignalR sync, mobile-first Vue.js web app |
+| 016 | [OBS Integration](016-obs-integration.md) | 📋 Planned | [#17](https://github.com/ThorSPB/SDAHymns/issues/17) | Window capture optimization, Browser Source, OBS WebSocket automation |
 
 ## Implementation Order
 

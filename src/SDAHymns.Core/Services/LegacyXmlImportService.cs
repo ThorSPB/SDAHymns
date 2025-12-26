@@ -211,7 +211,7 @@ public class LegacyXmlImportService : ILegacyXmlImportService
         stats.TotalHymns = categories.Sum(c => c.HymnCount);
         stats.CategoryCounts = categories.ToDictionary(c => c.Slug, c => c.HymnCount);
 
-        var lastImportSetting = await _context.AppSettings
+        var lastImportSetting = await _context.AppSettingsKeyValue
             .FirstOrDefaultAsync(s => s.Key == "LastDatabaseImportDate");
 
         if (lastImportSetting != null && !string.IsNullOrEmpty(lastImportSetting.Value))
