@@ -1,7 +1,8 @@
 # Spec 008: Keyboard Shortcuts System
 
-**Status:** 📋 Planned
+**Status:** ✅ Implemented
 **Created:** 2025-12-04
+**Completed:** 2025-12-26
 **Dependencies:** 006-enhanced-control-window.md
 
 ## Overview
@@ -387,18 +388,18 @@ public void ExecuteHotKey_TriggersRegisteredAction()
 
 ## Acceptance Criteria
 
-- [ ] All default shortcuts work as documented
-- [ ] F1 shows shortcuts overlay
-- [ ] Can customize shortcuts in settings
-- [ ] Custom shortcuts persist after restart
-- [ ] Conflict detection warns user
-- [ ] Context-aware shortcuts work (search vs display)
-- [ ] Visual feedback on shortcut trigger (optional)
-- [ ] Cannot override critical system shortcuts
-- [ ] Multimedia keys work (if available)
-- [ ] Can reset shortcuts to defaults
-- [ ] Shortcut hints show on button tooltips
-- [ ] Keyboard-only workflow fully functional
+- [x] All default shortcuts work as documented
+- [x] F1 shows shortcuts overlay
+- [x] Can customize shortcuts in settings (click button, press keys)
+- [x] Custom shortcuts persist after restart (JSON file)
+- [x] Conflict detection warns user (orange banner with swap message)
+- [x] Context-aware shortcuts work (search vs display)
+- [x] Visual feedback on shortcut trigger (button states)
+- [x] Cannot override critical system shortcuts (only captures non-modifier keys)
+- [ ] Multimedia keys work (if available) - *Deferred to Phase 3*
+- [x] Can reset shortcuts to defaults
+- [x] Shortcut hints show on button tooltips
+- [x] Keyboard-only workflow fully functional
 
 ## Future Enhancements (Phase 3)
 
@@ -408,6 +409,46 @@ public void ExecuteHotKey_TriggersRegisteredAction()
 - MIDI controller mapping
 - Gamepad support
 - Voice commands
+
+## Implementation Notes (2025-12-26)
+
+### Architecture Decisions
+
+1. **String-based keys in Core layer**
+   - Avoided Avalonia dependency in `SDAHymns.Core`
+   - Used string representations (`"Ctrl+F"`) for UI-agnostic design
+   - MainWindow converts Avalonia `Key` enums to strings before passing to manager
+
+2. **Inline editing instead of separate dialog**
+   - Click-to-edit buttons directly in F1 window
+   - Better UX than modal dialog
+   - Immediate visual feedback
+
+3. **Auto-swap conflicts instead of blocking**
+   - Shows orange warning banner describing swaps
+   - Allows saving - automatically swaps conflicting shortcuts
+   - User-friendly approach vs hard error
+
+### Key Features Implemented
+
+- **HotKeyManager Service** - 20+ default shortcuts, JSON persistence
+- **ShortcutsWindow** - F1 overlay with inline editing
+- **Smart conflict handling** - Auto-detects and swaps
+- **Context-aware shortcuts** - Arrow keys work differently based on focus
+- **Recent hymn shortcuts** - Ctrl+1-5 for quick access
+- **Visual feedback** - Button hover/listening states, swap warning banner
+
+### Test Coverage
+
+- 24 unit tests for HotKeyManager
+- 68 total tests (all passing)
+- Coverage: gesture parsing, action registration, conflict detection, JSON persistence
+
+### Deferred Features
+
+- Multimedia key support (Phase 3)
+- Import/export shortcut schemes (Phase 3)
+- Multiple shortcut profiles (Phase 3)
 
 ## Related Specs
 
