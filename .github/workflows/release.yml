@@ -72,9 +72,13 @@ jobs:
             if [ "$EVENT" = "workflow_dispatch" ]; then
               BUMP_TYPE="${{ inputs.bump_type }}"
             elif [ "$EVENT" = "push" ]; then
-              COMMIT_MSG="${{ github.event.head_commit.message }}"
+              # Use heredoc to safely handle multiline commit messages
+              COMMIT_MSG=$(cat << 'EOF'
+          ${{ github.event.head_commit.message }}
+          EOF
+          )
               echo "Commit message: $COMMIT_MSG"
-              
+
               if [[ "$COMMIT_MSG" == *"[major]"* ]]; then
                 BUMP_TYPE="major"
               elif [[ "$COMMIT_MSG" == *"[minor]"* ]]; then
