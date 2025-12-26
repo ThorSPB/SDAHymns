@@ -9,7 +9,7 @@ public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<HymnsConte
         // Find solution root by looking for .sln file
         var currentDir = new DirectoryInfo(Directory.GetCurrentDirectory());
         var solutionRoot = currentDir;
-        
+
         while (solutionRoot != null && !solutionRoot.GetFiles("*.sln").Any())
         {
             solutionRoot = solutionRoot.Parent;

@@ -67,7 +67,8 @@ public partial class ShortcutsWindowViewModel : ObservableObject
 
     public void CaptureKey(string key, string modifiers)
     {
-        if (ListeningShortcut == null) return;
+        if (ListeningShortcut == null)
+            return;
 
         var newShortcut = string.IsNullOrEmpty(modifiers) ? key : $"{modifiers}+{key}";
         ListeningShortcut.Shortcut = newShortcut;

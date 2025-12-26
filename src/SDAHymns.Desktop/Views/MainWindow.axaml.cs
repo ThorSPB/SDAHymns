@@ -281,7 +281,8 @@ public partial class MainWindow : Window
 
         // Get the profile service from DI
         var profileService = _serviceProvider.GetService<IDisplayProfileService>();
-        if (profileService == null) return;
+        if (profileService == null)
+            return;
 
         // Create the profile editor window
         var profileEditorViewModel = new ProfileEditorViewModel(profileService);
@@ -300,5 +301,69 @@ public partial class MainWindow : Window
     public void SetServiceProvider(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
+    }
+
+    private async void OpenSettings_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (_serviceProvider == null)
+            return;
+
+        // Get the SettingsWindowViewModel from DI
+        var settingsViewModel = _serviceProvider.GetService<SettingsWindowViewModel>();
+        if (settingsViewModel == null)
+            return;
+
+        // Create the settings window
+        var settingsWindow = new SettingsWindow
+        {
+            DataContext = settingsViewModel
+        };
+
+        // Show as dialog
+        await settingsWindow.ShowDialog(this);
+    }
+
+    private async void RecordTimings_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (DataContext is not MainWindowViewModel viewModel || _serviceProvider == null)
+            return;
+
+        // Check if we have a hymn loaded with audio
+        if (viewModel.CurrentHymn == null || viewModel.CurrentAudioRecording == null)
+        {
+            // TODO: Show message to user
+            return;
+        }
+
+        // Get the audio player service from DI
+        var audioPlayer = _serviceProvider.GetService<IAudioPlayerService>();
+        if (audioPlayer == null)
+            return;
+
+        // Create the recorder mode ViewModel
+        var recorderViewModel = new RecorderModeViewModel(audioPlayer);
+        recorderViewModel.LoadHymn(viewModel.CurrentHymn, viewModel.CurrentAudioRecording);
+
+        // Load existing timings if any
+        if (!string.IsNullOrWhiteSpace(viewModel.CurrentAudioRecording.TimingMapJson))
+        {
+            var timingRecorder = new TimingRecorder(audioPlayer);
+            timingRecorder.LoadTimingMap(viewModel.CurrentAudioRecording.TimingMapJson);
+        }
+
+        // Create and show the recorder window
+        var recorderWindow = new RecorderModeWindow
+        {
+            DataContext = recorderViewModel
+        };
+
+        var result = await recorderWindow.ShowDialog<bool?>(this);
+
+        // If user saved timings, update the database
+        if (result == true)
+        {
+            var timingMapJson = recorderViewModel.GetTimingMapJson();
+            await viewModel.SaveAudioTimingsCommand.ExecuteAsync(timingMapJson);
+        }
     }
 }

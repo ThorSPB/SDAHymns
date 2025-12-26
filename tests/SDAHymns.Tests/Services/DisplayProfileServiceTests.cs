@@ -194,7 +194,7 @@ public class DisplayProfileServiceTests : IDisposable
         await _service.SetActiveProfileAsync(profile.Id);
 
         // Assert
-        var setting = await _context.AppSettings
+        var setting = await _context.AppSettingsKeyValue
             .FirstOrDefaultAsync(s => s.Key == "ActiveDisplayProfileId");
         setting.Should().NotBeNull();
         setting!.Value.Should().Be(profile.Id.ToString());

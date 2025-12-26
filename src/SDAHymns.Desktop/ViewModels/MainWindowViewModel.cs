@@ -6,12 +6,16 @@ using Velopack;
 
 namespace SDAHymns.Desktop.ViewModels;
 
-public partial class MainWindowViewModel : ViewModelBase
+public partial class MainWindowViewModel : ViewModelBase, IDisposable
 {
+    private bool _disposed;
     private readonly IHymnDisplayService _hymnService;
     private readonly IUpdateService _updateService;
     private readonly ISearchService _searchService;
     private readonly IDisplayProfileService _profileService;
+    private readonly IAudioPlayerService _audioPlayer;
+    private readonly HymnSynchronizer _synchronizer;
+    private readonly ISettingsService _settingsService;
 
     [ObservableProperty]
     private Hymn? _currentHymn;
@@ -76,12 +80,57 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private DisplayProfile? _activeProfile;
 
-    public MainWindowViewModel(IHymnDisplayService hymnService, IUpdateService updateService, ISearchService searchService, IDisplayProfileService profileService)
+    // Audio properties
+    [ObservableProperty]
+    private AudioRecording? _currentAudioRecording;
+
+    [ObservableProperty]
+    private bool _isAudioLoaded = false;
+
+    [ObservableProperty]
+    private double _audioPosition = 0;  // Seconds
+
+    [ObservableProperty]
+    private double _audioDuration = 0;  // Seconds
+
+    [ObservableProperty]
+    private double _audioVolume = 80;  // 0-100
+
+    [ObservableProperty]
+    private bool _autoAdvanceEnabled = false;
+
+    [ObservableProperty]
+    private string _playPauseIcon = "▶";
+
+    [ObservableProperty]
+    private string _playPauseTooltip = "Play";
+
+    [ObservableProperty]
+    private bool _isCountdownActive = false;
+
+    [ObservableProperty]
+    private int _countdownSeconds = 0;
+
+    private AutoPlayCountdown? _countdown;
+
+    public string AudioTimeDisplay =>
+        $"{FormatTime(AudioPosition)} / {FormatTime(AudioDuration)}";
+
+    public MainWindowViewModel(IHymnDisplayService hymnService, IUpdateService updateService, ISearchService searchService, IDisplayProfileService profileService, IAudioPlayerService audioPlayer, ISettingsService settingsService)
     {
         _hymnService = hymnService;
         _updateService = updateService;
         _searchService = searchService;
         _profileService = profileService;
+        _audioPlayer = audioPlayer;
+        _settingsService = settingsService;
+        _synchronizer = new HymnSynchronizer(_audioPlayer);
+
+        // Subscribe to audio events
+        _audioPlayer.PositionChanged += OnAudioPositionChanged;
+        _audioPlayer.PlaybackEnded += OnAudioPlaybackEnded;
+        _audioPlayer.StateChanged += OnAudioStateChanged;
+        _synchronizer.VerseChangeRequested += OnSynchronizerVerseChangeRequested;
 
         // Initialize search results and recent hymns
         _ = InitializeAsync();
@@ -330,6 +379,9 @@ public partial class MainWindowViewModel : ViewModelBase
                 await _searchService.AddToRecentAsync(CurrentHymn.Id);
                 await LoadRecentHymnsAsync();
 
+                // Try to load audio if available
+                await TryLoadAudioAsync();
+
                 OnPropertyChanged(nameof(CurrentVerseContent));
                 OnPropertyChanged(nameof(CurrentVerseLabel));
                 OnPropertyChanged(nameof(HymnTitle));
@@ -404,7 +456,8 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private async Task UpdateNowAsync()
     {
-        if (_pendingUpdate == null) return;
+        if (_pendingUpdate == null)
+            return;
 
         IsDownloadingUpdate = true;
         DownloadProgress = 0;
@@ -430,5 +483,251 @@ public partial class MainWindowViewModel : ViewModelBase
     private void DismissUpdate()
     {
         IsUpdateAvailable = false;
+    }
+
+    // Audio methods
+    private string FormatTime(double seconds)
+    {
+        var ts = TimeSpan.FromSeconds(seconds);
+        return $"{ts.Minutes:D2}:{ts.Seconds:D2}";
+    }
+
+    partial void OnAudioPositionChanged(double value)
+    {
+        OnPropertyChanged(nameof(AudioTimeDisplay));
+    }
+
+    partial void OnAudioDurationChanged(double value)
+    {
+        OnPropertyChanged(nameof(AudioTimeDisplay));
+    }
+
+    partial void OnAudioVolumeChanged(double value)
+    {
+        _audioPlayer.Volume = (float)(value / 100.0);
+    }
+
+    partial void OnAutoAdvanceEnabledChanged(bool value)
+    {
+        _synchronizer.SetEnabled(value);
+    }
+
+    private void OnAudioPositionChanged(object? sender, TimeSpan position)
+    {
+        AudioPosition = position.TotalSeconds;
+    }
+
+    private void OnAudioPlaybackEnded(object? sender, EventArgs e)
+    {
+        PlayPauseIcon = "▶";
+        PlayPauseTooltip = "Play";
+        AudioPosition = 0;
+    }
+
+    private void OnAudioStateChanged(object? sender, PlaybackState newState)
+    {
+        switch (newState)
+        {
+            case PlaybackState.Playing:
+                PlayPauseIcon = "⏸";
+                PlayPauseTooltip = "Pause";
+                break;
+            case PlaybackState.Paused:
+            case PlaybackState.Stopped:
+                PlayPauseIcon = "▶";
+                PlayPauseTooltip = "Play";
+                break;
+        }
+    }
+
+    private void OnSynchronizerVerseChangeRequested(object? sender, int verseNumber)
+    {
+        // Find the verse index (verseNumber is 1-based, index is 0-based)
+        var index = Verses.FindIndex(v => v.VerseNumber == verseNumber);
+        if (index >= 0)
+        {
+            CurrentVerseIndex = index;
+            StatusMessage = $"Auto-advanced to verse {verseNumber}";
+        }
+    }
+
+    [RelayCommand]
+    private async Task PlayPauseAudioAsync()
+    {
+        if (!IsAudioLoaded)
+            return;
+
+        try
+        {
+            if (_audioPlayer.PlaybackState == PlaybackState.Playing)
+            {
+                await _audioPlayer.PauseAsync();
+            }
+            else
+            {
+                await _audioPlayer.PlayAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Audio error: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    private async Task StopAudioAsync()
+    {
+        if (!IsAudioLoaded)
+            return;
+
+        try
+        {
+            await _audioPlayer.StopAsync();
+            AudioPosition = 0;
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Audio error: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    public async Task SaveAudioTimingsAsync(string timingMapJson)
+    {
+        if (CurrentAudioRecording == null)
+            return;
+
+        try
+        {
+            // Update the timing map
+            CurrentAudioRecording.TimingMapJson = timingMapJson;
+
+            // Save to database
+            await _hymnService.UpdateAudioRecordingAsync(CurrentAudioRecording);
+
+            // Reload timing map in synchronizer
+            _synchronizer.LoadTimingMap(timingMapJson);
+
+            StatusMessage = "Timings saved successfully";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error saving timings: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    private void CancelCountdown()
+    {
+        _countdown?.Cancel();
+        IsCountdownActive = false;
+        CountdownSeconds = 0;
+        StatusMessage = "Auto-play cancelled";
+    }
+
+    private async Task StartAutoPlayCountdownAsync()
+    {
+        if (!IsAudioLoaded)
+            return;
+
+        try
+        {
+            // Get auto-play delay from settings
+            var delaySeconds = await _settingsService.GetAutoPlayDelayAsync();
+
+            // Initialize countdown if not already created
+            if (_countdown == null)
+            {
+                _countdown = new AutoPlayCountdown();
+
+                _countdown.CountdownTick += (s, remaining) =>
+                {
+                    CountdownSeconds = remaining;
+                };
+
+                _countdown.CountdownCompleted += async (s, e) =>
+                {
+                    IsCountdownActive = false;
+                    await _audioPlayer.PlayAsync();
+                };
+
+                _countdown.CountdownCancelled += (s, e) =>
+                {
+                    IsCountdownActive = false;
+                    CountdownSeconds = 0;
+                };
+            }
+
+            IsCountdownActive = true;
+            _countdown.Start(delaySeconds);
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Countdown error: {ex.Message}";
+            IsCountdownActive = false;
+        }
+    }
+
+    private async Task TryLoadAudioAsync()
+    {
+        if (CurrentHymn == null)
+            return;
+
+        try
+        {
+            // Check if audio recording exists for this hymn
+            var recording = CurrentHymn.AudioRecordings.FirstOrDefault();
+            if (recording != null)
+            {
+                // Get audio library path from settings
+                var audioLibraryPath = await _settingsService.GetAudioLibraryPathAsync();
+                await _audioPlayer.LoadAsync(recording, audioLibraryPath);
+
+                CurrentAudioRecording = recording;
+                AudioDuration = _audioPlayer.TotalDuration.TotalSeconds;
+                AudioPosition = 0;
+                IsAudioLoaded = true;
+
+                // Load timing map if available
+                if (!string.IsNullOrEmpty(recording.TimingMapJson))
+                {
+                    _synchronizer.LoadTimingMap(recording.TimingMapJson);
+                }
+
+                StatusMessage = $"Audio loaded: {recording.FilePath}";
+            }
+            else
+            {
+                IsAudioLoaded = false;
+                StatusMessage = "No audio file available for this hymn";
+            }
+        }
+        catch (FileNotFoundException)
+        {
+            IsAudioLoaded = false;
+            StatusMessage = "Audio file not found. Check audio library path in settings.";
+        }
+        catch (Exception ex)
+        {
+            IsAudioLoaded = false;
+            StatusMessage = $"Error loading audio: {ex.Message}";
+        }
+    }
+
+    public void Dispose()
+    {
+        if (_disposed)
+            return;
+
+        // Unsubscribe from audio player events to prevent memory leaks
+        _audioPlayer.PositionChanged -= OnAudioPositionChanged;
+        _audioPlayer.PlaybackEnded -= OnAudioPlaybackEnded;
+        _audioPlayer.StateChanged -= OnAudioStateChanged;
+        _synchronizer.VerseChangeRequested -= OnSynchronizerVerseChangeRequested;
+
+        _synchronizer?.Dispose();
+        _countdown?.Dispose();
+
+        _disposed = true;
     }
 }

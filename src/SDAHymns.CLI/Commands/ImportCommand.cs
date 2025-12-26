@@ -57,7 +57,7 @@ public class ImportCommandHandler
         // Update last import date
         if (result.IsSuccess && result.ImportedCount > 0)
         {
-            var lastImportSetting = await _context.AppSettings
+            var lastImportSetting = await _context.AppSettingsKeyValue
                 .FirstOrDefaultAsync(s => s.Key == "LastDatabaseImportDate");
 
             if (lastImportSetting != null)

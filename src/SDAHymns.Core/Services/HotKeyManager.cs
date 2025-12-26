@@ -4,6 +4,11 @@ namespace SDAHymns.Core.Services;
 
 public class HotKeyManager : IHotKeyManager
 {
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        WriteIndented = true
+    };
+
     private readonly Dictionary<string, KeyGesture> _hotKeys = new();
     private readonly Dictionary<string, Action> _actions = new();
     private readonly Dictionary<string, ShortcutInfo> _shortcutInfo = new();
@@ -186,10 +191,7 @@ public class HotKeyManager : IHotKeyManager
                 kvp => kvp.Value.ToString()
             );
 
-            var json = JsonSerializer.Serialize(bindings, new JsonSerializerOptions
-            {
-                WriteIndented = true
-            });
+            var json = JsonSerializer.Serialize(bindings, JsonOptions);
 
             File.WriteAllText(path, json);
         }

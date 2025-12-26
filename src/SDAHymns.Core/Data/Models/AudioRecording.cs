@@ -22,6 +22,12 @@ public class AudioRecording
 
     // Playback settings
     public double DefaultPlaybackSpeed { get; set; } = 1.0;
+    public float VolumeOffset { get; set; } = 0.0f;  // Per-track volume normalization (-1.0 to 1.0)
+
+    // Synchronization
+    // JSON format: { "1": 12.5, "2": 45.2, "3": 88.0 }
+    // Key: Verse Number, Value: Seconds from start
+    public string? TimingMapJson { get; set; }
 
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }

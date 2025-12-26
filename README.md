@@ -18,16 +18,17 @@ SDAHymns is a complete rewrite of a legacy hymn display application, designed to
   - Imnuri tineret (Youth hymns)
 
 ### Advanced Features
-- **CLI Support** - Full command-line interface for automation and AI integration
-- **Auto-Updates** - Seamless update mechanism via GitHub Releases
-- **Piano Recordings** - Audio playback for churches without pianists
-- **OBS/Streaming Optimization** - Customizable display with transparent backgrounds, fonts, colors
-- **Display Profiles** - Multiple saved configurations (Projector, OBS Stream, Practice)
-- **Keyboard-Driven** - Full hotkey support for productivity
-- **Service Planner** - Pre-plan hymn orders for services
-- **Export** - Generate PDFs and images for bulletins
-- **Statistics** - Track hymn usage frequency
-- **Offline-First** - Fully functional without internet
+- ✅ **Auto-Updates** - Seamless update mechanism via GitHub Releases with Velopack
+- ✅ **Piano Recordings** - Audio playback with sync, recorder mode, countdown, device selection
+- ✅ **Audio Library Management** - Download from GitHub/Pi, verify checksums, migrate library
+- ✅ **Display Profiles** - 6 preset profiles + full editor (fonts, colors, backgrounds, effects)
+- ✅ **Keyboard-Driven** - Full hotkey support with F1 overlay and customizable shortcuts
+- ✅ **OBS/Streaming Optimization** - Transparent backgrounds, custom fonts/colors for streaming
+- ✅ **Offline-First** - Fully functional without internet
+- 🚧 **CLI Support** - Full command-line interface for automation (planned)
+- 🚧 **Service Planner** - Pre-plan hymn orders for services (planned)
+- 🚧 **Export** - Generate PDFs and images for bulletins (planned)
+- 🚧 **Statistics** - Track hymn usage frequency (planned)
 
 ## Tech Stack
 
@@ -187,24 +188,23 @@ Contributions are welcome! This project aims for industry-standard testing cover
 - [x] PowerPoint verse extraction
 - [x] Basic hymn display (dual-window system)
 
-### Phase 2: Core Features 🚧 In Progress
-- [x] **Enhanced control window** (search, browse, recent/favorites)
-- [ ] Display profiles system
-- [x] **Keyboard shortcuts** (F1 overlay, inline editing, auto-swap conflicts)
-- [ ] Service planner
+### Phase 2: Core Features ✅ COMPLETE
+- [x] Enhanced control window (search, browse, recent/favorites)
+- [x] Display profiles system (6 presets, full editor, background images)
+- [x] Keyboard shortcuts (F1 overlay, inline editing, customizable)
+- [ ] Service planner (planned)
 
-### Phase 3: Enhanced Features
-- [ ] Audio playback system
-- [ ] Export functionality
-- [ ] Statistics tracking
+### Phase 3: Enhanced Features ✅ MOSTLY COMPLETE
+- [x] **Audio playback system** (NAudio player, sync, recorder mode, countdown, device selector - 19/19 criteria)
+- [x] **Audio download & settings** (GitHub/Pi downloads, library management, folder picker - 18/20 app features)
+- [ ] Export functionality (PDF/image generation - planned)
+- [ ] Statistics tracking (usage analytics - planned)
 
-### Phase 4: Advanced Features
-- [ ] **Auto-update system** (⚡ *Prioritized - In Progress*)
+### Phase 4: Advanced Features 🚧 In Progress
+- [x] **Auto-update system** (Velopack, GitHub Releases, delta updates)
 - [ ] CLI interface with IPC
 - [ ] Remote control API
 - [ ] OBS integration
-
-> **Note:** Auto-updates (Spec 010) is being implemented early to enable seamless distribution and testing during active development. This leverages the existing GitHub Releases CI/CD pipeline.
 
 ## License
 

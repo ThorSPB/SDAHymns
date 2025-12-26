@@ -18,7 +18,8 @@ public class HymnsContext : DbContext
     public DbSet<ServicePlan> ServicePlans => Set<ServicePlan>();
     public DbSet<ServicePlanItem> ServicePlanItems => Set<ServicePlanItem>();
     public DbSet<UsageStatistic> UsageStatistics => Set<UsageStatistic>();
-    public DbSet<AppSetting> AppSettings => Set<AppSetting>();
+    public DbSet<AppSetting> AppSettingsKeyValue => Set<AppSetting>();  // Key-value store
+    public DbSet<AppSettings> AppSettings => Set<AppSettings>();  // Singleton app configuration
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -33,6 +34,7 @@ public class HymnsContext : DbContext
         ConfigureServicePlanItem(modelBuilder);
         ConfigureUsageStatistic(modelBuilder);
         ConfigureAppSetting(modelBuilder);
+        ConfigureAppSettings(modelBuilder);
 
         SeedData(modelBuilder);
     }
@@ -291,6 +293,31 @@ public class HymnsContext : DbContext
 
             entity.HasIndex(a => a.Key)
                 .IsUnique();
+        });
+    }
+
+    private void ConfigureAppSettings(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<AppSettings>(entity =>
+        {
+            entity.HasKey(a => a.Id);
+
+            entity.Property(a => a.AudioLibraryPath)
+                .HasMaxLength(500);
+
+            entity.Property(a => a.AudioOutputDeviceId)
+                .HasMaxLength(200);
+
+            entity.Property(a => a.LastWindowPosition)
+                .HasMaxLength(100);
+
+            entity.Property(a => a.LastWindowSize)
+                .HasMaxLength(100);
+
+            entity.HasOne(a => a.ActiveDisplayProfile)
+                .WithMany()
+                .HasForeignKey(a => a.ActiveDisplayProfileId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
     }
 
@@ -662,7 +689,7 @@ public class HymnsContext : DbContext
             }
         );
 
-        // Seed initial AppSettings
+        // Seed initial AppSettings (key-value store)
         modelBuilder.Entity<AppSetting>().HasData(
             new AppSetting
             {
@@ -688,6 +715,24 @@ public class HymnsContext : DbContext
                 Key = "EnableStatisticsTracking",
                 Value = "true",
                 Description = "Track hymn usage statistics",
+                CreatedAt = now,
+                UpdatedAt = now
+            }
+        );
+
+        // Seed initial AppSettings (singleton)
+        modelBuilder.Entity<AppSettings>().HasData(
+            new AppSettings
+            {
+                Id = 1,
+                AudioLibraryPath = null,  // User will configure
+                AudioOutputDeviceId = null,  // Use default device
+                AudioAutoPlayDelay = 5,
+                GlobalVolume = 0.8f,
+                AutoAdvanceEnabled = false,
+                ActiveDisplayProfileId = 1,  // Classic Dark
+                LastWindowPosition = null,
+                LastWindowSize = null,
                 CreatedAt = now,
                 UpdatedAt = now
             }
