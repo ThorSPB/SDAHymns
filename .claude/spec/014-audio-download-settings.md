@@ -3,7 +3,7 @@
 **Status:** 📋 Planned
 **Created:** 2025-12-26
 **Dependencies:** 011-audio-playback.md
-**Related Issues:** TBD (will create issue)
+**Related Issues:** [#18](https://github.com/ThorSPB/SDAHymns/issues/18)
 
 ## Overview
 

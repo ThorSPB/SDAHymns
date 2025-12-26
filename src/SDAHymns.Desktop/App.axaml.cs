@@ -59,6 +59,10 @@ public partial class App : Application
             services.AddSingleton<IUpdateService, UpdateService>();
             services.AddSingleton<IHotKeyManager, HotKeyManager>();
             services.AddSingleton<IAudioPlayerService, AudioPlayerService>();
+            services.AddScoped<ISettingsService, SettingsService>();
+            services.AddScoped<IAudioLibraryService, AudioLibraryService>();
+            services.AddScoped<IAudioDownloadService, AudioDownloadService>();
+            services.AddSingleton<HttpClient>();  // For AudioDownloadService
 
             // ViewModels
             services.AddTransient<MainWindowViewModel>();

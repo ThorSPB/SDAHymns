@@ -14,6 +14,7 @@ public partial class MainWindowViewModel : ViewModelBase
     private readonly IDisplayProfileService _profileService;
     private readonly IAudioPlayerService _audioPlayer;
     private readonly HymnSynchronizer _synchronizer;
+    private readonly ISettingsService _settingsService;
 
     [ObservableProperty]
     private Hymn? _currentHymn;
@@ -103,13 +104,14 @@ public partial class MainWindowViewModel : ViewModelBase
     public string AudioTimeDisplay =>
         $"{FormatTime(AudioPosition)} / {FormatTime(AudioDuration)}";
 
-    public MainWindowViewModel(IHymnDisplayService hymnService, IUpdateService updateService, ISearchService searchService, IDisplayProfileService profileService, IAudioPlayerService audioPlayer)
+    public MainWindowViewModel(IHymnDisplayService hymnService, IUpdateService updateService, ISearchService searchService, IDisplayProfileService profileService, IAudioPlayerService audioPlayer, ISettingsService settingsService)
     {
         _hymnService = hymnService;
         _updateService = updateService;
         _searchService = searchService;
         _profileService = profileService;
         _audioPlayer = audioPlayer;
+        _settingsService = settingsService;
         _synchronizer = new HymnSynchronizer(_audioPlayer);
 
         // Subscribe to audio events
@@ -584,8 +586,8 @@ public partial class MainWindowViewModel : ViewModelBase
             var recording = CurrentHymn.AudioRecordings.FirstOrDefault();
             if (recording != null)
             {
-                // TODO: Get audio library path from AppSettings
-                var audioLibraryPath = @"D:\Music\SDAHymns";  // Placeholder
+                // Get audio library path from settings
+                var audioLibraryPath = await _settingsService.GetAudioLibraryPathAsync();
                 await _audioPlayer.LoadAsync(recording, audioLibraryPath);
 
                 AudioDuration = _audioPlayer.TotalDuration.TotalSeconds;

@@ -37,7 +37,7 @@ This file tracks all specifications and their implementation status.
 | 011 | [Audio Playback](011-audio-playback.md) | ✅ Implemented | [#12](https://github.com/ThorSPB/SDAHymns/issues/12) | NAudio player, sync/auto-advance, recorder mode (core complete, UI pending) |
 | 012 | [Statistics Tracking](012-statistics-tracking.md) | 📋 Planned | [#13](https://github.com/ThorSPB/SDAHymns/issues/13) | Usage analytics, dashboard, reporting, "forgotten hymns" discovery |
 | 013 | [Export Functionality](013-export-functionality.md) | 📋 Planned | [#14](https://github.com/ThorSPB/SDAHymns/issues/14) | PDF generation (QuestPDF), Image rendering (WYSIWYG), batch export |
-| 014 | [Audio Download & Settings](014-audio-download-settings.md) | 📋 Planned | TBD | GitHub/Pi download, settings UI, library management, migration tool |
+| 014 | [Audio Download & Settings](014-audio-download-settings.md) | 📋 Planned | [#18](https://github.com/ThorSPB/SDAHymns/issues/18) | GitHub/Pi download, settings UI, library management, migration tool |
 | ~~014~~ 015 | [CLI Interface](014-cli-interface.md) | 📋 Planned | [#15](https://github.com/ThorSPB/SDAHymns/issues/15) | Dual-mode (Direct/Control), IPC via Named Pipes, Headless display mode |
 | ~~015~~ 016 | [Remote Control API](015-remote-control-api.md) | 📋 Planned | [#16](https://github.com/ThorSPB/SDAHymns/issues/16) | Embedded Kestrel server, SignalR sync, mobile-first Vue.js web app |
 | 016 | [OBS Integration](016-obs-integration.md) | 📋 Planned | [#17](https://github.com/ThorSPB/SDAHymns/issues/17) | Window capture optimization, Browser Source, OBS WebSocket automation |
