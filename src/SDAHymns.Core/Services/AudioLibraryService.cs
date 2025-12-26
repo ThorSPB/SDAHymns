@@ -273,11 +273,11 @@ public class AudioLibraryService : IAudioLibraryService
                 progress?.Report((filesCopied * 100) / totalFiles);
             }
 
-            // Update settings
-            await _settingsService.SetAudioLibraryPathAsync(newPath);
-
-            // Delete old directory
+            // Delete old directory first
             Directory.Delete(oldPath, recursive: true);
+
+            // Only update settings after successful deletion (atomic operation)
+            await _settingsService.SetAudioLibraryPathAsync(newPath);
 
             return true;
         }

@@ -15,6 +15,7 @@ public class AudioPlayerService : IAudioPlayerService
     private Timer? _positionTimer;
     private string? _currentFilePath;
     private bool _disposed;
+    private float _volumeOffset = 0.0f;
 
     // Properties
     public TimeSpan CurrentTime => _audioFileReader?.CurrentTime ?? TimeSpan.Zero;
@@ -31,7 +32,8 @@ public class AudioPlayerService : IAudioPlayerService
             _volume = Math.Clamp(value, 0.0f, 1.0f);
             if (_waveOut != null)
             {
-                _waveOut.Volume = _volume;
+                // Apply global volume plus per-track offset
+                _waveOut.Volume = Math.Clamp(_volume + _volumeOffset, 0.0f, 1.0f);
             }
         }
     }
@@ -60,13 +62,14 @@ public class AudioPlayerService : IAudioPlayerService
             _audioFileReader = new AudioFileReader(filePath);
             _currentFilePath = filePath;
 
-            // Apply volume offset from recording
-            _audioFileReader.Volume = Math.Clamp(_volume + recording.VolumeOffset, 0.0f, 1.0f);
+            // Store volume offset and set audio file reader to pass-through (1.0f)
+            _volumeOffset = recording.VolumeOffset;
+            _audioFileReader.Volume = 1.0f;
 
-            // Initialize playback device
+            // Initialize playback device with combined volume (global + offset)
             _waveOut = new WaveOutEvent
             {
-                Volume = _volume
+                Volume = Math.Clamp(_volume + _volumeOffset, 0.0f, 1.0f)
             };
 
             _waveOut.Init(_audioFileReader);
@@ -167,7 +170,7 @@ public class AudioPlayerService : IAudioPlayerService
             _waveOut = new WaveOutEvent
             {
                 DeviceNumber = deviceNumber,
-                Volume = _volume
+                Volume = Math.Clamp(_volume + _volumeOffset, 0.0f, 1.0f)
             };
 
             if (_audioFileReader != null)

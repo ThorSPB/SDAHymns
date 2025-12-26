@@ -719,6 +719,12 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         if (_disposed)
             return;
 
+        // Unsubscribe from audio player events to prevent memory leaks
+        _audioPlayer.PositionChanged -= OnAudioPositionChanged;
+        _audioPlayer.PlaybackEnded -= OnAudioPlaybackEnded;
+        _audioPlayer.StateChanged -= OnAudioStateChanged;
+        _synchronizer.VerseChangeRequested -= OnSynchronizerVerseChangeRequested;
+
         _synchronizer?.Dispose();
         _countdown?.Dispose();
 

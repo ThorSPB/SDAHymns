@@ -11,6 +11,12 @@ namespace SDAHymns.Core.Services;
 /// </summary>
 public class AudioDownloadService : IAudioDownloadService
 {
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        PropertyNameCaseInsensitive = true
+    };
+
     private readonly ISettingsService _settingsService;
     private readonly IAudioLibraryService _libraryService;
     private readonly HttpClient _httpClient;
@@ -38,7 +44,7 @@ public class AudioDownloadService : IAudioDownloadService
                 // For now, use "latest" or "1.0.0" as version
                 var source = sourceTemplate.Replace("{version}", "1.0.0");
                 var json = await _httpClient.GetStringAsync(source, cancellationToken);
-                var manifest = JsonSerializer.Deserialize<AudioPackageManifest>(json);
+                var manifest = JsonSerializer.Deserialize<AudioPackageManifest>(json, JsonOptions);
 
                 if (manifest != null)
                 {
@@ -70,15 +76,31 @@ public class AudioDownloadService : IAudioDownloadService
         var installedCategories = await _libraryService.GetInstalledCategoriesAsync();
         var installedPackages = new List<InstalledPackage>();
 
+        // Fetch manifest to get display names (if available)
+        AudioPackageManifest? manifest = null;
+        try
+        {
+            manifest = await FetchManifestAsync();
+        }
+        catch
+        {
+            // If manifest fetch fails, continue without display names
+        }
+
         foreach (var category in installedCategories)
         {
             var files = await _libraryService.GetInstalledFilesAsync(category);
             var size = await _libraryService.GetCategorySizeAsync(category);
 
+            // Get display name from manifest if available, otherwise use category slug
+            var displayName = manifest?.Categories.TryGetValue(category, out var package) == true
+                ? package.DisplayName
+                : category;
+
             installedPackages.Add(new InstalledPackage
             {
                 Category = category,
-                DisplayName = GetCategoryDisplayName(category),
+                DisplayName = displayName,
                 FileCount = files.Count,
                 TotalSize = size,
                 InstalledDate = files.Any() ? files.Min(f => f.LastModified) : DateTime.MinValue,
@@ -126,10 +148,18 @@ public class AudioDownloadService : IAudioDownloadService
         progress?.Report(downloadProgress);
 
         var actualChecksum = await ComputeChecksumAsync(tempZipPath);
-        if (!actualChecksum.Equals(package.Checksum, StringComparison.OrdinalIgnoreCase))
+
+        // Extract hash value from manifest checksum (handle "sha256:hash" or just "hash")
+        var expectedChecksum = package.Checksum;
+        if (expectedChecksum.Contains(':'))
+        {
+            expectedChecksum = expectedChecksum.Split(':', 2)[1];
+        }
+
+        if (!actualChecksum.Equals(expectedChecksum, StringComparison.OrdinalIgnoreCase))
         {
             File.Delete(tempZipPath);
-            throw new InvalidOperationException($"Checksum mismatch for {categorySlug}. Expected: {package.Checksum}, Got: {actualChecksum}");
+            throw new InvalidOperationException($"Checksum mismatch for {categorySlug}. Expected: {expectedChecksum}, Got: {actualChecksum}");
         }
 
         // Extract
@@ -156,18 +186,12 @@ public class AudioDownloadService : IAudioDownloadService
 
     public async Task DownloadAllAsync(IProgress<DownloadProgress>? progress = null, CancellationToken cancellationToken = default)
     {
-        var packages = await GetAvailablePackagesAsync(cancellationToken);
+        // Fetch manifest once before iteration
+        var manifest = await FetchManifestAsync(cancellationToken);
 
-        foreach (var package in packages)
+        foreach (var categorySlug in manifest.Categories.Keys)
         {
-            // Find the category slug (key in manifest.Categories)
-            var manifest = await FetchManifestAsync(cancellationToken);
-            var categorySlug = manifest.Categories.FirstOrDefault(kvp => kvp.Value == package).Key;
-
-            if (!string.IsNullOrEmpty(categorySlug))
-            {
-                await DownloadCategoryAsync(categorySlug, progress, cancellationToken);
-            }
+            await DownloadCategoryAsync(categorySlug, progress, cancellationToken);
         }
     }
 
@@ -227,18 +251,5 @@ public class AudioDownloadService : IAudioDownloadService
         using var stream = File.OpenRead(filePath);
         var hash = await sha256.ComputeHashAsync(stream);
         return Convert.ToHexStringLower(hash);
-    }
-
-    private static string GetCategoryDisplayName(string categorySlug)
-    {
-        return categorySlug switch
-        {
-            "crestine" => "Imnuri Crestine",
-            "companioni" => "Imnuri Companioni",
-            "exploratori" => "Imnuri Exploratori",
-            "licurici" => "Imnuri Licurici",
-            "tineret" => "Imnuri Tineret",
-            _ => categorySlug
-        };
     }
 }
