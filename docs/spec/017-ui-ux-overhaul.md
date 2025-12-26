@@ -2,13 +2,16 @@
 
 **Status:** 📋 Planned
 **Created:** 2025-12-26
-**Dependencies:** All previous specs (foundation for visual refinement)
+**Updated:** 2025-12-26 (Added RemoteWidget/DisplayWindow polish requirements)
+**Dependencies:** All previous specs (foundation for visual refinement), Spec 019 (RemoteWidget provides approved color scheme)
 
 ## Overview
 
 Revamp the entire application UI/UX to create a modern, polished, professional appearance. The current interface is functional but lacks visual polish, consistency, and modern design patterns. This spec focuses on transforming the application into a visually appealing, intuitive, and delightful user experience.
 
 **Goal:** Transform the functional interface into a modern, beautiful, and professional application worthy of church presentation software.
+
+**Note:** Spec 019 (Compact Remote Widget) has been implemented with a beautiful color scheme that has been approved by the user. This spec will apply that color scheme throughout the application and polish all windows including RemoteWidget and DisplayWindow.
 
 ## Current Issues
 

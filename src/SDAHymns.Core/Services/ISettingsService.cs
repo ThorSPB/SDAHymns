@@ -1,4 +1,5 @@
 using SDAHymns.Core.Data.Models;
+using SDAHymns.Core.Models;
 
 namespace SDAHymns.Core.Services;
 
@@ -32,4 +33,8 @@ public interface ISettingsService
     Task SetLastWindowPositionAsync(string? position);
     Task<string?> GetLastWindowSizeAsync();
     Task SetLastWindowSizeAsync(string? size);
+
+    // Remote widget settings
+    Task<RemoteWidgetSettings> LoadRemoteWidgetSettingsAsync();
+    Task SaveRemoteWidgetSettingsAsync(RemoteWidgetSettings settings);
 }

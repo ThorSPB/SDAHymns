@@ -293,6 +293,32 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         }
     }
 
+    /// <summary>
+    /// Load a hymn directly by hymn object and verse index (used by RemoteWidget)
+    /// </summary>
+    public async Task LoadHymnDirectlyAsync(Hymn hymn, int verseIndex = 0)
+    {
+        try
+        {
+            CurrentHymn = hymn;
+            Verses = await _hymnService.GetVersesForHymnAsync(hymn.Id);
+            CurrentVerseIndex = Math.Min(verseIndex, Verses.Count - 1);
+
+            OnPropertyChanged(nameof(CurrentVerseContent));
+            OnPropertyChanged(nameof(CurrentVerseLabel));
+            OnPropertyChanged(nameof(HymnTitle));
+            OnPropertyChanged(nameof(CanGoNext));
+            OnPropertyChanged(nameof(CanGoPrevious));
+            OnPropertyChanged(nameof(VerseIndicator));
+
+            StatusMessage = $"Loaded: {CurrentHymn.Title} ({Verses.Count} verses)";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error loading hymn: {ex.Message}";
+        }
+    }
+
     [RelayCommand(CanExecute = nameof(CanGoNext))]
     public void NextVerse()
     {
