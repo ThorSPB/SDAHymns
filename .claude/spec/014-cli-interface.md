@@ -60,7 +60,7 @@ We will use `CommandLineParser` verbs to organize commands.
 *   `hymn show <number>`: Load and display a hymn.
 *   `hymn next` / `hymn prev`: Navigate verses.
 *   `slide goto <index>`: Jump to specific slide/verse.
-*   `display blank`: Toggle black screen.
+*   `display blank [--on|--off]`: Toggle black screen, or set explicit state.
 *   `display theme <profile_id>`: Switch display profile.
 *   `app quit`: Close the GUI.
 
