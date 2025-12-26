@@ -58,6 +58,7 @@ public partial class App : Application
             services.AddScoped<IDisplayProfileService, DisplayProfileService>();
             services.AddSingleton<IUpdateService, UpdateService>();
             services.AddSingleton<IHotKeyManager, HotKeyManager>();
+            services.AddSingleton<IAudioPlayerService, AudioPlayerService>();
 
             // ViewModels
             services.AddTransient<MainWindowViewModel>();

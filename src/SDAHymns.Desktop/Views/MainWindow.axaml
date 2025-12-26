@@ -14,7 +14,7 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,*,Auto,Auto" Background="Black">
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,*,Auto,Auto,Auto" Background="Black">
         <!-- Update Notification Banner -->
         <Border Grid.Row="0"
                 IsVisible="{Binding IsUpdateAvailable}"
@@ -320,8 +320,91 @@
             </StackPanel>
         </Border>
 
-        <!-- Status Bar -->
+        <!-- Audio Controls Bar -->
         <Border Grid.Row="7"
+                Background="#1A1A1A"
+                BorderBrush="#333333"
+                BorderThickness="0,1,0,1"
+                Padding="15,10"
+                IsVisible="{Binding IsAudioLoaded}">
+            <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto,Auto">
+                <!-- Play/Pause Button -->
+                <Button Grid.Column="0"
+                        Content="{Binding PlayPauseIcon}"
+                        Command="{Binding PlayPauseAudioCommand}"
+                        ToolTip.Tip="{Binding PlayPauseTooltip}"
+                        Width="50"
+                        Height="40"
+                        FontSize="18"
+                        Margin="0,0,10,0"
+                        Background="#2A2A2A"
+                        Foreground="White"
+                        BorderBrush="#444444"/>
+
+                <!-- Stop Button -->
+                <Button Grid.Column="1"
+                        Content="⏹"
+                        Command="{Binding StopAudioCommand}"
+                        ToolTip.Tip="Stop"
+                        Width="50"
+                        Height="40"
+                        FontSize="18"
+                        Margin="0,0,10,0"
+                        Background="#2A2A2A"
+                        Foreground="White"
+                        BorderBrush="#444444"/>
+
+                <!-- Time Display -->
+                <TextBlock Grid.Column="2"
+                          Text="{Binding AudioTimeDisplay}"
+                          VerticalAlignment="Center"
+                          Foreground="White"
+                          FontSize="14"
+                          FontFamily="Consolas"
+                          Margin="0,0,15,0"
+                          MinWidth="100"/>
+
+                <!-- Seek Slider -->
+                <Slider Grid.Column="3"
+                        Value="{Binding AudioPosition}"
+                        Minimum="0"
+                        Maximum="{Binding AudioDuration}"
+                        VerticalAlignment="Center"
+                        Margin="0,0,15,0"
+                        ToolTip.Tip="Seek"/>
+
+                <!-- Volume Icon -->
+                <TextBlock Grid.Column="4"
+                          Text="🔊"
+                          VerticalAlignment="Center"
+                          FontSize="16"
+                          Margin="0,0,5,0"/>
+
+                <!-- Volume Slider -->
+                <Slider Grid.Column="5"
+                        Value="{Binding AudioVolume}"
+                        Minimum="0"
+                        Maximum="100"
+                        Width="100"
+                        VerticalAlignment="Center"
+                        Margin="0,0,15,0"
+                        ToolTip.Tip="Volume"/>
+
+                <!-- Auto-Advance Toggle -->
+                <ToggleButton Grid.Column="6"
+                              Content="🎵 Auto"
+                              IsChecked="{Binding AutoAdvanceEnabled}"
+                              ToolTip.Tip="Auto-advance verses with timing"
+                              Height="40"
+                              Padding="10,0"
+                              Background="#2A2A2A"
+                              Foreground="White"
+                              BorderBrush="#444444"/>
+            </Grid>
+        </Border>
+
+        <!-- Status Bar -->
+        <Border Grid.Row="8"
                 Background="#0D0D0D"
                 BorderBrush="#333333"
                 BorderThickness="0,0,0,0"
