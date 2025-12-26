@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Microsoft.Extensions.DependencyInjection;
 using SDAHymns.Core.Services;
 using SDAHymns.Desktop.ViewModels;
 
@@ -10,6 +11,7 @@ public partial class MainWindow : Window
 {
     private DisplayWindow? _displayWindow;
     private readonly IHotKeyManager _hotKeyManager;
+    private IServiceProvider? _serviceProvider;
 
     public MainWindow(IHotKeyManager hotKeyManager)
     {
@@ -205,11 +207,20 @@ public partial class MainWindow : Window
 
     private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
+        var viewModel = (MainWindowViewModel)sender!;
+
         if (e.PropertyName == nameof(MainWindowViewModel.IsAspectRatio43) && _displayWindow != null)
         {
-            var viewModel = (MainWindowViewModel)sender!;
             _displayWindow.Width = viewModel.DisplayWidth;
             _displayWindow.Height = viewModel.DisplayHeight;
+        }
+        else if (e.PropertyName == nameof(MainWindowViewModel.ActiveProfile) && _displayWindow != null)
+        {
+            // Apply the new profile to the display window
+            if (viewModel.ActiveProfile != null)
+            {
+                _displayWindow.ApplyProfile(viewModel.ActiveProfile);
+            }
         }
     }
 
@@ -227,6 +238,12 @@ public partial class MainWindow : Window
                 Width = viewModel.DisplayWidth,
                 Height = viewModel.DisplayHeight
             };
+
+            // Apply the active profile to the display window
+            if (viewModel.ActiveProfile != null)
+            {
+                _displayWindow.ApplyProfile(viewModel.ActiveProfile);
+            }
 
             _displayWindow.Closed += (s, e) =>
             {
@@ -255,5 +272,33 @@ public partial class MainWindow : Window
     private void ToggleDisplayWindow_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         ToggleDisplayWindow();
+    }
+
+    private async void EditProfiles_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (DataContext is not MainWindowViewModel viewModel || _serviceProvider == null)
+            return;
+
+        // Get the profile service from DI
+        var profileService = _serviceProvider.GetService<IDisplayProfileService>();
+        if (profileService == null) return;
+
+        // Create the profile editor window
+        var profileEditorViewModel = new ProfileEditorViewModel(profileService);
+        var profileEditorWindow = new ProfileEditorWindow
+        {
+            DataContext = profileEditorViewModel
+        };
+
+        // Show as dialog
+        await profileEditorWindow.ShowDialog(this);
+
+        // Reload profiles after editing
+        await viewModel.LoadProfilesCommand.ExecuteAsync(null);
+    }
+
+    public void SetServiceProvider(IServiceProvider serviceProvider)
+    {
+        _serviceProvider = serviceProvider;
     }
 }

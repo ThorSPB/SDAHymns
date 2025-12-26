@@ -73,7 +73,7 @@
                 BorderBrush="#333333"
                 BorderThickness="0,0,0,1"
                 Padding="15">
-            <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto">
+            <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto,Auto,Auto">
                 <TextBox Grid.Column="0"
                          x:Name="SearchTextBox"
                          Text="{Binding SearchQuery}"
@@ -101,7 +101,36 @@
                     </ComboBox.Items>
                 </ComboBox>
 
-                <Button Grid.Column="2"
+                <ComboBox Grid.Column="2"
+                          Width="180"
+                          ItemsSource="{Binding AvailableProfiles}"
+                          SelectedItem="{Binding ActiveProfile}"
+                          VerticalAlignment="Center"
+                          Background="#2A2A2A"
+                          Foreground="White"
+                          BorderBrush="#444444"
+                          Margin="0,0,5,0"
+                          ToolTip.Tip="Display Profile">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Name}"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+
+                <Button Grid.Column="3"
+                        Content="⚙"
+                        Click="EditProfiles_Click"
+                        ToolTip.Tip="Edit Profiles"
+                        Width="40"
+                        Height="35"
+                        FontSize="16"
+                        Margin="0,0,10,0"
+                        Background="#2A2A2A"
+                        Foreground="White"
+                        BorderBrush="#444444"/>
+
+                <Button Grid.Column="4"
                         Content="{Binding FavoriteIcon}"
                         Command="{Binding ToggleFavoriteCommand}"
                         ToolTip.Tip="Toggle Favorite (Ctrl+D)"
@@ -113,7 +142,7 @@
                         Foreground="White"
                         BorderBrush="#444444"/>
 
-                <ToggleButton Grid.Column="3"
+                <ToggleButton Grid.Column="5"
                               Content="{Binding AspectRatioLabel}"
                               IsChecked="{Binding IsAspectRatio43}"
                               Width="100"
@@ -123,7 +152,7 @@
                               Foreground="White"
                               BorderBrush="#444444"/>
 
-                <Button Grid.Column="4"
+                <Button Grid.Column="6"
                         Content="{Binding DisplayWindowButtonLabel}"
                         Click="ToggleDisplayWindow_Click"
                         ToolTip.Tip="Toggle Display Window (F5)"

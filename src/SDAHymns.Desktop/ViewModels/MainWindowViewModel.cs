@@ -11,6 +11,7 @@ public partial class MainWindowViewModel : ViewModelBase
     private readonly IHymnDisplayService _hymnService;
     private readonly IUpdateService _updateService;
     private readonly ISearchService _searchService;
+    private readonly IDisplayProfileService _profileService;
 
     [ObservableProperty]
     private Hymn? _currentHymn;
@@ -68,11 +69,19 @@ public partial class MainWindowViewModel : ViewModelBase
 
     private UpdateInfo? _pendingUpdate;
 
-    public MainWindowViewModel(IHymnDisplayService hymnService, IUpdateService updateService, ISearchService searchService)
+    // Profile properties
+    [ObservableProperty]
+    private List<DisplayProfile> _availableProfiles = new();
+
+    [ObservableProperty]
+    private DisplayProfile? _activeProfile;
+
+    public MainWindowViewModel(IHymnDisplayService hymnService, IUpdateService updateService, ISearchService searchService, IDisplayProfileService profileService)
     {
         _hymnService = hymnService;
         _updateService = updateService;
         _searchService = searchService;
+        _profileService = profileService;
 
         // Initialize search results and recent hymns
         _ = InitializeAsync();
@@ -87,10 +96,49 @@ public partial class MainWindowViewModel : ViewModelBase
 
             // Load recent hymns
             await LoadRecentHymnsAsync();
+
+            // Load display profiles
+            await LoadProfilesAsync();
         }
         catch (Exception ex)
         {
             StatusMessage = $"Initialization error: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    private async Task LoadProfilesAsync()
+    {
+        try
+        {
+            AvailableProfiles = await _profileService.GetAllProfilesAsync();
+            ActiveProfile = await _profileService.GetActiveProfileAsync();
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error loading profiles: {ex.Message}";
+        }
+    }
+
+    partial void OnActiveProfileChanged(DisplayProfile? value)
+    {
+        if (value != null)
+        {
+            _ = SetActiveProfileAsync(value);
+        }
+    }
+
+    private async Task SetActiveProfileAsync(DisplayProfile profile)
+    {
+        try
+        {
+            await _profileService.SetActiveProfileAsync(profile.Id);
+            StatusMessage = $"Active profile: {profile.Name}";
+            // TODO: Notify display window to refresh with new profile
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error setting active profile: {ex.Message}";
         }
     }
 

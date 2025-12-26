@@ -167,20 +167,41 @@ public class HymnsContext : DbContext
             entity.Property(d => d.FontFamily)
                 .HasMaxLength(100);
 
+            entity.Property(d => d.FontWeight)
+                .HasMaxLength(20);
+
             entity.Property(d => d.BackgroundColor)
                 .HasMaxLength(20);
 
             entity.Property(d => d.TextColor)
                 .HasMaxLength(20);
 
+            entity.Property(d => d.TitleColor)
+                .HasMaxLength(20);
+
+            entity.Property(d => d.LabelColor)
+                .HasMaxLength(20);
+
+            entity.Property(d => d.AccentColor)
+                .HasMaxLength(20);
+
             entity.Property(d => d.ShadowColor)
+                .HasMaxLength(20);
+
+            entity.Property(d => d.OutlineColor)
                 .HasMaxLength(20);
 
             entity.Property(d => d.TextAlignment)
                 .HasMaxLength(20);
 
+            entity.Property(d => d.VerticalAlignment)
+                .HasMaxLength(20);
+
             entity.Property(d => d.BackgroundImagePath)
                 .HasMaxLength(500);
+
+            entity.Property(d => d.BackgroundImageMode)
+                .HasMaxLength(20);
 
             entity.HasIndex(d => d.Name)
                 .IsUnique();
@@ -339,70 +360,305 @@ public class HymnsContext : DbContext
 
         // Seed DisplayProfiles
         modelBuilder.Entity<DisplayProfile>().HasData(
+            // 1. Classic Dark (Default)
             new DisplayProfile
             {
                 Id = 1,
-                Name = "Projector",
-                Description = "Default projector display settings",
-                BackgroundColor = "#000000",
-                BackgroundOpacity = 1.0,
-                FontFamily = "Arial",
-                FontSize = 48,
-                TextColor = "#FFFFFF",
-                TextAlignment = "Center",
-                EnableTextShadow = true,
-                ShadowColor = "#000000",
-                PaddingHorizontal = 60,
-                PaddingVertical = 40,
-                LineSpacing = 15,
-                TransparentBackground = false,
+                Name = "Classic Dark",
+                Description = "Default black background with white text, left-aligned",
                 IsDefault = true,
                 IsSystemProfile = true,
                 CreatedAt = now,
-                UpdatedAt = now
+                UpdatedAt = now,
+                // Typography
+                FontFamily = "Inter",
+                TitleFontSize = 36,
+                VerseFontSize = 48,
+                LabelFontSize = 28,
+                FontWeight = "Normal",
+                LineHeight = 1.4,
+                LetterSpacing = 0,
+                // Colors
+                BackgroundColor = "#000000",
+                TextColor = "#FFFFFF",
+                TitleColor = "#FFFFFF",
+                LabelColor = "#CCCCCC",
+                AccentColor = "#0078D4",
+                // Background
+                BackgroundOpacity = 1.0,
+                BackgroundImagePath = null,
+                BackgroundImageMode = "Fill",
+                BackgroundImageOpacity = 0.3,
+                // Layout
+                TextAlignment = "Left",
+                VerticalAlignment = "Center",
+                MarginLeft = 100,
+                MarginRight = 100,
+                MarginTop = 60,
+                MarginBottom = 60,
+                // Effects
+                EnableTextShadow = false,
+                ShadowColor = "#000000",
+                ShadowBlurRadius = 10,
+                ShadowOffsetX = 2,
+                ShadowOffsetY = 2,
+                EnableTextOutline = false,
+                OutlineColor = "#000000",
+                OutlineThickness = 2,
+                // Advanced
+                TransparentBackground = false,
+                ShowVerseNumbers = true,
+                ShowHymnTitle = true
             },
+            // 2. High Contrast
             new DisplayProfile
             {
                 Id = 2,
-                Name = "OBS Stream",
-                Description = "Transparent background for OBS/streaming",
-                BackgroundColor = "#000000",
-                BackgroundOpacity = 0.0,
-                FontFamily = "Arial",
-                FontSize = 52,
-                TextColor = "#FFFFFF",
-                TextAlignment = "Center",
-                EnableTextShadow = true,
-                ShadowColor = "#000000",
-                PaddingHorizontal = 80,
-                PaddingVertical = 60,
-                LineSpacing = 18,
-                TransparentBackground = true,
+                Name = "High Contrast",
+                Description = "Pure black and white with bold text and shadow for maximum visibility",
                 IsDefault = false,
                 IsSystemProfile = true,
                 CreatedAt = now,
-                UpdatedAt = now
+                UpdatedAt = now,
+                // Typography
+                FontFamily = "Inter",
+                TitleFontSize = 40,
+                VerseFontSize = 56,
+                LabelFontSize = 32,
+                FontWeight = "Bold",
+                LineHeight = 1.4,
+                LetterSpacing = 0,
+                // Colors
+                BackgroundColor = "#000000",
+                TextColor = "#FFFFFF",
+                TitleColor = "#FFFFFF",
+                LabelColor = "#FFFFFF",
+                AccentColor = "#FFFFFF",
+                // Background
+                BackgroundOpacity = 1.0,
+                BackgroundImagePath = null,
+                BackgroundImageMode = "Fill",
+                BackgroundImageOpacity = 0.3,
+                // Layout
+                TextAlignment = "Left",
+                VerticalAlignment = "Center",
+                MarginLeft = 100,
+                MarginRight = 100,
+                MarginTop = 60,
+                MarginBottom = 60,
+                // Effects
+                EnableTextShadow = true,
+                ShadowColor = "#000000",
+                ShadowBlurRadius = 15,
+                ShadowOffsetX = 3,
+                ShadowOffsetY = 3,
+                EnableTextOutline = false,
+                OutlineColor = "#000000",
+                OutlineThickness = 2,
+                // Advanced
+                TransparentBackground = false,
+                ShowVerseNumbers = true,
+                ShowHymnTitle = true
             },
+            // 3. OBS Stream Optimized
             new DisplayProfile
             {
                 Id = 3,
-                Name = "Practice Mode",
-                Description = "Lower opacity for practice/rehearsal",
-                BackgroundColor = "#1a1a1a",
-                BackgroundOpacity = 0.7,
-                FontFamily = "Arial",
-                FontSize = 36,
-                TextColor = "#CCCCCC",
-                TextAlignment = "Center",
-                EnableTextShadow = false,
-                PaddingHorizontal = 40,
-                PaddingVertical = 30,
-                LineSpacing = 12,
-                TransparentBackground = false,
+                Name = "OBS Stream",
+                Description = "Transparent background with text outline for streaming over video",
                 IsDefault = false,
                 IsSystemProfile = true,
                 CreatedAt = now,
-                UpdatedAt = now
+                UpdatedAt = now,
+                // Typography
+                FontFamily = "Inter",
+                TitleFontSize = 40,
+                VerseFontSize = 52,
+                LabelFontSize = 30,
+                FontWeight = "SemiBold",
+                LineHeight = 1.4,
+                LetterSpacing = 0,
+                // Colors
+                BackgroundColor = "#000000",
+                TextColor = "#FFFFFF",
+                TitleColor = "#FFFFFF",
+                LabelColor = "#EEEEEE",
+                AccentColor = "#0078D4",
+                // Background
+                BackgroundOpacity = 0.0,
+                BackgroundImagePath = null,
+                BackgroundImageMode = "Fill",
+                BackgroundImageOpacity = 0.3,
+                // Layout
+                TextAlignment = "Center",
+                VerticalAlignment = "Center",
+                MarginLeft = 120,
+                MarginRight = 120,
+                MarginTop = 80,
+                MarginBottom = 80,
+                // Effects
+                EnableTextShadow = false,
+                ShadowColor = "#000000",
+                ShadowBlurRadius = 10,
+                ShadowOffsetX = 2,
+                ShadowOffsetY = 2,
+                EnableTextOutline = true,
+                OutlineColor = "#000000",
+                OutlineThickness = 3,
+                // Advanced
+                TransparentBackground = true,
+                ShowVerseNumbers = true,
+                ShowHymnTitle = true
+            },
+            // 4. Projector - Bright Room
+            new DisplayProfile
+            {
+                Id = 4,
+                Name = "Bright Room",
+                Description = "Dark blue background with yellow text for bright environments",
+                IsDefault = false,
+                IsSystemProfile = true,
+                CreatedAt = now,
+                UpdatedAt = now,
+                // Typography
+                FontFamily = "Inter",
+                TitleFontSize = 38,
+                VerseFontSize = 52,
+                LabelFontSize = 30,
+                FontWeight = "Bold",
+                LineHeight = 1.4,
+                LetterSpacing = 0,
+                // Colors
+                BackgroundColor = "#001F3F",
+                TextColor = "#FFD700",
+                TitleColor = "#FFD700",
+                LabelColor = "#FFC700",
+                AccentColor = "#FFD700",
+                // Background
+                BackgroundOpacity = 1.0,
+                BackgroundImagePath = null,
+                BackgroundImageMode = "Fill",
+                BackgroundImageOpacity = 0.3,
+                // Layout
+                TextAlignment = "Center",
+                VerticalAlignment = "Center",
+                MarginLeft = 100,
+                MarginRight = 100,
+                MarginTop = 60,
+                MarginBottom = 60,
+                // Effects
+                EnableTextShadow = true,
+                ShadowColor = "#000000",
+                ShadowBlurRadius = 12,
+                ShadowOffsetX = 2,
+                ShadowOffsetY = 2,
+                EnableTextOutline = false,
+                OutlineColor = "#000000",
+                OutlineThickness = 2,
+                // Advanced
+                TransparentBackground = false,
+                ShowVerseNumbers = true,
+                ShowHymnTitle = true
+            },
+            // 5. Minimalist
+            new DisplayProfile
+            {
+                Id = 5,
+                Name = "Minimalist",
+                Description = "Clean and simple with minimal styling",
+                IsDefault = false,
+                IsSystemProfile = true,
+                CreatedAt = now,
+                UpdatedAt = now,
+                // Typography
+                FontFamily = "Inter",
+                TitleFontSize = 32,
+                VerseFontSize = 44,
+                LabelFontSize = 26,
+                FontWeight = "Normal",
+                LineHeight = 1.5,
+                LetterSpacing = 0,
+                // Colors
+                BackgroundColor = "#000000",
+                TextColor = "#EEEEEE",
+                TitleColor = "#EEEEEE",
+                LabelColor = "#CCCCCC",
+                AccentColor = "#666666",
+                // Background
+                BackgroundOpacity = 1.0,
+                BackgroundImagePath = null,
+                BackgroundImageMode = "Fill",
+                BackgroundImageOpacity = 0.3,
+                // Layout
+                TextAlignment = "Left",
+                VerticalAlignment = "Center",
+                MarginLeft = 80,
+                MarginRight = 80,
+                MarginTop = 50,
+                MarginBottom = 50,
+                // Effects
+                EnableTextShadow = false,
+                ShadowColor = "#000000",
+                ShadowBlurRadius = 10,
+                ShadowOffsetX = 2,
+                ShadowOffsetY = 2,
+                EnableTextOutline = false,
+                OutlineColor = "#000000",
+                OutlineThickness = 2,
+                // Advanced
+                TransparentBackground = false,
+                ShowVerseNumbers = true,
+                ShowHymnTitle = true
+            },
+            // 6. Traditional
+            new DisplayProfile
+            {
+                Id = 6,
+                Name = "Traditional",
+                Description = "Classic church aesthetic with navy and gold colors",
+                IsDefault = false,
+                IsSystemProfile = true,
+                CreatedAt = now,
+                UpdatedAt = now,
+                // Typography
+                FontFamily = "Georgia",
+                TitleFontSize = 40,
+                VerseFontSize = 50,
+                LabelFontSize = 32,
+                FontWeight = "Normal",
+                LineHeight = 1.5,
+                LetterSpacing = 0,
+                // Colors
+                BackgroundColor = "#00274D",
+                TextColor = "#D4AF37",
+                TitleColor = "#D4AF37",
+                LabelColor = "#C4A030",
+                AccentColor = "#D4AF37",
+                // Background
+                BackgroundOpacity = 1.0,
+                BackgroundImagePath = null,
+                BackgroundImageMode = "Fill",
+                BackgroundImageOpacity = 0.3,
+                // Layout
+                TextAlignment = "Center",
+                VerticalAlignment = "Center",
+                MarginLeft = 120,
+                MarginRight = 120,
+                MarginTop = 70,
+                MarginBottom = 70,
+                // Effects
+                EnableTextShadow = false,
+                ShadowColor = "#000000",
+                ShadowBlurRadius = 10,
+                ShadowOffsetX = 2,
+                ShadowOffsetY = 2,
+                EnableTextOutline = false,
+                OutlineColor = "#000000",
+                OutlineThickness = 2,
+                // Advanced
+                TransparentBackground = false,
+                ShowVerseNumbers = true,
+                ShowHymnTitle = true
             }
         );
 
