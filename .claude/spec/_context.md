@@ -37,7 +37,8 @@ This file tracks all specifications and their implementation status.
 | 011 | [Audio Playback](011-audio-playback.md) | 📋 Planned | NAudio player, sync/auto-advance, recorder mode, external file support |
 | 012 | [Statistics Tracking](012-statistics-tracking.md) | 📋 Planned | Usage analytics, dashboard, reporting, "forgotten hymns" discovery |
 | 013 | [Export Functionality](013-export-functionality.md) | 📋 Planned | PDF generation (QuestPDF), Image rendering (WYSIWYG), batch export |
-| _TBD_ | CLI Interface | 📋 Planned | Command-line tool with IPC |
+| 014 | [CLI Interface](014-cli-interface.md) | 📋 Planned | Dual-mode (Direct/Control), IPC via Named Pipes, Headless display mode |
+| _TBD_ | Remote Control API | 📋 Planned | HTTP API for remote control |
 | _TBD_ | Export Functionality | 📋 Planned | PDF/image export (individual hymns) |
 | _TBD_ | Statistics Tracking | 📋 Planned | Usage analytics |
 
@@ -79,7 +80,7 @@ This file tracks all specifications and their implementation status.
 
 ### Phase 4: Advanced Features
 1. **010: Auto-Updates** - ✅ COMPLETED (Early implementation for dogfooding)
-2. CLI interface with IPC
+2. **014: CLI Interface** - 📋 Planned (IPC control, headless mode, automation)
 3. Remote control API
 4. OBS integration
 

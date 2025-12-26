@@ -17,15 +17,18 @@
 
     <!-- Clean projection display - just the content -->
     <Viewbox Stretch="Uniform">
-        <Border Width="{Binding DisplayWidth}"
+        <Border x:Name="RootBorder"
+                Width="{Binding DisplayWidth}"
                 Height="{Binding DisplayHeight}"
                 Background="Black">
             <Grid RowDefinitions="Auto,*">
                 <!-- Hymn Title -->
                 <Border Grid.Row="0"
+                        x:Name="TitleBorder"
                         Background="Black"
                         Padding="40,30">
-                    <TextBlock Text="{Binding HymnTitle}"
+                    <TextBlock x:Name="HymnTitleText"
+                               Text="{Binding HymnTitle}"
                                FontSize="36"
                                FontWeight="Bold"
                                HorizontalAlignment="Center"
@@ -36,12 +39,14 @@
 
                 <!-- Verse Content -->
                 <Viewbox Grid.Row="1" Stretch="Uniform" StretchDirection="DownOnly">
-                    <StackPanel VerticalAlignment="Center"
+                    <StackPanel x:Name="ContentPanel"
+                               VerticalAlignment="Center"
                                HorizontalAlignment="Left"
                                Width="1200"
                                Margin="100,60,100,60">
                         <!-- Verse Label (e.g., "1.", "Refren") -->
-                        <TextBlock Text="{Binding CurrentVerseLabel}"
+                        <TextBlock x:Name="VerseLabelText"
+                                  Text="{Binding CurrentVerseLabel}"
                                   FontSize="32"
                                   FontWeight="SemiBold"
                                   HorizontalAlignment="Left"
@@ -49,7 +54,8 @@
                                   Foreground="#CCCCCC"/>
 
                         <!-- Verse Content -->
-                        <TextBlock Text="{Binding CurrentVerseContent}"
+                        <TextBlock x:Name="VerseContentText"
+                                  Text="{Binding CurrentVerseContent}"
                                   FontSize="56"
                                   TextWrapping="Wrap"
                                   TextAlignment="Left"

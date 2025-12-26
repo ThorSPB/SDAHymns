@@ -55,6 +55,7 @@ public partial class App : Application
             // Services
             services.AddScoped<IHymnDisplayService, HymnDisplayService>();
             services.AddScoped<ISearchService, SearchService>();
+            services.AddScoped<IDisplayProfileService, DisplayProfileService>();
             services.AddSingleton<IUpdateService, UpdateService>();
             services.AddSingleton<IHotKeyManager, HotKeyManager>();
 
@@ -68,6 +69,9 @@ public partial class App : Application
             {
                 DataContext = _serviceProvider.GetRequiredService<MainWindowViewModel>()
             };
+
+            // Provide service provider to main window for creating child windows
+            mainWindow.SetServiceProvider(_serviceProvider);
 
             desktop.MainWindow = mainWindow;
 

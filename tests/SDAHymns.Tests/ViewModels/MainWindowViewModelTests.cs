@@ -14,19 +14,21 @@ public class MainWindowViewModelTests
     private readonly Mock<IHymnDisplayService> _mockHymnService;
     private readonly Mock<IUpdateService> _mockUpdateService;
     private readonly Mock<ISearchService> _mockSearchService;
+    private readonly Mock<IDisplayProfileService> _mockProfileService;
 
     public MainWindowViewModelTests()
     {
         _mockHymnService = new Mock<IHymnDisplayService>();
         _mockUpdateService = new Mock<IUpdateService>();
         _mockSearchService = new Mock<ISearchService>();
+        _mockProfileService = new Mock<IDisplayProfileService>();
     }
 
     [Fact]
     public void Constructor_InitializesWithNoUpdateAvailable()
     {
         // Arrange & Act
-        var viewModel = new MainWindowViewModel(_mockHymnService.Object, _mockUpdateService.Object, _mockSearchService.Object);
+        var viewModel = new MainWindowViewModel(_mockHymnService.Object, _mockUpdateService.Object, _mockSearchService.Object, _mockProfileService.Object);
 
         // Assert
         viewModel.IsUpdateAvailable.Should().BeFalse();
@@ -39,7 +41,7 @@ public class MainWindowViewModelTests
     public void ShowUpdateNotification_SetsPropertiesCorrectly()
     {
         // Arrange
-        var viewModel = new MainWindowViewModel(_mockHymnService.Object, _mockUpdateService.Object, _mockSearchService.Object);
+        var viewModel = new MainWindowViewModel(_mockHymnService.Object, _mockUpdateService.Object, _mockSearchService.Object, _mockProfileService.Object);
         var mockUpdateInfo = CreateMockUpdateInfo("1.2.3");
 
         // Act
@@ -54,7 +56,7 @@ public class MainWindowViewModelTests
     public void DismissUpdate_HidesBanner()
     {
         // Arrange
-        var viewModel = new MainWindowViewModel(_mockHymnService.Object, _mockUpdateService.Object, _mockSearchService.Object);
+        var viewModel = new MainWindowViewModel(_mockHymnService.Object, _mockUpdateService.Object, _mockSearchService.Object, _mockProfileService.Object);
         var mockUpdateInfo = CreateMockUpdateInfo("1.2.3");
         viewModel.ShowUpdateNotification(mockUpdateInfo);
 
@@ -69,7 +71,7 @@ public class MainWindowViewModelTests
     public async Task UpdateNowAsync_WithSuccessfulDownload_CallsApplyUpdatesAndRestart()
     {
         // Arrange
-        var viewModel = new MainWindowViewModel(_mockHymnService.Object, _mockUpdateService.Object, _mockSearchService.Object);
+        var viewModel = new MainWindowViewModel(_mockHymnService.Object, _mockUpdateService.Object, _mockSearchService.Object, _mockProfileService.Object);
         var mockUpdateInfo = CreateMockUpdateInfo("1.2.3");
         viewModel.ShowUpdateNotification(mockUpdateInfo);
 
@@ -97,7 +99,7 @@ public class MainWindowViewModelTests
     public async Task UpdateNowAsync_WithFailedDownload_KeepsBannerVisible()
     {
         // Arrange
-        var viewModel = new MainWindowViewModel(_mockHymnService.Object, _mockUpdateService.Object, _mockSearchService.Object);
+        var viewModel = new MainWindowViewModel(_mockHymnService.Object, _mockUpdateService.Object, _mockSearchService.Object, _mockProfileService.Object);
         var mockUpdateInfo = CreateMockUpdateInfo("1.2.3");
         viewModel.ShowUpdateNotification(mockUpdateInfo);
 
@@ -118,7 +120,7 @@ public class MainWindowViewModelTests
     public async Task UpdateNowAsync_WithFailedDownload_ResetsDownloadingState()
     {
         // Arrange
-        var viewModel = new MainWindowViewModel(_mockHymnService.Object, _mockUpdateService.Object, _mockSearchService.Object);
+        var viewModel = new MainWindowViewModel(_mockHymnService.Object, _mockUpdateService.Object, _mockSearchService.Object, _mockProfileService.Object);
         var mockUpdateInfo = CreateMockUpdateInfo("1.2.3");
         viewModel.ShowUpdateNotification(mockUpdateInfo);
 
@@ -137,7 +139,7 @@ public class MainWindowViewModelTests
     public async Task UpdateNowAsync_WithNoPendingUpdate_DoesNothing()
     {
         // Arrange
-        var viewModel = new MainWindowViewModel(_mockHymnService.Object, _mockUpdateService.Object, _mockSearchService.Object);
+        var viewModel = new MainWindowViewModel(_mockHymnService.Object, _mockUpdateService.Object, _mockSearchService.Object, _mockProfileService.Object);
         // Don't call ShowUpdateNotification - no pending update
 
         // Act
@@ -153,7 +155,7 @@ public class MainWindowViewModelTests
     public void ShowUpdateNotification_WithDifferentVersions_UpdatesLatestVersion()
     {
         // Arrange
-        var viewModel = new MainWindowViewModel(_mockHymnService.Object, _mockUpdateService.Object, _mockSearchService.Object);
+        var viewModel = new MainWindowViewModel(_mockHymnService.Object, _mockUpdateService.Object, _mockSearchService.Object, _mockProfileService.Object);
 
         // Act
         var update1 = CreateMockUpdateInfo("1.0.0");
@@ -173,7 +175,7 @@ public class MainWindowViewModelTests
     public void IsUpdateAvailable_AfterDismiss_BecomesFalse()
     {
         // Arrange
-        var viewModel = new MainWindowViewModel(_mockHymnService.Object, _mockUpdateService.Object, _mockSearchService.Object);
+        var viewModel = new MainWindowViewModel(_mockHymnService.Object, _mockUpdateService.Object, _mockSearchService.Object, _mockProfileService.Object);
         var mockUpdateInfo = CreateMockUpdateInfo("1.2.3");
         viewModel.ShowUpdateNotification(mockUpdateInfo);
         viewModel.IsUpdateAvailable.Should().BeTrue();
