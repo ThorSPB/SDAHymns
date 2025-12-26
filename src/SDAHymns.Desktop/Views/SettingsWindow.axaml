@@ -56,7 +56,7 @@
                                          Margin="0,0,10,0"/>
                                 <Button Grid.Column="1"
                                         Content="📁 Browse"
-                                        Command="{Binding BrowseLibraryPathCommand}"
+                                        Click="BrowseLibraryPath_Click"
                                         Background="#2A2A2A"
                                         Foreground="White"
                                         BorderBrush="#444444"
@@ -176,6 +176,23 @@
                                         Minimum="0"
                                         Maximum="100"/>
                             </StackPanel>
+
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="Audio Output Device:"
+                                           Foreground="White"
+                                           FontSize="12"/>
+                                <ComboBox ItemsSource="{Binding AvailableAudioDevices}"
+                                          SelectedItem="{Binding SelectedAudioDevice}"
+                                          Background="#2A2A2A"
+                                          Foreground="White"
+                                          BorderBrush="#444444">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding DeviceName}"/>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </StackPanel>
                         </StackPanel>
 
                         <!-- Action Buttons -->
@@ -187,7 +204,7 @@
                                     BorderBrush="#444444"
                                     Padding="15,8"/>
                             <Button Content="Migrate Library"
-                                    Command="{Binding MigrateLibraryCommand}"
+                                    Click="MigrateLibrary_Click"
                                     Background="#2A2A2A"
                                     Foreground="White"
                                     BorderBrush="#444444"

@@ -1,6 +1,6 @@
 # Spec 014: Audio Download & Settings System
 
-**Status:** ✅ Implemented (Core features complete, manifest generation pending)
+**Status:** ✅ Implemented (18/20 acceptance criteria complete - packaging scripts are external tooling)
 **Created:** 2025-12-26
 **Updated:** 2025-12-26
 **Dependencies:** 011-audio-playback.md
@@ -419,7 +419,7 @@ public interface ISettingsService
 - [x] **Verify:** Can verify checksums of downloaded files
 - [x] **Settings UI:** Settings window with tabbed interface (General/Audio/Display)
 - [x] **Library Path:** Can configure and change library path
-- [x] **Migration:** Migration service implemented (UI dialog pending folder picker)
+- [x] **Migration:** Full migration service with progress reporting and folder picker
 - [x] **Discovery:** AudioPlayerService finds files in configured path
 - [x] **Health Check:** Can scan library and report issues
 - [x] **Delete:** Can delete installed category packs
@@ -427,9 +427,10 @@ public interface ISettingsService
 - [x] **Fallback:** Falls back to Pi server if GitHub fails
 - [x] **Progress:** Real-time progress reporting for downloads
 - [x] **Integration:** Settings accessible from MainWindow via ⚙ Settings button
-- [ ] **UI:** Folder picker implementation (pending platform-specific code)
-- [ ] **Packaging:** Manifest generation script
-- [ ] **Packaging:** Audio pack creation workflow
+- [x] **UI:** Folder picker implementation (Avalonia StorageProvider - cross-platform)
+- [x] **UI:** Migrate Library button with folder picker dialog
+- [ ] **Packaging:** Manifest generation script (tooling - not app feature)
+- [ ] **Packaging:** Audio pack creation workflow (documentation - not app feature)
 
 ## Future Enhancements
 

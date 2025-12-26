@@ -11,6 +11,7 @@ public partial class SettingsWindowViewModel : ViewModelBase
     private readonly ISettingsService _settingsService;
     private readonly IAudioLibraryService _libraryService;
     private readonly IAudioDownloadService _downloadService;
+    private readonly IAudioPlayerService _audioPlayer;
 
     [ObservableProperty]
     private string _audioLibraryPath = string.Empty;
@@ -42,11 +43,18 @@ public partial class SettingsWindowViewModel : ViewModelBase
     [ObservableProperty]
     private long _totalLibrarySize = 0;
 
-    public SettingsWindowViewModel(ISettingsService settingsService, IAudioLibraryService libraryService, IAudioDownloadService downloadService)
+    [ObservableProperty]
+    private ObservableCollection<AudioDeviceInfo> _availableAudioDevices = new();
+
+    [ObservableProperty]
+    private AudioDeviceInfo? _selectedAudioDevice;
+
+    public SettingsWindowViewModel(ISettingsService settingsService, IAudioLibraryService libraryService, IAudioDownloadService downloadService, IAudioPlayerService audioPlayer)
     {
         _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
         _libraryService = libraryService ?? throw new ArgumentNullException(nameof(libraryService));
         _downloadService = downloadService ?? throw new ArgumentNullException(nameof(downloadService));
+        _audioPlayer = audioPlayer ?? throw new ArgumentNullException(nameof(audioPlayer));
 
         _ = InitializeAsync();
     }
@@ -60,6 +68,16 @@ public partial class SettingsWindowViewModel : ViewModelBase
             AutoPlayDelay = await _settingsService.GetAutoPlayDelayAsync();
             var volume = await _settingsService.GetGlobalVolumeAsync();
             GlobalVolume = volume * 100; // Convert 0-1 to 0-100
+
+            // Load audio devices
+            var devices = _audioPlayer.GetOutputDevices();
+            AvailableAudioDevices.Clear();
+            foreach (var device in devices)
+            {
+                AvailableAudioDevices.Add(device);
+            }
+            // Select the default/first device
+            SelectedAudioDevice = AvailableAudioDevices.FirstOrDefault();
 
             // Load installed packages
             await RefreshInstalledPackagesAsync();
@@ -76,22 +94,19 @@ public partial class SettingsWindowViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private async Task BrowseLibraryPathAsync()
-    {
-        // TODO: Open folder picker dialog
-        // For now, this would need platform-specific code or a file picker library
-        StatusMessage = "Folder picker not yet implemented";
-        await Task.CompletedTask;
-    }
-
-    [RelayCommand]
-    private async Task SaveSettingsAsync()
+    public async Task SaveSettingsAsync()
     {
         try
         {
             await _settingsService.SetAudioLibraryPathAsync(AudioLibraryPath);
             await _settingsService.SetAutoPlayDelayAsync(AutoPlayDelay);
             await _settingsService.SetGlobalVolumeAsync((float)(GlobalVolume / 100.0));
+
+            // Set audio output device
+            if (SelectedAudioDevice != null)
+            {
+                _audioPlayer.SetOutputDevice(SelectedAudioDevice.DeviceNumber);
+            }
 
             StatusMessage = "Settings saved successfully";
         }
@@ -145,7 +160,8 @@ public partial class SettingsWindowViewModel : ViewModelBase
     [RelayCommand]
     private async Task DownloadCategoryAsync(string categorySlug)
     {
-        if (IsDownloading) return;
+        if (IsDownloading)
+            return;
 
         try
         {
@@ -226,12 +242,48 @@ public partial class SettingsWindowViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private async Task MigrateLibraryAsync()
+    public async Task MigrateLibraryWithPathAsync(string newPath)
     {
-        // TODO: Open folder picker to select new location
-        // Then call _libraryService.MigrateLibraryAsync
-        StatusMessage = "Migration not yet implemented";
-        await Task.CompletedTask;
+        if (string.IsNullOrWhiteSpace(newPath))
+        {
+            StatusMessage = "Invalid path selected";
+            return;
+        }
+
+        try
+        {
+            StatusMessage = "Migrating library...";
+            IsDownloading = true; // Reuse the downloading flag for progress
+
+            var progress = new Progress<int>(p =>
+            {
+                DownloadProgress = p;
+                DownloadStatusText = $"Migrating files... {p}%";
+            });
+
+            var success = await _libraryService.MigrateLibraryAsync(newPath, progress);
+
+            if (success)
+            {
+                AudioLibraryPath = newPath;
+                StatusMessage = "Library migrated successfully";
+                await RefreshInstalledPackagesAsync();
+            }
+            else
+            {
+                StatusMessage = "Migration failed";
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Migration error: {ex.Message}";
+        }
+        finally
+        {
+            IsDownloading = false;
+            DownloadProgress = 0;
+            DownloadStatusText = string.Empty;
+        }
     }
 
     [RelayCommand]

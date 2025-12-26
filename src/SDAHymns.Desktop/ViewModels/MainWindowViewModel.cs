@@ -6,8 +6,9 @@ using Velopack;
 
 namespace SDAHymns.Desktop.ViewModels;
 
-public partial class MainWindowViewModel : ViewModelBase
+public partial class MainWindowViewModel : ViewModelBase, IDisposable
 {
+    private bool _disposed;
     private readonly IHymnDisplayService _hymnService;
     private readonly IUpdateService _updateService;
     private readonly ISearchService _searchService;
@@ -81,6 +82,9 @@ public partial class MainWindowViewModel : ViewModelBase
 
     // Audio properties
     [ObservableProperty]
+    private AudioRecording? _currentAudioRecording;
+
+    [ObservableProperty]
     private bool _isAudioLoaded = false;
 
     [ObservableProperty]
@@ -100,6 +104,14 @@ public partial class MainWindowViewModel : ViewModelBase
 
     [ObservableProperty]
     private string _playPauseTooltip = "Play";
+
+    [ObservableProperty]
+    private bool _isCountdownActive = false;
+
+    [ObservableProperty]
+    private int _countdownSeconds = 0;
+
+    private AutoPlayCountdown? _countdown;
 
     public string AudioTimeDisplay =>
         $"{FormatTime(AudioPosition)} / {FormatTime(AudioDuration)}";
@@ -444,7 +456,8 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private async Task UpdateNowAsync()
     {
-        if (_pendingUpdate == null) return;
+        if (_pendingUpdate == null)
+            return;
 
         IsDownloadingUpdate = true;
         DownloadProgress = 0;
@@ -541,7 +554,8 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private async Task PlayPauseAudioAsync()
     {
-        if (!IsAudioLoaded) return;
+        if (!IsAudioLoaded)
+            return;
 
         try
         {
@@ -563,7 +577,8 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private async Task StopAudioAsync()
     {
-        if (!IsAudioLoaded) return;
+        if (!IsAudioLoaded)
+            return;
 
         try
         {
@@ -576,9 +591,87 @@ public partial class MainWindowViewModel : ViewModelBase
         }
     }
 
+    [RelayCommand]
+    public async Task SaveAudioTimingsAsync(string timingMapJson)
+    {
+        if (CurrentAudioRecording == null)
+            return;
+
+        try
+        {
+            // Update the timing map
+            CurrentAudioRecording.TimingMapJson = timingMapJson;
+
+            // Save to database
+            await _hymnService.UpdateAudioRecordingAsync(CurrentAudioRecording);
+
+            // Reload timing map in synchronizer
+            _synchronizer.LoadTimingMap(timingMapJson);
+
+            StatusMessage = "Timings saved successfully";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error saving timings: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    private void CancelCountdown()
+    {
+        _countdown?.Cancel();
+        IsCountdownActive = false;
+        CountdownSeconds = 0;
+        StatusMessage = "Auto-play cancelled";
+    }
+
+    private async Task StartAutoPlayCountdownAsync()
+    {
+        if (!IsAudioLoaded)
+            return;
+
+        try
+        {
+            // Get auto-play delay from settings
+            var delaySeconds = await _settingsService.GetAutoPlayDelayAsync();
+
+            // Initialize countdown if not already created
+            if (_countdown == null)
+            {
+                _countdown = new AutoPlayCountdown();
+
+                _countdown.CountdownTick += (s, remaining) =>
+                {
+                    CountdownSeconds = remaining;
+                };
+
+                _countdown.CountdownCompleted += async (s, e) =>
+                {
+                    IsCountdownActive = false;
+                    await _audioPlayer.PlayAsync();
+                };
+
+                _countdown.CountdownCancelled += (s, e) =>
+                {
+                    IsCountdownActive = false;
+                    CountdownSeconds = 0;
+                };
+            }
+
+            IsCountdownActive = true;
+            _countdown.Start(delaySeconds);
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Countdown error: {ex.Message}";
+            IsCountdownActive = false;
+        }
+    }
+
     private async Task TryLoadAudioAsync()
     {
-        if (CurrentHymn == null) return;
+        if (CurrentHymn == null)
+            return;
 
         try
         {
@@ -590,6 +683,7 @@ public partial class MainWindowViewModel : ViewModelBase
                 var audioLibraryPath = await _settingsService.GetAudioLibraryPathAsync();
                 await _audioPlayer.LoadAsync(recording, audioLibraryPath);
 
+                CurrentAudioRecording = recording;
                 AudioDuration = _audioPlayer.TotalDuration.TotalSeconds;
                 AudioPosition = 0;
                 IsAudioLoaded = true;
@@ -618,5 +712,16 @@ public partial class MainWindowViewModel : ViewModelBase
             IsAudioLoaded = false;
             StatusMessage = $"Error loading audio: {ex.Message}";
         }
+    }
+
+    public void Dispose()
+    {
+        if (_disposed)
+            return;
+
+        _synchronizer?.Dispose();
+        _countdown?.Dispose();
+
+        _disposed = true;
     }
 }

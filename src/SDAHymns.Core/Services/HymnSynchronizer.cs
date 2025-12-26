@@ -186,7 +186,8 @@ public class HymnSynchronizer : IDisposable
 
     public void Dispose()
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
 
         _audioPlayer.PositionChanged -= OnPositionChanged;
         _audioPlayer.PlaybackEnded -= OnPlaybackEnded;

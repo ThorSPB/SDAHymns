@@ -5,7 +5,7 @@ namespace SDAHymns.Tests.Services;
 
 public class HotKeyManagerTests
 {
-    private readonly IHotKeyManager _hotKeyManager;
+    private readonly HotKeyManager _hotKeyManager;
 
     public HotKeyManagerTests()
     {

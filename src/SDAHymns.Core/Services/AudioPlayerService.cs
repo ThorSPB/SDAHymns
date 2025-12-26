@@ -250,7 +250,8 @@ public class AudioPlayerService : IAudioPlayerService
 
     public void Dispose()
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
 
         DisposeAudioResources();
         _disposed = true;

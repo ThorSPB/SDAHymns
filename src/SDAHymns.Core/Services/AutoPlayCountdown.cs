@@ -89,7 +89,8 @@ public class AutoPlayCountdown : IDisposable
 
     public void Dispose()
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
 
         Stop();
         _disposed = true;

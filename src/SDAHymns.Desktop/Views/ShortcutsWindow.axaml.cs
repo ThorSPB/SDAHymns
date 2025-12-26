@@ -33,8 +33,10 @@ public partial class ShortcutsWindow : Window
 
     private void Window_KeyDown(object? sender, KeyEventArgs e)
     {
-        if (DataContext is not ShortcutsWindowViewModel viewModel) return;
-        if (viewModel.ListeningShortcut == null) return;
+        if (DataContext is not ShortcutsWindowViewModel viewModel)
+            return;
+        if (viewModel.ListeningShortcut == null)
+            return;
 
         // Don't process modifier keys alone
         if (e.Key is Key.LeftCtrl or Key.RightCtrl or

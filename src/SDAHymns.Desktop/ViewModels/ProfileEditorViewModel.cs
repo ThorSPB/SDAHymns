@@ -55,7 +55,8 @@ public partial class ProfileEditorViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanSaveProfile))]
     private async Task SaveProfileAsync()
     {
-        if (SelectedProfile == null) return;
+        if (SelectedProfile == null)
+            return;
 
         try
         {
@@ -99,7 +100,8 @@ public partial class ProfileEditorViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanDeleteProfile))]
     private async Task DeleteProfileAsync()
     {
-        if (SelectedProfile == null) return;
+        if (SelectedProfile == null)
+            return;
 
         try
         {
@@ -122,7 +124,8 @@ public partial class ProfileEditorViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanDuplicateProfile))]
     private async Task DuplicateProfileAsync()
     {
-        if (SelectedProfile == null) return;
+        if (SelectedProfile == null)
+            return;
 
         try
         {
@@ -147,7 +150,8 @@ public partial class ProfileEditorViewModel : ObservableObject
     /// </summary>
     public async Task<string?> GetExportJsonAsync()
     {
-        if (SelectedProfile == null) return null;
+        if (SelectedProfile == null)
+            return null;
 
         try
         {
@@ -180,7 +184,8 @@ public partial class ProfileEditorViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanResetProfile))]
     private async Task ResetProfileAsync()
     {
-        if (SelectedProfile == null) return;
+        if (SelectedProfile == null)
+            return;
 
         // Reload profile from database to discard changes
         try
@@ -205,7 +210,8 @@ public partial class ProfileEditorViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanPreviewProfile))]
     private Task PreviewProfileAsync()
     {
-        if (SelectedProfile == null) return Task.CompletedTask;
+        if (SelectedProfile == null)
+            return Task.CompletedTask;
 
         // TODO: Implement preview functionality (show in display window)
         StatusMessage = "Preview functionality coming soon";

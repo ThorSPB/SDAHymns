@@ -10,6 +10,17 @@ namespace SDAHymns.Core.Services;
 /// </summary>
 public class DisplayProfileService : IDisplayProfileService
 {
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        WriteIndented = true
+    };
+
+    private static readonly JsonSerializerOptions CamelCaseJsonOptions = new()
+    {
+        WriteIndented = true,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
+
     private readonly HymnsContext _context;
     private const string ActiveProfileIdKey = "ActiveDisplayProfileId";
 
@@ -188,23 +199,12 @@ public class DisplayProfileService : IDisplayProfileService
         if (profile == null)
             throw new InvalidOperationException($"Profile with ID {id} not found");
 
-        var options = new JsonSerializerOptions
-        {
-            WriteIndented = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        };
-
-        return JsonSerializer.Serialize(profile, options);
+        return JsonSerializer.Serialize(profile, CamelCaseJsonOptions);
     }
 
     public async Task<DisplayProfile> ImportProfileAsync(string json)
     {
-        var options = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        };
-
-        var profile = JsonSerializer.Deserialize<DisplayProfile>(json, options);
+        var profile = JsonSerializer.Deserialize<DisplayProfile>(json, CamelCaseJsonOptions);
         if (profile == null)
             throw new InvalidOperationException("Failed to deserialize profile JSON");
 

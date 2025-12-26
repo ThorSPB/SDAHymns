@@ -226,7 +226,7 @@ public class AudioDownloadService : IAudioDownloadService
         using var sha256 = SHA256.Create();
         using var stream = File.OpenRead(filePath);
         var hash = await sha256.ComputeHashAsync(stream);
-        return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+        return Convert.ToHexStringLower(hash);
     }
 
     private static string GetCategoryDisplayName(string categorySlug)

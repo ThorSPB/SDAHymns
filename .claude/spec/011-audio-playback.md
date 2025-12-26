@@ -1,6 +1,6 @@
 # Spec 011: Audio Playback & Synchronization
 
-**Status:** ✅ Implemented (Core features complete, UI pending for recorder mode)
+**Status:** ✅ Implemented (All 19 acceptance criteria complete)
 **Created:** 2025-12-26
 **Updated:** 2025-12-26
 **Dependencies:** 005-basic-hymn-display.md
@@ -172,10 +172,12 @@ A special mode in the Control Window:
 - [x] **UI:** Audio loads automatically when hymn is selected
 - [x] **UI:** Real-time position updates and state changes
 - [x] **UI:** Auto-advance integration (triggers verse changes based on timing map)
-- [ ] **UI:** Recorder Mode window (core logic complete, UI pending)
-- [ ] **UI:** Auto-play countdown overlay on DisplayWindow (core logic complete, UI pending)
-- [ ] **Settings:** Audio library path configuration (pending Spec 014)
-- [ ] **Settings:** Audio output device selection (core API available, UI pending)
+- [x] **UI:** Recorder Mode window (full implementation with spacebar tap recording)
+- [x] **UI:** Record button in MainWindow audio controls
+- [x] **Integration:** Save timings to database via MainWindowViewModel
+- [x] **UI:** Auto-play countdown overlay on DisplayWindow (full screen overlay with cancel button)
+- [x] **Settings:** Audio library path configuration (completed in Spec 014)
+- [x] **Settings:** Audio output device selection (ComboBox in Settings with real-time switching)
 
 ## Implementation Summary
 

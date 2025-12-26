@@ -8,6 +8,7 @@ public interface IHymnDisplayService
 {
     Task<Hymn?> GetHymnByNumberAsync(int hymnNumber, string categorySlug);
     Task<List<Verse>> GetVersesForHymnAsync(int hymnId);
+    Task UpdateAudioRecordingAsync(AudioRecording audioRecording);
 }
 
 public class HymnDisplayService : IHymnDisplayService
@@ -35,5 +36,11 @@ public class HymnDisplayService : IHymnDisplayService
             .Where(v => v.HymnId == hymnId)
             .OrderBy(v => v.DisplayOrder)
             .ToListAsync();
+    }
+
+    public async Task UpdateAudioRecordingAsync(AudioRecording audioRecording)
+    {
+        _context.AudioRecordings.Update(audioRecording);
+        await _context.SaveChangesAsync();
     }
 }

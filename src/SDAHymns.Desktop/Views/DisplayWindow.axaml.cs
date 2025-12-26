@@ -17,7 +17,8 @@ public partial class DisplayWindow : Window
     /// </summary>
     public void ApplyProfile(DisplayProfile profile)
     {
-        if (profile == null) return;
+        if (profile == null)
+            return;
 
         // Apply to root border (background)
         if (RootBorder != null)

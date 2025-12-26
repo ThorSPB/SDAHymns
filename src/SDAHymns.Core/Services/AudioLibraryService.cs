@@ -8,6 +8,11 @@ namespace SDAHymns.Core.Services;
 /// </summary>
 public class AudioLibraryService : IAudioLibraryService
 {
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        WriteIndented = true
+    };
+
     private readonly ISettingsService _settingsService;
 
     public AudioLibraryService(ISettingsService settingsService)
@@ -124,7 +129,7 @@ public class AudioLibraryService : IAudioLibraryService
         }
 
         var metadataPath = Path.Combine(categoryPath, $"{metadata.HymnNumber:D3}.metadata.json");
-        var json = JsonSerializer.Serialize(metadata, new JsonSerializerOptions { WriteIndented = true });
+        var json = JsonSerializer.Serialize(metadata, JsonOptions);
         await File.WriteAllTextAsync(metadataPath, json);
     }
 
