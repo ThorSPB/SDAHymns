@@ -45,9 +45,9 @@ This file tracks all specifications and their implementation status.
 
 | ID | Spec | Status | Issue | Notes |
 |----|------|--------|-------|-------|
-| 017 | [UI/UX Overhaul](017-ui-ux-overhaul.md) | 📋 Planned | [#20](https://github.com/ThorSPB/SDAHymns/issues/20) | Modern design system, animations, themes, icon integration, card layouts |
+| 017 | [UI/UX Overhaul](017-ui-ux-overhaul.md) | 📋 Planned | [#20](https://github.com/ThorSPB/SDAHymns/issues/20) | Modern design system, animations, themes, icon integration, card layouts - INCLUDES polishing RemoteWidget & DisplayWindow |
 | 018 | [Enhanced Slide Formatting](018-enhanced-slide-formatting.md) | 📋 Planned | [#21](https://github.com/ThorSPB/SDAHymns/issues/21) | Verse number styling, chorus differentiation, smart layout, transitions |
-| 019 | [Compact Remote Widget](019-compact-remote-widget.md) | 📋 Planned | [#22](https://github.com/ThorSPB/SDAHymns/issues/22) | Widget-style default GUI, custom chrome, lockable position, borderless display |
+| 019 | [Compact Remote Widget](019-compact-remote-widget.md) | ✅ Implemented | [#22](https://github.com/ThorSPB/SDAHymns/issues/22) | Widget-style default GUI, custom chrome, lockable position, borderless display, PowerPoint-style keyboard controls |
 | ~~015~~ 020 | [Remote Control API](015-remote-control-api.md) | 📋 Planned | [#16](https://github.com/ThorSPB/SDAHymns/issues/16) | Embedded Kestrel server, SignalR sync, mobile-first Vue.js web app |
 
 ## Implementation Order
@@ -86,9 +86,9 @@ This file tracks all specifications and their implementation status.
 3. **016: OBS Integration** - 📋 Planned (Window capture, browser source, automation)
 
 ### Phase 5: UI/UX Refinement & Polish
-1. **017: UI/UX Overhaul** - 📋 Planned (Modern design, animations, themes, icon system)
+1. **017: UI/UX Overhaul** - 📋 Planned (Modern design, animations, themes, icon system, polish RemoteWidget/DisplayWindow)
 2. **018: Enhanced Slide Formatting** - 📋 Planned (Verse numbers, chorus styling, transitions, multi-column)
-3. **019: Compact Remote Widget** - 📋 Planned (Widget-style default GUI, custom chrome, lockable, borderless display)
+3. **019: Compact Remote Widget** - ✅ IMPLEMENTED (Widget-style default GUI, custom chrome, lockable, borderless display, keyboard controls)
 4. **015: Remote Control API** - 📋 Planned (Web server, SignalR, mobile web app)
 
 ## Current Session Focus
@@ -308,35 +308,47 @@ All Phase 1 goals achieved:
 
 **🎯 NEXT SESSION:** Begin Spec 009 (Service Planner) or Spec 012/013 (Statistics/Export)
 
-**Session 8 (2025-12-26 - Phase 5 Planning):**
+**Session 8 (2025-12-26 - Phase 5 Planning & Implementation):**
+
+**Planning:**
 - ✅ Created **Phase 5: UI/UX Refinement & Polish**
 - ✅ Created **Spec 017:** UI/UX Overhaul & Modernization [#20](https://github.com/ThorSPB/SDAHymns/issues/20)
-  - Modern design system (color palette, typography, spacing)
-  - Icon system integration (Fluent/Material icons)
-  - Smooth animations and transitions
-  - Card-based layouts with elevation
-  - Dark/Light theme system
-  - Toast notifications
-  - MainWindow redesign with two-column layout
 - ✅ Created **Spec 018:** Enhanced Hymn Slide Formatting [#21](https://github.com/ThorSPB/SDAHymns/issues/21)
-  - 5 verse number styles (Badge, Large Decorative, Inline, etc.)
-  - 5 chorus formatting options (Indent, Italic, Background, etc.)
-  - Smart text layout with hyphenation
-  - Multi-column layout support
-  - Slide metadata display (hymn number, verse indicator)
-  - 5 transition effects (Fade, Slide, Dissolve, etc.)
-  - Typography enhancements (line height, letter spacing)
 - ✅ Created **Spec 019:** Compact Remote Control Widget [#22](https://github.com/ThorSPB/SDAHymns/issues/22)
-  - Widget-style default GUI (280x520px, bottom-right corner)
-  - Custom window chrome (no standard title bar/buttons)
-  - Position management (dragable, lockable, persistent)
-  - Always on top toggle
-  - Essential controls (hymn input, number pad, navigation)
-  - Borderless fullscreen DisplayWindow on projector
-  - Multi-monitor support with projector selection
-  - MainWindow becomes "Advanced Mode" for configuration
 - ✅ Moved **Spec 015** (Remote Control API) into Phase 5 as **Spec 020**
-- 📋 **NEXT:** Begin implementation (recommended: Spec 019 first for immediate UX improvement)
+
+**Implementation - Spec 019: Compact Remote Widget** ✅ COMPLETE
+- ✅ Created `RemoteWidgetSettings` model with JSON persistence
+- ✅ Created `RemoteWidgetViewModel` with all core logic
+- ✅ Created `RemoteWidget.axaml` with custom window chrome
+- ✅ Implemented position save/load (default: bottom-right corner)
+- ✅ Custom title bar with menu dropdown (≡), minimize, close buttons
+- ✅ Draggable window with lock/unlock toggle
+- ✅ Always-on-top toggle with persistence
+- ✅ Hymn number input with Enter key support
+- ✅ Optional number pad (3x4 grid: 0-9, ←, ⏎) with toggle
+- ✅ SHOW/BLANK action buttons
+- ✅ Verse navigation buttons (▲ Prev / ▼ Next)
+- ✅ Audio control button integration
+- ✅ Status message display
+- ✅ Bottom toolbar (📌 Pin, 🔒 Lock, ⚙ Advanced Mode)
+- ✅ **DisplayWindow integration** - properly shows hymn content
+- ✅ **PowerPoint-style keyboard controls:**
+  - Space/→/↓/PgDn/Enter → Next verse
+  - ←/↑/PgUp/Backspace → Previous verse
+  - Escape/B → Close/blank
+- ✅ **App launch flow:** Default = RemoteWidget, `--advanced` = MainWindow
+- ✅ Beautiful color scheme approved:
+  - #1E1E2E (background), #6366F1 (accent), #2A2A3C (surface), #16161E (titlebar)
+- ✅ Database migration for `RemoteWidgetSettingsJson` field
+
+**User Feedback:**
+- ✅ Colors are beautiful and should be used throughout the app
+- ✅ Layout/sizing needs polish (to be addressed in Spec 017)
+- ✅ Keyboard controls work perfectly like PowerPoint
+- ✅ Core functionality complete, ready for polish phase
+
+**📋 NEXT:** Spec 017 (UI/UX Overhaul) will polish RemoteWidget, DisplayWindow, and MainWindow
 
 **Phase 2 Progress:**
 - ✅ **Spec 006**: Enhanced Control Window - COMPLETE
