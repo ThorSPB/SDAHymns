@@ -1,7 +1,8 @@
 # Spec 018: Enhanced Hymn Slide Formatting
 
-**Status:** 📋 Planned
+**Status:** ✅ Implemented
 **Created:** 2025-12-26
+**Completed:** 2025-12-26
 **Dependencies:** 007-display-profiles.md, 017-ui-ux-overhaul.md
 
 ## Overview
@@ -427,6 +428,32 @@ public class DisplayProfile
 3. Test with real hymns on projector
 4. Document best practices in tooltip hints
 5. Create 2-3 new preset profiles showcasing features
+
+## Implementation Notes
+
+**Completed Features:**
+- ✅ All 24 new properties added to DisplayProfile model
+- ✅ Database migration created and applied
+- ✅ Title-only-on-first-verse behavior (user requirement)
+- ✅ Black ending slide with auto-close timer (user requirement)
+- ✅ 6 verse number styles implemented (None, InlinePlain, InlineBold, Badge, LargeDecorative, Superscript)
+- ✅ 6 chorus formatting styles (SameAsVerse, Indented, Italic, ColoredText, BackgroundHighlight, Combined)
+- ✅ Typography enhancements (line height, letter spacing, paragraph/verse spacing)
+- ✅ ProfileEditor UI updated with 4 new sections (160+ lines of XAML)
+- ✅ All 123 tests passing
+- ✅ Build succeeded with 0 warnings
+
+**Deferred Features:**
+- ⏭️ Advanced transition animations (Slide, Dissolve) - Would require significant animation framework implementation
+- ⏭️ Multi-column layout - Future enhancement
+- ⏭️ Slide metadata display (corner info) - Future enhancement
+- ⏭️ Smart text layout (hyphenation, orphan/widow prevention) - Future enhancement
+
+**Technical Decisions:**
+- Used simple visibility toggling for verse number styles instead of complex XAML templating
+- Implemented chorus detection based on label containing "Refren"
+- Added auto-close event system for ending slide (DisplayWindowCloseRequested)
+- Used existing LineHeight and LetterSpacing properties for typography
 
 ## Acceptance Criteria
 

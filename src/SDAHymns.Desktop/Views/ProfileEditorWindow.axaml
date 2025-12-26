@@ -499,6 +499,206 @@
                         </StackPanel>
                     </StackPanel>
 
+                    <!-- Enhanced Slide Formatting (Spec 018) -->
+
+                    <!-- Verse Number Styling Section -->
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="Verse Number Styling"
+                                   FontSize="18"
+                                   FontWeight="Bold"
+                                   Foreground="White"/>
+                        <Separator Background="#333333"/>
+
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Verse Number Style" FontSize="12" Foreground="#CCCCCC"/>
+                            <ComboBox SelectedItem="{Binding SelectedProfile.VerseNumberStyle}"
+                                      Background="#2A2A2A"
+                                      Foreground="White"
+                                      BorderBrush="#444444">
+                                <ComboBoxItem Content="None"/>
+                                <ComboBoxItem Content="InlinePlain"/>
+                                <ComboBoxItem Content="InlineBold"/>
+                                <ComboBoxItem Content="Badge"/>
+                                <ComboBoxItem Content="LargeDecorative"/>
+                                <ComboBoxItem Content="Superscript"/>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <Grid ColumnDefinitions="*,10,*" RowDefinitions="Auto,Auto">
+                            <TextBlock Grid.Column="0" Grid.Row="0" Text="Verse Number Color" FontSize="12" Foreground="#CCCCCC"/>
+                            <TextBox Grid.Column="0" Grid.Row="1"
+                                    Text="{Binding SelectedProfile.VerseNumberColor}"
+                                    Watermark="#CCCCCC"
+                                    Background="#2A2A2A"
+                                    Foreground="White"
+                                    BorderBrush="#444444"/>
+
+                            <TextBlock Grid.Column="2" Grid.Row="0" Text="Number Size" FontSize="12" Foreground="#CCCCCC"/>
+                            <NumericUpDown Grid.Column="2" Grid.Row="1"
+                                          Value="{Binding SelectedProfile.VerseNumberSize}"
+                                          Minimum="12"
+                                          Maximum="80"
+                                          Increment="2"
+                                          Background="#2A2A2A"
+                                          Foreground="White"
+                                          BorderBrush="#444444"/>
+                        </Grid>
+
+                        <CheckBox Content="Verse Number on Separate Line"
+                                 IsChecked="{Binding SelectedProfile.VerseNumberSeparateLine}"
+                                 Foreground="White"/>
+                    </StackPanel>
+
+                    <!-- Chorus Formatting Section -->
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="Chorus Formatting"
+                                   FontSize="18"
+                                   FontWeight="Bold"
+                                   Foreground="White"/>
+                        <Separator Background="#333333"/>
+
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Chorus Style" FontSize="12" Foreground="#CCCCCC"/>
+                            <ComboBox SelectedItem="{Binding SelectedProfile.ChorusStyle}"
+                                      Background="#2A2A2A"
+                                      Foreground="White"
+                                      BorderBrush="#444444">
+                                <ComboBoxItem Content="SameAsVerse"/>
+                                <ComboBoxItem Content="Indented"/>
+                                <ComboBoxItem Content="Italic"/>
+                                <ComboBoxItem Content="ColoredText"/>
+                                <ComboBoxItem Content="BackgroundHighlight"/>
+                                <ComboBoxItem Content="Combined"/>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <Grid ColumnDefinitions="*,10,*,10,*" RowDefinitions="Auto,Auto">
+                            <TextBlock Grid.Column="0" Grid.Row="0" Text="Indent Amount" FontSize="12" Foreground="#CCCCCC"/>
+                            <NumericUpDown Grid.Column="0" Grid.Row="1"
+                                          Value="{Binding SelectedProfile.ChorusIndentAmount}"
+                                          Minimum="0"
+                                          Maximum="200"
+                                          Increment="10"
+                                          Background="#2A2A2A"
+                                          Foreground="White"
+                                          BorderBrush="#444444"/>
+
+                            <TextBlock Grid.Column="2" Grid.Row="0" Text="Text Color" FontSize="12" Foreground="#CCCCCC"/>
+                            <TextBox Grid.Column="2" Grid.Row="1"
+                                    Text="{Binding SelectedProfile.ChorusTextColor}"
+                                    Watermark="#E0E0E0"
+                                    Background="#2A2A2A"
+                                    Foreground="White"
+                                    BorderBrush="#444444"/>
+
+                            <TextBlock Grid.Column="4" Grid.Row="0" Text="Background Color" FontSize="12" Foreground="#CCCCCC"/>
+                            <TextBox Grid.Column="4" Grid.Row="1"
+                                    Text="{Binding SelectedProfile.ChorusBackgroundColor}"
+                                    Watermark="#1A1A1A"
+                                    Background="#2A2A2A"
+                                    Foreground="White"
+                                    BorderBrush="#444444"/>
+                        </Grid>
+
+                        <CheckBox Content="Chorus in Italic"
+                                 IsChecked="{Binding SelectedProfile.ChorusItalic}"
+                                 Foreground="White"/>
+                        <CheckBox Content="Show 'Refrain:' Label"
+                                 IsChecked="{Binding SelectedProfile.ShowChorusLabel}"
+                                 Foreground="White"/>
+                    </StackPanel>
+
+                    <!-- Slide Settings Section -->
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="Slide Settings"
+                                   FontSize="18"
+                                   FontWeight="Bold"
+                                   Foreground="White"/>
+                        <Separator Background="#333333"/>
+
+                        <CheckBox Content="Show Title Only on First Verse"
+                                 IsChecked="{Binding SelectedProfile.ShowTitleOnFirstVerseOnly}"
+                                 Foreground="White"
+                                 ToolTip.Tip="When enabled, hymn title appears only when hymn first loads"/>
+
+                        <CheckBox Content="Enable Black Ending Slide"
+                                 IsChecked="{Binding SelectedProfile.EnableBlackEndingSlide}"
+                                 Foreground="White"
+                                 ToolTip.Tip="Show black slide after last verse (like PowerPoint)"/>
+
+                        <StackPanel Spacing="4"
+                                   IsEnabled="{Binding SelectedProfile.EnableBlackEndingSlide}">
+                            <TextBlock Text="Auto-Close Duration (seconds)" FontSize="12" Foreground="#CCCCCC"/>
+                            <NumericUpDown Value="{Binding SelectedProfile.EndingSlideAutoCloseDuration}"
+                                          Minimum="0"
+                                          Maximum="60"
+                                          Increment="1"
+                                          Background="#2A2A2A"
+                                          Foreground="White"
+                                          BorderBrush="#444444"
+                                          ToolTip.Tip="0 = disabled, auto-close after N seconds"/>
+                        </StackPanel>
+
+                        <Grid ColumnDefinitions="*,10,*" RowDefinitions="Auto,Auto">
+                            <TextBlock Grid.Column="0" Grid.Row="0" Text="Paragraph Spacing" FontSize="12" Foreground="#CCCCCC"/>
+                            <NumericUpDown Grid.Column="0" Grid.Row="1"
+                                          Value="{Binding SelectedProfile.ParagraphSpacing}"
+                                          Minimum="0"
+                                          Maximum="100"
+                                          Increment="5"
+                                          Background="#2A2A2A"
+                                          Foreground="White"
+                                          BorderBrush="#444444"
+                                          ToolTip.Tip="Space between verse number and text"/>
+
+                            <TextBlock Grid.Column="2" Grid.Row="0" Text="Verse Spacing" FontSize="12" Foreground="#CCCCCC"/>
+                            <NumericUpDown Grid.Column="2" Grid.Row="1"
+                                          Value="{Binding SelectedProfile.VerseSpacing}"
+                                          Minimum="0"
+                                          Maximum="150"
+                                          Increment="10"
+                                          Background="#2A2A2A"
+                                          Foreground="White"
+                                          BorderBrush="#444444"
+                                          ToolTip.Tip="Space between verses (future use)"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- Transitions Section -->
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="Transitions"
+                                   FontSize="18"
+                                   FontWeight="Bold"
+                                   Foreground="White"/>
+                        <Separator Background="#333333"/>
+
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Verse Transition Effect" FontSize="12" Foreground="#CCCCCC"/>
+                            <ComboBox SelectedItem="{Binding SelectedProfile.VerseTransition}"
+                                      Background="#2A2A2A"
+                                      Foreground="White"
+                                      BorderBrush="#444444">
+                                <ComboBoxItem Content="None"/>
+                                <ComboBoxItem Content="Fade"/>
+                                <ComboBoxItem Content="Slide"/>
+                                <ComboBoxItem Content="Dissolve"/>
+                                <ComboBoxItem Content="FadeToBlack"/>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Transition Duration (ms)" FontSize="12" Foreground="#CCCCCC"/>
+                            <NumericUpDown Value="{Binding SelectedProfile.TransitionDuration}"
+                                          Minimum="100"
+                                          Maximum="1000"
+                                          Increment="50"
+                                          Background="#2A2A2A"
+                                          Foreground="White"
+                                          BorderBrush="#444444"
+                                          ToolTip.Tip="Duration of transition animation"/>
+                        </StackPanel>
+                    </StackPanel>
+
                     <!-- Advanced Section -->
                     <StackPanel Spacing="12">
                         <TextBlock Text="Advanced"

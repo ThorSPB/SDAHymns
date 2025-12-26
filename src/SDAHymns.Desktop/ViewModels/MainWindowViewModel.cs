@@ -118,6 +118,9 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     private bool _isOnEndingSlide = false;
 
     [ObservableProperty]
+    private bool _isOnTitleSlide = false;
+
+    [ObservableProperty]
     private int _endingSlideCountdown = 0;
 
     private System.Timers.Timer? _endingSlideTimer;
@@ -227,11 +230,15 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 
     partial void OnCurrentVerseIndexChanged(int value)
     {
-        // Reset ending slide state when changing verses
+        // Reset ending slide and title slide state when changing verses
         if (IsOnEndingSlide)
         {
             IsOnEndingSlide = false;
             StopEndingSlideTimer();
+        }
+        if (IsOnTitleSlide)
+        {
+            IsOnTitleSlide = false;
         }
 
         OnPropertyChanged(nameof(CurrentVerseContent));
@@ -240,6 +247,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         OnPropertyChanged(nameof(CanGoPrevious));
         OnPropertyChanged(nameof(VerseIndicator));
         OnPropertyChanged(nameof(ShowTitleSlide));
+        OnPropertyChanged(nameof(ShowVerseContent));
         OnPropertyChanged(nameof(IsOnFirstVerse));
     }
 
@@ -249,12 +257,16 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         IsOnEndingSlide = false;
         StopEndingSlideTimer();
 
+        // Start on title slide if enabled
+        IsOnTitleSlide = ActiveProfile?.ShowTitleOnFirstVerseOnly == true;
+
         OnPropertyChanged(nameof(CurrentVerseContent));
         OnPropertyChanged(nameof(CurrentVerseLabel));
         OnPropertyChanged(nameof(CanGoNext));
         OnPropertyChanged(nameof(CanGoPrevious));
         OnPropertyChanged(nameof(VerseIndicator));
         OnPropertyChanged(nameof(ShowTitleSlide));
+        OnPropertyChanged(nameof(ShowVerseContent));
         OnPropertyChanged(nameof(IsOnFirstVerse));
     }
 
@@ -272,21 +284,25 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         ? $"{CurrentHymn.Number}. {CurrentHymn.Title}"
         : null;
 
-    // Determines if title should be shown (first verse only if profile setting is enabled)
-    public bool ShowTitleSlide =>
-        ActiveProfile?.ShowTitleOnFirstVerseOnly == true
-            ? CurrentVerseIndex == 0 && !IsOnEndingSlide
-            : !IsOnEndingSlide;
+    // Title slide is shown as a separate slide (not on top of verses)
+    public bool ShowTitleSlide => IsOnTitleSlide;
 
-    public bool IsOnFirstVerse => CurrentVerseIndex == 0 && !IsOnEndingSlide;
+    // Content should be hidden when on title slide or ending slide
+    public bool ShowVerseContent => !IsOnTitleSlide && !IsOnEndingSlide;
 
-    // Can go next if not on last verse, OR if on last verse and ending slide is enabled
+    public bool IsOnFirstVerse => CurrentVerseIndex == 0 && !IsOnEndingSlide && !IsOnTitleSlide;
+
+    // Can go next if on title slide, not on last verse, OR if on last verse and ending slide is enabled
     public bool CanGoNext =>
         IsOnEndingSlide
             ? false
-            : CurrentVerseIndex < Verses.Count - 1 || (ActiveProfile?.EnableBlackEndingSlide == true);
+            : IsOnTitleSlide || CurrentVerseIndex < Verses.Count - 1 || (ActiveProfile?.EnableBlackEndingSlide == true);
 
-    public bool CanGoPrevious => IsOnEndingSlide || CurrentVerseIndex > 0;
+    // Can go previous if: on ending slide, on a verse after first, or on first verse (to go back to title)
+    public bool CanGoPrevious =>
+        IsOnEndingSlide ||
+        CurrentVerseIndex > 0 ||
+        (CurrentVerseIndex == 0 && !IsOnTitleSlide && ActiveProfile?.ShowTitleOnFirstVerseOnly == true);
 
     [RelayCommand]
     public async Task LoadHymnAsync()
@@ -362,12 +378,24 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         if (!CanGoNext)
             return;
 
+        // If on title slide, move to first verse
+        if (IsOnTitleSlide)
+        {
+            IsOnTitleSlide = false;
+            CurrentVerseIndex = 0;
+            OnPropertyChanged(nameof(ShowTitleSlide));
+            OnPropertyChanged(nameof(ShowVerseContent));
+            OnPropertyChanged(nameof(IsOnFirstVerse));
+            return;
+        }
+
         // If on last verse and ending slide is enabled, move to ending slide
         if (CurrentVerseIndex == Verses.Count - 1 && ActiveProfile?.EnableBlackEndingSlide == true)
         {
             IsOnEndingSlide = true;
             StartEndingSlideTimer();
             OnPropertyChanged(nameof(ShowTitleSlide));
+            OnPropertyChanged(nameof(ShowVerseContent));
             OnPropertyChanged(nameof(IsOnFirstVerse));
         }
         else
@@ -388,12 +416,22 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
             IsOnEndingSlide = false;
             StopEndingSlideTimer();
             OnPropertyChanged(nameof(ShowTitleSlide));
+            OnPropertyChanged(nameof(ShowVerseContent));
             OnPropertyChanged(nameof(IsOnFirstVerse));
+            return;
         }
-        else
+
+        // If on first verse and title slide is enabled, go back to title slide
+        if (CurrentVerseIndex == 0 && ActiveProfile?.ShowTitleOnFirstVerseOnly == true)
         {
-            CurrentVerseIndex--;
+            IsOnTitleSlide = true;
+            OnPropertyChanged(nameof(ShowTitleSlide));
+            OnPropertyChanged(nameof(ShowVerseContent));
+            OnPropertyChanged(nameof(IsOnFirstVerse));
+            return;
         }
+
+        CurrentVerseIndex--;
     }
 
     // Search methods

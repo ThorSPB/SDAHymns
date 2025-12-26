@@ -149,17 +149,13 @@ public partial class DisplayWindow : Window
             HymnTitleText.IsVisible = profile.ShowHymnTitle;
         }
 
-        // Apply to verse label
-        if (VerseLabelText != null)
-        {
-            VerseLabelText.FontFamily = new FontFamily(profile.FontFamily);
-            VerseLabelText.FontSize = profile.LabelFontSize;
-            VerseLabelText.Foreground = new SolidColorBrush(Color.Parse(profile.LabelColor));
-            VerseLabelText.FontWeight = ParseFontWeight(profile.FontWeight);
-            VerseLabelText.IsVisible = profile.ShowVerseNumbers;
-        }
+        // Apply verse number styling (Spec 018)
+        ApplyVerseNumberStyle(profile);
 
-        // Apply to verse content
+        // Apply chorus formatting (Spec 018)
+        ApplyChorusFormatting(profile);
+
+        // Apply to verse content (with typography enhancements - Phase 7)
         if (VerseContentText != null)
         {
             VerseContentText.FontFamily = new FontFamily(profile.FontFamily);
@@ -167,7 +163,10 @@ public partial class DisplayWindow : Window
             VerseContentText.Foreground = new SolidColorBrush(Color.Parse(profile.TextColor));
             VerseContentText.FontWeight = ParseFontWeight(profile.FontWeight);
             VerseContentText.TextAlignment = ParseTextAlignment(profile.TextAlignment);
+
+            // Typography enhancements (Spec 018 - Phase 7)
             VerseContentText.LineHeight = profile.LineHeight * profile.VerseFontSize;
+            VerseContentText.LetterSpacing = profile.LetterSpacing;
 
             // Apply text effects (shadow/outline)
             if (profile.EnableTextShadow)
@@ -190,6 +189,177 @@ public partial class DisplayWindow : Window
 
             // Apply vertical alignment
             ContentPanel.VerticalAlignment = ParseVerticalAlignment(profile.VerticalAlignment);
+        }
+    }
+
+    /// <summary>
+    /// Applies verse number styling based on profile settings (Spec 018 - Phase 5)
+    /// </summary>
+    private void ApplyVerseNumberStyle(DisplayProfile profile)
+    {
+        if (VerseLabelText == null || VerseLabelBadge == null || VerseLabelBadgeText == null || VerseLabelContainer == null)
+            return;
+
+        var verseNumberSize = profile.VerseNumberSize > 0 ? profile.VerseNumberSize : profile.LabelFontSize;
+        var verseNumberColor = Color.Parse(profile.VerseNumberColor);
+
+        // Hide all verse number elements first
+        VerseLabelText.IsVisible = false;
+        VerseLabelBadge.IsVisible = false;
+        VerseLabelContainer.IsVisible = profile.ShowVerseNumbers;
+
+        // Set margin based on ParagraphSpacing
+        VerseLabelContainer.Margin = new Thickness(0, 0, 0, profile.ParagraphSpacing);
+
+        switch (profile.VerseNumberStyle)
+        {
+            case "None":
+                VerseLabelContainer.IsVisible = false;
+                break;
+
+            case "InlinePlain":
+                VerseLabelText.IsVisible = true;
+                VerseLabelText.FontFamily = new FontFamily(profile.FontFamily);
+                VerseLabelText.FontSize = verseNumberSize;
+                VerseLabelText.Foreground = new SolidColorBrush(verseNumberColor);
+                VerseLabelText.FontWeight = FontWeight.Normal;
+                break;
+
+            case "InlineBold":
+                VerseLabelText.IsVisible = true;
+                VerseLabelText.FontFamily = new FontFamily(profile.FontFamily);
+                VerseLabelText.FontSize = verseNumberSize;
+                VerseLabelText.Foreground = new SolidColorBrush(Color.Parse(profile.AccentColor));
+                VerseLabelText.FontWeight = FontWeight.Bold;
+                break;
+
+            case "Badge":
+                VerseLabelBadge.IsVisible = true;
+                VerseLabelBadge.Background = new SolidColorBrush(Color.Parse(profile.AccentColor));
+                VerseLabelBadgeText.FontFamily = new FontFamily(profile.FontFamily);
+                VerseLabelBadgeText.FontSize = verseNumberSize;
+                VerseLabelBadgeText.FontWeight = FontWeight.Bold;
+                break;
+
+            case "LargeDecorative":
+                VerseLabelText.IsVisible = true;
+                VerseLabelText.FontFamily = new FontFamily(profile.FontFamily);
+                VerseLabelText.FontSize = verseNumberSize * 2; // 2x larger
+                VerseLabelText.Foreground = new SolidColorBrush(verseNumberColor);
+                VerseLabelText.FontWeight = FontWeight.Light;
+                VerseLabelText.Opacity = 0.6;
+                if (profile.VerseNumberSeparateLine)
+                {
+                    VerseLabelContainer.Orientation = Avalonia.Layout.Orientation.Vertical;
+                }
+                break;
+
+            case "Superscript":
+                VerseLabelText.IsVisible = true;
+                VerseLabelText.FontFamily = new FontFamily(profile.FontFamily);
+                VerseLabelText.FontSize = verseNumberSize * 0.6; // Smaller
+                VerseLabelText.Foreground = new SolidColorBrush(verseNumberColor);
+                VerseLabelText.FontWeight = FontWeight.Normal;
+                VerseLabelText.Margin = new Thickness(0, -10, 5, 0); // Raised position
+                break;
+
+            default:
+                // Fallback to InlinePlain
+                VerseLabelText.IsVisible = true;
+                VerseLabelText.FontFamily = new FontFamily(profile.FontFamily);
+                VerseLabelText.FontSize = verseNumberSize;
+                VerseLabelText.Foreground = new SolidColorBrush(verseNumberColor);
+                VerseLabelText.FontWeight = FontWeight.Normal;
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Applies chorus formatting based on profile settings (Spec 018 - Phase 6)
+    /// </summary>
+    private void ApplyChorusFormatting(DisplayProfile profile)
+    {
+        if (VerseContentText == null || ChorusBackground == null)
+            return;
+
+        // Check if current verse is a chorus (label contains "Refren" or "Refrain")
+        var isChorus = DataContext is MainWindowViewModel vm &&
+                       vm.CurrentVerseLabel?.Contains("Refren", StringComparison.OrdinalIgnoreCase) == true;
+
+        if (!isChorus)
+        {
+            // Reset to normal verse styling
+            ChorusBackground.Background = new SolidColorBrush(Colors.Transparent);
+            ChorusBackground.Padding = new Thickness(0);
+            VerseContentText.Foreground = new SolidColorBrush(Color.Parse(profile.TextColor));
+            VerseContentText.FontStyle = FontStyle.Normal;
+            VerseContentText.Margin = new Thickness(0);
+            return;
+        }
+
+        // Apply chorus styling based on ChorusStyle
+        switch (profile.ChorusStyle)
+        {
+            case "SameAsVerse":
+                // No special formatting
+                ChorusBackground.Background = new SolidColorBrush(Colors.Transparent);
+                ChorusBackground.Padding = new Thickness(0);
+                VerseContentText.Foreground = new SolidColorBrush(Color.Parse(profile.TextColor));
+                VerseContentText.FontStyle = FontStyle.Normal;
+                VerseContentText.Margin = new Thickness(0);
+                break;
+
+            case "Indented":
+                ChorusBackground.Background = new SolidColorBrush(Colors.Transparent);
+                ChorusBackground.Padding = new Thickness(0);
+                VerseContentText.Foreground = new SolidColorBrush(Color.Parse(profile.TextColor));
+                VerseContentText.FontStyle = FontStyle.Normal;
+                VerseContentText.Margin = new Thickness(profile.ChorusIndentAmount, 0, 0, 0);
+                break;
+
+            case "Italic":
+                ChorusBackground.Background = new SolidColorBrush(Colors.Transparent);
+                ChorusBackground.Padding = new Thickness(0);
+                VerseContentText.Foreground = new SolidColorBrush(Color.Parse(profile.TextColor));
+                VerseContentText.FontStyle = FontStyle.Italic;
+                VerseContentText.Margin = new Thickness(0);
+                break;
+
+            case "ColoredText":
+                ChorusBackground.Background = new SolidColorBrush(Colors.Transparent);
+                ChorusBackground.Padding = new Thickness(0);
+                VerseContentText.Foreground = new SolidColorBrush(Color.Parse(profile.ChorusTextColor));
+                VerseContentText.FontStyle = FontStyle.Normal;
+                VerseContentText.Margin = new Thickness(0);
+                break;
+
+            case "BackgroundHighlight":
+                var bgColor = Color.Parse(profile.ChorusBackgroundColor);
+                ChorusBackground.Background = new SolidColorBrush(bgColor);
+                ChorusBackground.Padding = new Thickness(30, 20);
+                VerseContentText.Foreground = new SolidColorBrush(Color.Parse(profile.TextColor));
+                VerseContentText.FontStyle = FontStyle.Normal;
+                VerseContentText.Margin = new Thickness(0);
+                break;
+
+            case "Combined":
+                // Indented + Italic + Colored
+                var combinedBgColor = Color.Parse(profile.ChorusBackgroundColor);
+                ChorusBackground.Background = new SolidColorBrush(combinedBgColor);
+                ChorusBackground.Padding = new Thickness(30, 20);
+                VerseContentText.Foreground = new SolidColorBrush(Color.Parse(profile.ChorusTextColor));
+                VerseContentText.FontStyle = profile.ChorusItalic ? FontStyle.Italic : FontStyle.Normal;
+                VerseContentText.Margin = new Thickness(profile.ChorusIndentAmount, 0, 0, 0);
+                break;
+
+            default:
+                // Fallback to SameAsVerse
+                ChorusBackground.Background = new SolidColorBrush(Colors.Transparent);
+                ChorusBackground.Padding = new Thickness(0);
+                VerseContentText.Foreground = new SolidColorBrush(Color.Parse(profile.TextColor));
+                VerseContentText.FontStyle = FontStyle.Normal;
+                VerseContentText.Margin = new Thickness(0);
+                break;
         }
     }
 

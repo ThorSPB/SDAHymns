@@ -46,7 +46,7 @@ This file tracks all specifications and their implementation status.
 | ID | Spec | Status | Issue | Notes |
 |----|------|--------|-------|-------|
 | 017 | [UI/UX Overhaul](017-ui-ux-overhaul.md) | 📋 Planned | [#20](https://github.com/ThorSPB/SDAHymns/issues/20) | Modern design system, animations, themes, icon integration, card layouts - INCLUDES polishing RemoteWidget & DisplayWindow |
-| 018 | [Enhanced Slide Formatting](018-enhanced-slide-formatting.md) | 📋 Planned | [#21](https://github.com/ThorSPB/SDAHymns/issues/21) | Verse number styling, chorus differentiation, smart layout, transitions |
+| 018 | [Enhanced Slide Formatting](018-enhanced-slide-formatting.md) | ✅ Implemented | [#21](https://github.com/ThorSPB/SDAHymns/issues/21) | Verse number styling (6 styles), chorus formatting (6 styles), title-on-first-verse, black ending slide, typography |
 | 019 | [Compact Remote Widget](019-compact-remote-widget.md) | ✅ Implemented | [#22](https://github.com/ThorSPB/SDAHymns/issues/22) | Widget-style default GUI, custom chrome, lockable position, borderless display, PowerPoint-style keyboard controls |
 | ~~015~~ 020 | [Remote Control API](015-remote-control-api.md) | 📋 Planned | [#16](https://github.com/ThorSPB/SDAHymns/issues/16) | Embedded Kestrel server, SignalR sync, mobile-first Vue.js web app |
 
@@ -347,6 +347,40 @@ All Phase 1 goals achieved:
 - ✅ Layout/sizing needs polish (to be addressed in Spec 017)
 - ✅ Keyboard controls work perfectly like PowerPoint
 - ✅ Core functionality complete, ready for polish phase
+
+**Session 9 (2025-12-26 - Completed - Spec 018 - Enhanced Slide Formatting):**
+- ✅ Added 24 new properties to DisplayProfile model
+- ✅ Created and applied database migration (AddEnhancedSlideFormatting)
+- ✅ **User Requirements:**
+  - Title appears only on first verse (ShowTitleOnFirstVerseOnly setting)
+  - Black ending slide after last verse with 10-second countdown
+  - Auto-close display window after countdown
+  - Clicking Next on ending slide closes immediately
+- ✅ **Verse Number Styling:** 6 styles implemented
+  - None, InlinePlain, InlineBold, Badge, LargeDecorative, Superscript
+  - Configurable color, size, separate line option
+  - Badge style with accent color background
+- ✅ **Chorus Formatting:** 6 styles implemented
+  - SameAsVerse, Indented, Italic, ColoredText, BackgroundHighlight, Combined
+  - Configurable indent amount, colors, italic toggle
+  - Auto-detection based on "Refren" label
+- ✅ **Typography Enhancements:**
+  - Line height multiplier (already existed)
+  - Letter spacing (already existed)
+  - New: ParagraphSpacing (between verse number and text)
+  - New: VerseSpacing (between verses)
+- ✅ **ProfileEditor UI:** Added 4 new sections
+  - Verse Number Styling (style, color, size, separate line)
+  - Chorus Formatting (style, indent, colors, italic, label)
+  - Slide Settings (title first verse, ending slide, auto-close, spacing)
+  - Transitions (effect type, duration)
+- ✅ **Deferred Features:**
+  - Advanced transitions (Slide, Dissolve, FadeToBlack) - requires animation framework
+  - Multi-column layout - future enhancement
+  - Slide metadata display - future enhancement
+  - Smart text layout (hyphenation, orphan/widow) - future enhancement
+- ✅ All 123 tests passing
+- ✅ Clean build (0 warnings, 0 errors)
 
 **📋 NEXT:** Spec 017 (UI/UX Overhaul) will polish RemoteWidget, DisplayWindow, and MainWindow
 

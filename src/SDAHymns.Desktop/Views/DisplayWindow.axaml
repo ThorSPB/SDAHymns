@@ -22,41 +22,63 @@
                 Height="{Binding DisplayHeight}"
                 Background="Black">
             <Grid>
-                <!-- Main Content (Verse Display) -->
-                <Grid RowDefinitions="Auto,*" IsVisible="{Binding !IsOnEndingSlide}">
-                    <!-- Hymn Title (shown based on profile settings) -->
-                    <Border Grid.Row="0"
-                            x:Name="TitleBorder"
-                            Background="Black"
-                            Padding="40,30"
-                            IsVisible="{Binding ShowTitleSlide}">
+                <!-- Title Slide (separate slide, just the title) -->
+                <Border x:Name="TitleBorder"
+                        Background="Black"
+                        Padding="40,30"
+                        IsVisible="{Binding ShowTitleSlide}">
+                    <Viewbox Stretch="Uniform">
                         <TextBlock x:Name="HymnTitleText"
                                    Text="{Binding HymnTitle}"
-                                   FontSize="36"
+                                   Width="1200"
+                                   FontSize="72"
                                    FontWeight="Bold"
                                    HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
                                    TextAlignment="Center"
                                    Foreground="White"
                                    TextWrapping="Wrap"/>
-                    </Border>
+                    </Viewbox>
+                </Border>
 
-                    <!-- Verse Content -->
-                    <Viewbox Grid.Row="1" Stretch="Uniform" StretchDirection="DownOnly">
-                        <StackPanel x:Name="ContentPanel"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Left"
-                                   Width="1200"
-                                   Margin="100,60,100,60">
-                            <!-- Verse Label (e.g., "1.", "Refren") -->
+                <!-- Verse Content (shown when NOT on title slide or ending slide) -->
+                <Viewbox Stretch="Uniform" StretchDirection="DownOnly" IsVisible="{Binding ShowVerseContent}">
+                    <StackPanel x:Name="ContentPanel"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Left"
+                               Width="1200"
+                               Margin="100,60,100,60">
+                        <!-- Verse Number/Label Container -->
+                        <StackPanel x:Name="VerseLabelContainer" Orientation="Horizontal" Margin="0,0,0,40">
+                            <!-- Badge Style -->
+                            <Border x:Name="VerseLabelBadge"
+                                    Background="#6366F1"
+                                    CornerRadius="8"
+                                    Padding="20,10"
+                                    Margin="0,0,20,0"
+                                    IsVisible="False">
+                                <TextBlock x:Name="VerseLabelBadgeText"
+                                          Text="{Binding CurrentVerseLabel}"
+                                          FontSize="32"
+                                          FontWeight="Bold"
+                                          Foreground="White"/>
+                            </Border>
+
+                            <!-- Inline/Normal Style -->
                             <TextBlock x:Name="VerseLabelText"
                                       Text="{Binding CurrentVerseLabel}"
                                       FontSize="32"
                                       FontWeight="SemiBold"
                                       HorizontalAlignment="Left"
-                                      Margin="0,0,0,40"
-                                      Foreground="#CCCCCC"/>
+                                      Foreground="#CCCCCC"
+                                      IsVisible="True"/>
+                        </StackPanel>
 
-                            <!-- Verse Content -->
+                        <!-- Verse Content (with chorus styling support) -->
+                        <Border x:Name="ChorusBackground"
+                                Background="Transparent"
+                                CornerRadius="8"
+                                Padding="0">
                             <TextBlock x:Name="VerseContentText"
                                       Text="{Binding CurrentVerseContent}"
                                       FontSize="56"
@@ -64,27 +86,13 @@
                                       TextAlignment="Left"
                                       LineHeight="75"
                                       Foreground="White"/>
-                        </StackPanel>
-                    </Viewbox>
-                </Grid>
-
-                <!-- Black Ending Slide with Countdown -->
-                <Border Background="Black" IsVisible="{Binding IsOnEndingSlide}">
-                    <StackPanel VerticalAlignment="Center"
-                                HorizontalAlignment="Center"
-                                Spacing="20"
-                                IsVisible="{Binding EndingSlideCountdown, Converter={x:Static ObjectConverters.IsNotNull}}">
-                        <TextBlock Text="Closing in..."
-                                   FontSize="32"
-                                   FontWeight="Normal"
-                                   HorizontalAlignment="Center"
-                                   Foreground="#666666"/>
-                        <TextBlock Text="{Binding EndingSlideCountdown}"
-                                   FontSize="72"
-                                   FontWeight="Bold"
-                                   HorizontalAlignment="Center"
-                                   Foreground="#444444"/>
+                        </Border>
                     </StackPanel>
+                </Viewbox>
+
+                <!-- Black Ending Slide (completely blank) -->
+                <Border Background="Black" IsVisible="{Binding IsOnEndingSlide}">
+                    <!-- Intentionally empty - just a black screen -->
                 </Border>
 
                 <!-- Auto-Play Countdown Overlay -->

@@ -94,7 +94,7 @@ public class DisplayProfile
     public int TransitionDuration { get; set; } = 300; // Milliseconds (100-1000)
 
     // Special Slides (User Requirements)
-    public bool ShowTitleOnFirstVerseOnly { get; set; } = false; // Title appears only on first verse
+    public bool ShowTitleOnFirstVerseOnly { get; set; } = true; // Title appears only on first verse
     public bool EnableBlackEndingSlide { get; set; } = true; // Black slide after last verse
     public int EndingSlideAutoCloseDuration { get; set; } = 10; // Seconds (0 = disabled)
 }
