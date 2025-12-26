@@ -66,6 +66,7 @@ public partial class App : Application
 
             // ViewModels
             services.AddTransient<MainWindowViewModel>();
+            services.AddTransient<SettingsWindowViewModel>();
 
             _serviceProvider = services.BuildServiceProvider();
 

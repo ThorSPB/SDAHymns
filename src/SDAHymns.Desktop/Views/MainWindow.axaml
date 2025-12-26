@@ -73,7 +73,7 @@
                 BorderBrush="#333333"
                 BorderThickness="0,0,0,1"
                 Padding="15">
-            <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto,Auto,Auto">
+            <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
                 <TextBox Grid.Column="0"
                          x:Name="SearchTextBox"
                          Text="{Binding SearchQuery}"
@@ -153,6 +153,17 @@
                               BorderBrush="#444444"/>
 
                 <Button Grid.Column="6"
+                        Content="⚙ Settings"
+                        Click="OpenSettings_Click"
+                        ToolTip.Tip="Open Settings (Ctrl+,)"
+                        Width="110"
+                        Height="35"
+                        Margin="0,0,10,0"
+                        Background="#2A2A2A"
+                        Foreground="White"
+                        BorderBrush="#444444"/>
+
+                <Button Grid.Column="7"
                         Content="{Binding DisplayWindowButtonLabel}"
                         Click="ToggleDisplayWindow_Click"
                         ToolTip.Tip="Toggle Display Window (F5)"

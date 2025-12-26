@@ -301,4 +301,22 @@ public partial class MainWindow : Window
     {
         _serviceProvider = serviceProvider;
     }
+
+    private async void OpenSettings_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (_serviceProvider == null) return;
+
+        // Get the SettingsWindowViewModel from DI
+        var settingsViewModel = _serviceProvider.GetService<SettingsWindowViewModel>();
+        if (settingsViewModel == null) return;
+
+        // Create the settings window
+        var settingsWindow = new SettingsWindow
+        {
+            DataContext = settingsViewModel
+        };
+
+        // Show as dialog
+        await settingsWindow.ShowDialog(this);
+    }
 }

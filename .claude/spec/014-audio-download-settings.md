@@ -1,7 +1,8 @@
 # Spec 014: Audio Download & Settings System
 
-**Status:** 📋 Planned
+**Status:** ✅ Implemented (Core features complete, manifest generation pending)
 **Created:** 2025-12-26
+**Updated:** 2025-12-26
 **Dependencies:** 011-audio-playback.md
 **Related Issues:** [#18](https://github.com/ThorSPB/SDAHymns/issues/18)
 
@@ -412,20 +413,23 @@ public interface ISettingsService
 
 ## Acceptance Criteria
 
-- [ ] **Manifest:** Can fetch and parse manifest.json from GitHub/Pi
-- [ ] **Download:** Can download category ZIP files with progress
-- [ ] **Extract:** Can extract ZIP to library folder
-- [ ] **Verify:** Can verify checksums of downloaded files
-- [ ] **Settings UI:** Settings window with audio tab
-- [ ] **Library Path:** Can configure and change library path
-- [ ] **Migration:** Can migrate files from old to new location
-- [ ] **Discovery:** AudioPlayerService finds files in configured path
-- [ ] **Health Check:** Can scan library and report issues
-- [ ] **Delete:** Can delete installed category packs
-- [ ] **Update:** Can update existing packs when new version available
-- [ ] **Fallback:** Falls back to Pi server if GitHub fails
-- [ ] **Progress:** Real-time progress reporting for downloads
-- [ ] **Integration:** Settings accessible from MainWindow (Ctrl+,)
+- [x] **Manifest:** Can fetch and parse manifest.json from GitHub/Pi
+- [x] **Download:** Can download category ZIP files with progress
+- [x] **Extract:** Can extract ZIP to library folder
+- [x] **Verify:** Can verify checksums of downloaded files
+- [x] **Settings UI:** Settings window with tabbed interface (General/Audio/Display)
+- [x] **Library Path:** Can configure and change library path
+- [x] **Migration:** Migration service implemented (UI dialog pending folder picker)
+- [x] **Discovery:** AudioPlayerService finds files in configured path
+- [x] **Health Check:** Can scan library and report issues
+- [x] **Delete:** Can delete installed category packs
+- [x] **Update:** Can update existing packs when new version available
+- [x] **Fallback:** Falls back to Pi server if GitHub fails
+- [x] **Progress:** Real-time progress reporting for downloads
+- [x] **Integration:** Settings accessible from MainWindow via ⚙ Settings button
+- [ ] **UI:** Folder picker implementation (pending platform-specific code)
+- [ ] **Packaging:** Manifest generation script
+- [ ] **Packaging:** Audio pack creation workflow
 
 ## Future Enhancements
 
