@@ -35,16 +35,16 @@ public partial class RemoteWidget : Window
         _serviceProvider = serviceProvider;
     }
 
-    private void OnOpened(object? sender, EventArgs e)
+    private async void OnOpened(object? sender, EventArgs e)
     {
         if (ViewModel == null) return;
+
+        // Initialize ViewModel asynchronously
+        await ViewModel.InitializeAsync();
 
         // Wire up callbacks
         ViewModel.OnShowHymnRequested = ShowHymnOnDisplay;
         ViewModel.OnBlankDisplayRequested = BlankDisplay;
-
-        // Apply always on top setting
-        Topmost = ViewModel.IsAlwaysOnTop;
 
         // Load saved position or use default
         if (!double.IsNaN(ViewModel.Settings.PositionX) && !double.IsNaN(ViewModel.Settings.PositionY))
@@ -170,20 +170,4 @@ public partial class RemoteWidget : Window
         return new PixelPoint(x, y);
     }
 
-    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
-    {
-        base.OnPropertyChanged(change);
-
-        // Update window topmost when ViewModel property changes
-        if (change.Property == DataContextProperty && DataContext is RemoteWidgetViewModel vm)
-        {
-            vm.PropertyChanged += (s, e) =>
-            {
-                if (e.PropertyName == nameof(RemoteWidgetViewModel.IsAlwaysOnTop))
-                {
-                    Topmost = vm.IsAlwaysOnTop;
-                }
-            };
-        }
-    }
 }

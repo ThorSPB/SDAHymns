@@ -35,6 +35,6 @@ public interface ISettingsService
     Task SetLastWindowSizeAsync(string? size);
 
     // Remote widget settings
-    RemoteWidgetSettings LoadRemoteWidgetSettings();
-    void SaveRemoteWidgetSettings(RemoteWidgetSettings settings);
+    Task<RemoteWidgetSettings> LoadRemoteWidgetSettingsAsync();
+    Task SaveRemoteWidgetSettingsAsync(RemoteWidgetSettings settings);
 }

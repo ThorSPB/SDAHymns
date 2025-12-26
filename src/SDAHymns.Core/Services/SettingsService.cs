@@ -164,9 +164,9 @@ public class SettingsService : ISettingsService
         await UpdateAppSettingsAsync(settings);
     }
 
-    public RemoteWidgetSettings LoadRemoteWidgetSettings()
+    public async Task<RemoteWidgetSettings> LoadRemoteWidgetSettingsAsync()
     {
-        var appSettings = _context.AppSettings.Find(1);
+        var appSettings = await _context.AppSettings.FindAsync(1);
 
         if (appSettings?.RemoteWidgetSettingsJson == null)
         {
@@ -186,9 +186,9 @@ public class SettingsService : ISettingsService
         }
     }
 
-    public void SaveRemoteWidgetSettings(RemoteWidgetSettings settings)
+    public async Task SaveRemoteWidgetSettingsAsync(RemoteWidgetSettings settings)
     {
-        var appSettings = _context.AppSettings.Find(1);
+        var appSettings = await _context.AppSettings.FindAsync(1);
 
         if (appSettings == null)
         {
@@ -209,7 +209,7 @@ public class SettingsService : ISettingsService
         appSettings.RemoteWidgetSettingsJson = JsonSerializer.Serialize(settings);
         appSettings.UpdatedAt = DateTime.UtcNow;
 
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
 
         // Update cache if settings were cached
         _cachedSettings = appSettings;

@@ -12,7 +12,8 @@
         CanResize="False"
         SystemDecorations="None"
         TransparencyLevelHint="AcrylicBlur"
-        Background="Transparent">
+        Background="Transparent"
+        Topmost="{Binding IsAlwaysOnTop}">
 
     <Window.Styles>
         <Style Selector="Border.remote-container">

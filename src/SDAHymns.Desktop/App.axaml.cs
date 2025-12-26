@@ -122,9 +122,18 @@ public partial class App : Application
                         // Dispatch to UI thread to show notification
                         await Dispatcher.UIThread.InvokeAsync(() =>
                         {
-                            if (mainWin.DataContext is MainWindowViewModel viewModel)
+                            // Handle both RemoteWidget (default) and MainWindow (advanced mode)
+                            if (mainWin.DataContext is MainWindowViewModel mainViewModel)
                             {
-                                viewModel.ShowUpdateNotification(updateInfo);
+                                mainViewModel.ShowUpdateNotification(updateInfo);
+                            }
+                            else if (mainWin is RemoteWidget && mainWin.DataContext is RemoteWidgetViewModel)
+                            {
+                                // For RemoteWidget, show a simple status message
+                                // (full update UI would be in MainWindow)
+                                // TODO: Add update notification to RemoteWidget status bar
+                                // For now, we'll just log it - user can see updates in advanced mode
+                                logger?.LogInformation("Update available: {Version}", updateInfo.TargetFullRelease.Version);
                             }
                         });
                     }

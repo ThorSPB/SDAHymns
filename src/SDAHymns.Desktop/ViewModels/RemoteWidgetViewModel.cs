@@ -65,17 +65,26 @@ public partial class RemoteWidgetViewModel : ViewModelBase
         _settingsService = settingsService;
         _audioService = audioService;
 
-        // Load settings
-        Settings = _settingsService.LoadRemoteWidgetSettings();
-        IsAlwaysOnTop = Settings.AlwaysOnTop;
-        IsPositionLocked = Settings.IsLocked;
-        ShowNumberPad = Settings.ShowNumberPad;
+        // Settings will be loaded asynchronously in InitializeAsync
+        Settings = new RemoteWidgetSettings();
 
         // Subscribe to audio events if available
         if (_audioService != null)
         {
             _audioService.StateChanged += OnPlaybackStateChanged;
         }
+    }
+
+    /// <summary>
+    /// Initialize the ViewModel asynchronously - call this after construction
+    /// </summary>
+    public async Task InitializeAsync()
+    {
+        // Load settings asynchronously
+        Settings = await _settingsService.LoadRemoteWidgetSettingsAsync();
+        IsAlwaysOnTop = Settings.AlwaysOnTop;
+        IsPositionLocked = Settings.IsLocked;
+        ShowNumberPad = Settings.ShowNumberPad;
     }
 
     [RelayCommand]
@@ -278,9 +287,9 @@ public partial class RemoteWidgetViewModel : ViewModelBase
         // TODO: Show toast notification
     }
 
-    private void SaveSettings()
+    private async void SaveSettings()
     {
-        _settingsService.SaveRemoteWidgetSettings(Settings);
+        await _settingsService.SaveRemoteWidgetSettingsAsync(Settings);
     }
 
     public void UpdatePosition(double x, double y)
