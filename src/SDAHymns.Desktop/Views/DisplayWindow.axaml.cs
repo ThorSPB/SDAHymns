@@ -15,6 +15,35 @@ public partial class DisplayWindow : Window
 
         // Add keyboard shortcuts for presentation control (PowerPoint-style)
         KeyDown += DisplayWindow_KeyDown;
+
+        // Subscribe to DataContext changes to hook up close event
+        DataContextChanged += DisplayWindow_DataContextChanged;
+    }
+
+    private void DisplayWindow_DataContextChanged(object? sender, EventArgs e)
+    {
+        if (DataContext is MainWindowViewModel viewModel)
+        {
+            // Subscribe to auto-close event
+            viewModel.DisplayWindowCloseRequested += OnDisplayWindowCloseRequested;
+        }
+    }
+
+    private void OnDisplayWindowCloseRequested()
+    {
+        // Close the window from UI thread
+        Avalonia.Threading.Dispatcher.UIThread.Post(() => Close());
+    }
+
+    protected override void OnClosed(EventArgs e)
+    {
+        // Unsubscribe from events to prevent memory leaks
+        if (DataContext is MainWindowViewModel viewModel)
+        {
+            viewModel.DisplayWindowCloseRequested -= OnDisplayWindowCloseRequested;
+        }
+
+        base.OnClosed(e);
     }
 
     private void DisplayWindow_KeyDown(object? sender, KeyEventArgs e)

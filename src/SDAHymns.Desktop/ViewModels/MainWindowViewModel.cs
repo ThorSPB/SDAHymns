@@ -113,6 +113,15 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 
     private AutoPlayCountdown? _countdown;
 
+    // Enhanced slide formatting properties (Spec 018)
+    [ObservableProperty]
+    private bool _isOnEndingSlide = false;
+
+    [ObservableProperty]
+    private int _endingSlideCountdown = 0;
+
+    private System.Timers.Timer? _endingSlideTimer;
+
     public string AudioTimeDisplay =>
         $"{FormatTime(AudioPosition)} / {FormatTime(AudioDuration)}";
 
@@ -218,20 +227,35 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 
     partial void OnCurrentVerseIndexChanged(int value)
     {
+        // Reset ending slide state when changing verses
+        if (IsOnEndingSlide)
+        {
+            IsOnEndingSlide = false;
+            StopEndingSlideTimer();
+        }
+
         OnPropertyChanged(nameof(CurrentVerseContent));
         OnPropertyChanged(nameof(CurrentVerseLabel));
         OnPropertyChanged(nameof(CanGoNext));
         OnPropertyChanged(nameof(CanGoPrevious));
         OnPropertyChanged(nameof(VerseIndicator));
+        OnPropertyChanged(nameof(ShowTitleSlide));
+        OnPropertyChanged(nameof(IsOnFirstVerse));
     }
 
     partial void OnVersesChanged(List<Verse> value)
     {
+        // Reset ending slide when loading new hymn
+        IsOnEndingSlide = false;
+        StopEndingSlideTimer();
+
         OnPropertyChanged(nameof(CurrentVerseContent));
         OnPropertyChanged(nameof(CurrentVerseLabel));
         OnPropertyChanged(nameof(CanGoNext));
         OnPropertyChanged(nameof(CanGoPrevious));
         OnPropertyChanged(nameof(VerseIndicator));
+        OnPropertyChanged(nameof(ShowTitleSlide));
+        OnPropertyChanged(nameof(IsOnFirstVerse));
     }
 
     public string? CurrentVerseContent =>
@@ -248,8 +272,21 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         ? $"{CurrentHymn.Number}. {CurrentHymn.Title}"
         : null;
 
-    public bool CanGoNext => CurrentVerseIndex < Verses.Count - 1;
-    public bool CanGoPrevious => CurrentVerseIndex > 0;
+    // Determines if title should be shown (first verse only if profile setting is enabled)
+    public bool ShowTitleSlide =>
+        ActiveProfile?.ShowTitleOnFirstVerseOnly == true
+            ? CurrentVerseIndex == 0 && !IsOnEndingSlide
+            : !IsOnEndingSlide;
+
+    public bool IsOnFirstVerse => CurrentVerseIndex == 0 && !IsOnEndingSlide;
+
+    // Can go next if not on last verse, OR if on last verse and ending slide is enabled
+    public bool CanGoNext =>
+        IsOnEndingSlide
+            ? false
+            : CurrentVerseIndex < Verses.Count - 1 || (ActiveProfile?.EnableBlackEndingSlide == true);
+
+    public bool CanGoPrevious => IsOnEndingSlide || CurrentVerseIndex > 0;
 
     [RelayCommand]
     public async Task LoadHymnAsync()
@@ -322,7 +359,18 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     [RelayCommand(CanExecute = nameof(CanGoNext))]
     public void NextVerse()
     {
-        if (CanGoNext)
+        if (!CanGoNext)
+            return;
+
+        // If on last verse and ending slide is enabled, move to ending slide
+        if (CurrentVerseIndex == Verses.Count - 1 && ActiveProfile?.EnableBlackEndingSlide == true)
+        {
+            IsOnEndingSlide = true;
+            StartEndingSlideTimer();
+            OnPropertyChanged(nameof(ShowTitleSlide));
+            OnPropertyChanged(nameof(IsOnFirstVerse));
+        }
+        else
         {
             CurrentVerseIndex++;
         }
@@ -331,7 +379,18 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     [RelayCommand(CanExecute = nameof(CanGoPrevious))]
     public void PreviousVerse()
     {
-        if (CanGoPrevious)
+        if (!CanGoPrevious)
+            return;
+
+        // If on ending slide, go back to last verse
+        if (IsOnEndingSlide)
+        {
+            IsOnEndingSlide = false;
+            StopEndingSlideTimer();
+            OnPropertyChanged(nameof(ShowTitleSlide));
+            OnPropertyChanged(nameof(IsOnFirstVerse));
+        }
+        else
         {
             CurrentVerseIndex--;
         }
@@ -740,10 +799,61 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         }
     }
 
+    // === Enhanced Slide Formatting - Ending Slide Timer ===
+
+    private void StartEndingSlideTimer()
+    {
+        StopEndingSlideTimer(); // Clean up any existing timer
+
+        if (ActiveProfile?.EndingSlideAutoCloseDuration > 0)
+        {
+            EndingSlideCountdown = ActiveProfile.EndingSlideAutoCloseDuration;
+
+            _endingSlideTimer = new System.Timers.Timer(1000); // 1 second interval
+            _endingSlideTimer.Elapsed += OnEndingSlideTimerElapsed;
+            _endingSlideTimer.AutoReset = true;
+            _endingSlideTimer.Start();
+        }
+    }
+
+    private void OnEndingSlideTimerElapsed(object? sender, System.Timers.ElapsedEventArgs e)
+    {
+        EndingSlideCountdown--;
+
+        if (EndingSlideCountdown <= 0)
+        {
+            StopEndingSlideTimer();
+            // Request display window close
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                IsDisplayWindowOpen = false;
+                DisplayWindowCloseRequested?.Invoke();
+            });
+        }
+    }
+
+    private void StopEndingSlideTimer()
+    {
+        if (_endingSlideTimer != null)
+        {
+            _endingSlideTimer.Stop();
+            _endingSlideTimer.Elapsed -= OnEndingSlideTimerElapsed;
+            _endingSlideTimer.Dispose();
+            _endingSlideTimer = null;
+        }
+        EndingSlideCountdown = 0;
+    }
+
+    // Event that DisplayWindow can subscribe to for auto-close
+    public event Action? DisplayWindowCloseRequested;
+
     public void Dispose()
     {
         if (_disposed)
             return;
+
+        // Clean up timers
+        StopEndingSlideTimer();
 
         // Unsubscribe from audio player events to prevent memory leaks
         _audioPlayer.PositionChanged -= OnAudioPositionChanged;

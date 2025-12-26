@@ -22,13 +22,14 @@
                 Height="{Binding DisplayHeight}"
                 Background="Black">
             <Grid>
-                <!-- Main Content -->
-                <Grid RowDefinitions="Auto,*">
-                    <!-- Hymn Title -->
+                <!-- Main Content (Verse Display) -->
+                <Grid RowDefinitions="Auto,*" IsVisible="{Binding !IsOnEndingSlide}">
+                    <!-- Hymn Title (shown based on profile settings) -->
                     <Border Grid.Row="0"
                             x:Name="TitleBorder"
                             Background="Black"
-                            Padding="40,30">
+                            Padding="40,30"
+                            IsVisible="{Binding ShowTitleSlide}">
                         <TextBlock x:Name="HymnTitleText"
                                    Text="{Binding HymnTitle}"
                                    FontSize="36"
@@ -66,6 +67,25 @@
                         </StackPanel>
                     </Viewbox>
                 </Grid>
+
+                <!-- Black Ending Slide with Countdown -->
+                <Border Background="Black" IsVisible="{Binding IsOnEndingSlide}">
+                    <StackPanel VerticalAlignment="Center"
+                                HorizontalAlignment="Center"
+                                Spacing="20"
+                                IsVisible="{Binding EndingSlideCountdown, Converter={x:Static ObjectConverters.IsNotNull}}">
+                        <TextBlock Text="Closing in..."
+                                   FontSize="32"
+                                   FontWeight="Normal"
+                                   HorizontalAlignment="Center"
+                                   Foreground="#666666"/>
+                        <TextBlock Text="{Binding EndingSlideCountdown}"
+                                   FontSize="72"
+                                   FontWeight="Bold"
+                                   HorizontalAlignment="Center"
+                                   Foreground="#444444"/>
+                    </StackPanel>
+                </Border>
 
                 <!-- Auto-Play Countdown Overlay -->
                 <Border Background="#CC000000"
