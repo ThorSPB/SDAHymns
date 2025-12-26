@@ -536,7 +536,7 @@
                                Orientation="Horizontal"
                                Spacing="10">
                         <Button Content="Export"
-                                Command="{Binding ExportProfileCommand}"
+                                Click="ExportButton_Click"
                                 Background="#2A2A2A"
                                 Foreground="White"
                                 Padding="20,10"

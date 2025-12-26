@@ -40,8 +40,11 @@ public partial class DisplayWindow : Window
                     };
                     RootBorder.Background = imageBrush;
                 }
-                catch
+                catch (Exception ex)
                 {
+                    // Log the error for debugging
+                    System.Diagnostics.Debug.WriteLine($"Failed to load background image '{profile.BackgroundImagePath}': {ex.Message}");
+
                     // If image fails to load, fall back to color
                     var bgColor = Color.Parse(profile.BackgroundColor);
                     var bgBrush = new SolidColorBrush(bgColor);
@@ -116,46 +119,43 @@ public partial class DisplayWindow : Window
 
     private static FontWeight ParseFontWeight(string weight)
     {
-        return weight.ToLower() switch
-        {
-            "bold" => FontWeight.Bold,
-            "semibold" => FontWeight.SemiBold,
-            "normal" => FontWeight.Normal,
-            _ => FontWeight.Normal
-        };
+        if (weight.Equals("bold", StringComparison.OrdinalIgnoreCase))
+            return FontWeight.Bold;
+        if (weight.Equals("semibold", StringComparison.OrdinalIgnoreCase))
+            return FontWeight.SemiBold;
+
+        return FontWeight.Normal;
     }
 
     private static TextAlignment ParseTextAlignment(string alignment)
     {
-        return alignment.ToLower() switch
-        {
-            "center" => TextAlignment.Center,
-            "right" => TextAlignment.Right,
-            "left" => TextAlignment.Left,
-            _ => TextAlignment.Left
-        };
+        if (alignment.Equals("center", StringComparison.OrdinalIgnoreCase))
+            return TextAlignment.Center;
+        if (alignment.Equals("right", StringComparison.OrdinalIgnoreCase))
+            return TextAlignment.Right;
+
+        return TextAlignment.Left;
     }
 
     private static Avalonia.Layout.VerticalAlignment ParseVerticalAlignment(string alignment)
     {
-        return alignment.ToLower() switch
-        {
-            "top" => Avalonia.Layout.VerticalAlignment.Top,
-            "bottom" => Avalonia.Layout.VerticalAlignment.Bottom,
-            "center" => Avalonia.Layout.VerticalAlignment.Center,
-            _ => Avalonia.Layout.VerticalAlignment.Center
-        };
+        if (alignment.Equals("top", StringComparison.OrdinalIgnoreCase))
+            return Avalonia.Layout.VerticalAlignment.Top;
+        if (alignment.Equals("bottom", StringComparison.OrdinalIgnoreCase))
+            return Avalonia.Layout.VerticalAlignment.Bottom;
+
+        return Avalonia.Layout.VerticalAlignment.Center;
     }
 
     private static Avalonia.Media.Stretch ParseStretchMode(string mode)
     {
-        return mode.ToLower() switch
-        {
-            "fill" => Avalonia.Media.Stretch.UniformToFill,
-            "fit" => Avalonia.Media.Stretch.Uniform,
-            "stretch" => Avalonia.Media.Stretch.Fill,
-            "tile" => Avalonia.Media.Stretch.None, // Tiling would need a different approach
-            _ => Avalonia.Media.Stretch.UniformToFill
-        };
+        if (mode.Equals("fit", StringComparison.OrdinalIgnoreCase))
+            return Avalonia.Media.Stretch.Uniform;
+        if (mode.Equals("stretch", StringComparison.OrdinalIgnoreCase))
+            return Avalonia.Media.Stretch.Fill;
+        if (mode.Equals("tile", StringComparison.OrdinalIgnoreCase))
+            return Avalonia.Media.Stretch.None; // Tiling would need a different approach
+
+        return Avalonia.Media.Stretch.UniformToFill; // Default: Fill
     }
 }

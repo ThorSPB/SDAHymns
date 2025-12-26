@@ -27,7 +27,8 @@
       "Bash(taskkill:*)",
       "Bash(gh run view:*)",
       "Bash(grep:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(gh pr create:*)"
     ],
     "deny": [],
     "ask": []

@@ -21,7 +21,6 @@ public partial class ProfileEditorViewModel : ObservableObject
     [NotifyCanExecuteChangedFor(nameof(SaveProfileCommand))]
     [NotifyCanExecuteChangedFor(nameof(DeleteProfileCommand))]
     [NotifyCanExecuteChangedFor(nameof(DuplicateProfileCommand))]
-    [NotifyCanExecuteChangedFor(nameof(ExportProfileCommand))]
     [NotifyCanExecuteChangedFor(nameof(ResetProfileCommand))]
     [NotifyCanExecuteChangedFor(nameof(PreviewProfileCommand))]
     private DisplayProfile? _selectedProfile;
@@ -143,29 +142,31 @@ public partial class ProfileEditorViewModel : ObservableObject
 
     private bool CanDuplicateProfile() => SelectedProfile != null;
 
-    [RelayCommand(CanExecute = nameof(CanExportProfile))]
-    private async Task ExportProfileAsync()
+    /// <summary>
+    /// Export profile to JSON - returns the JSON string for the window to save using file picker
+    /// </summary>
+    public async Task<string?> GetExportJsonAsync()
     {
-        if (SelectedProfile == null) return;
+        if (SelectedProfile == null) return null;
 
         try
         {
-            var json = await _profileService.ExportProfileAsync(SelectedProfile.Id);
-
-            // Save to file (simplified - in real app would use file picker)
-            var fileName = $"{SelectedProfile.Name.Replace(" ", "_")}_profile.json";
-            var filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), fileName);
-            await File.WriteAllTextAsync(filePath, json);
-
-            StatusMessage = $"Profile exported to {filePath}";
+            return await _profileService.ExportProfileAsync(SelectedProfile.Id);
         }
         catch (Exception ex)
         {
             StatusMessage = $"Error exporting profile: {ex.Message}";
+            return null;
         }
     }
 
-    private bool CanExportProfile() => SelectedProfile != null;
+    /// <summary>
+    /// Called after successful export with the file path
+    /// </summary>
+    public void OnExportSuccess(string filePath)
+    {
+        StatusMessage = $"Profile exported to {filePath}";
+    }
 
     [RelayCommand]
     private async Task ImportProfileAsync()

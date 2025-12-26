@@ -39,7 +39,7 @@ This file tracks all specifications and their implementation status.
 | 013 | [Export Functionality](013-export-functionality.md) | 📋 Planned | PDF generation (QuestPDF), Image rendering (WYSIWYG), batch export |
 | 014 | [CLI Interface](014-cli-interface.md) | 📋 Planned | Dual-mode (Direct/Control), IPC via Named Pipes, Headless display mode |
 | 015 | [Remote Control API](015-remote-control-api.md) | 📋 Planned | Embedded Kestrel server, SignalR sync, mobile-first Vue.js web app |
-| _TBD_ | OBS Integration | 📋 Planned | WebSocket/browser source |
+| 016 | [OBS Integration](016-obs-integration.md) | 📋 Planned | Window capture optimization, Browser Source, OBS WebSocket automation |
 | _TBD_ | Export Functionality | 📋 Planned | PDF/image export (individual hymns) |
 | _TBD_ | Statistics Tracking | 📋 Planned | Usage analytics |
 
@@ -83,7 +83,7 @@ This file tracks all specifications and their implementation status.
 1. **010: Auto-Updates** - ✅ COMPLETED (Early implementation for dogfooding)
 2. **014: CLI Interface** - 📋 Planned (IPC control, headless mode, automation)
 3. **015: Remote Control API** - 📋 Planned (Web server, SignalR, mobile web app)
-4. OBS integration
+4. **016: OBS Integration** - 📋 Planned (Window capture, browser source, automation)
 
 ## Current Session Focus
 
