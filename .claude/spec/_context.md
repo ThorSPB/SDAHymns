@@ -30,7 +30,7 @@ This file tracks all specifications and their implementation status.
 | 004 | [PowerPoint Verse Extraction](004-powerpoint-verse-extraction.md) | ✅ Implemented | 1,249/1,254 hymns (99.6%) - 4,629 verses imported successfully |
 | 005 | [Basic Hymn Display](005-basic-hymn-display.md) | ✅ Implemented | Dual-window system (control + display), verse navigation, dark theme, auto-scaling |
 | 006 | [Enhanced Control Window](006-enhanced-control-window.md) | ✅ Implemented | Full-text search, browse, recent/favorites - real-time search, recent hymns bar |
-| 007 | [Display Profiles](007-display-profiles.md) | 📋 Planned | Customizable fonts, colors, backgrounds, effects - preset + custom profiles |
+| 007 | [Display Profiles](007-display-profiles.md) | ✅ Implemented | 6 preset profiles, full editor UI, background images, 19 tests passing |
 | 008 | [Keyboard Shortcuts](008-keyboard-shortcuts.md) | ✅ Implemented | Global hotkeys, F1 shortcuts overlay, tooltips, 24 tests passing |
 | 009 | [Service Planner](009-service-planner.md) | 📋 Planned | Pre-plan services, live mode, templates, PDF export |
 | 010 | [Auto-Updates with Velopack](010-auto-updates.md) | ✓ Tested | Seamless updates via GitHub Releases, delta updates, cross-platform |
@@ -38,7 +38,8 @@ This file tracks all specifications and their implementation status.
 | 012 | [Statistics Tracking](012-statistics-tracking.md) | 📋 Planned | Usage analytics, dashboard, reporting, "forgotten hymns" discovery |
 | 013 | [Export Functionality](013-export-functionality.md) | 📋 Planned | PDF generation (QuestPDF), Image rendering (WYSIWYG), batch export |
 | 014 | [CLI Interface](014-cli-interface.md) | 📋 Planned | Dual-mode (Direct/Control), IPC via Named Pipes, Headless display mode |
-| _TBD_ | Remote Control API | 📋 Planned | HTTP API for remote control |
+| 015 | [Remote Control API](015-remote-control-api.md) | 📋 Planned | Embedded Kestrel server, SignalR sync, mobile-first Vue.js web app |
+| _TBD_ | OBS Integration | 📋 Planned | WebSocket/browser source |
 | _TBD_ | Export Functionality | 📋 Planned | PDF/image export (individual hymns) |
 | _TBD_ | Statistics Tracking | 📋 Planned | Usage analytics |
 
@@ -81,7 +82,7 @@ This file tracks all specifications and their implementation status.
 ### Phase 4: Advanced Features
 1. **010: Auto-Updates** - ✅ COMPLETED (Early implementation for dogfooding)
 2. **014: CLI Interface** - 📋 Planned (IPC control, headless mode, automation)
-3. Remote control API
+3. **015: Remote Control API** - 📋 Planned (Web server, SignalR, mobile web app)
 4. OBS integration
 
 ## Current Session Focus
@@ -220,11 +221,65 @@ All Phase 1 goals achieved:
 - Shortcuts are case-insensitive for better UX
 - Real-time validation prevents saving conflicting shortcuts
 
-**🎯 NEXT SESSION:** Continue Phase 2 - Implement Spec 007 (Display Profiles)
+**Session 6 (2025-12-26 - Completed - Spec 007):**
+- ✅ Created comprehensive `DisplayProfile` model with 30+ customization properties
+  - Typography: Font family, title/verse/label sizes, weight, line height, letter spacing
+  - Colors: Background, text, title, label, accent (all hex codes)
+  - Background: Opacity, image path/mode/opacity support
+  - Layout: Text/vertical alignment, individual margins (L/R/T/B)
+  - Effects: Text shadow (color, blur, offset), text outline (color, thickness)
+  - Advanced: Transparent background, show verse numbers/title
+- ✅ Database migration with 6 preset profiles seeded:
+  - Classic Dark (default) - Black bg, white text, left-aligned
+  - High Contrast - Bold text with shadow for maximum visibility
+  - OBS Stream - Transparent bg with outline for streaming
+  - Bright Room - Navy bg with yellow text for bright environments
+  - Minimalist - Clean and simple
+  - Traditional - Classic church aesthetic (navy & gold)
+- ✅ Implemented `DisplayProfileService` with full CRUD operations
+  - GetAll, GetById, GetActive, Create, Update, Delete
+  - SetActive profile with AppSettings persistence
+  - Duplicate profile with new name
+  - Export/Import profiles as JSON
+- ✅ Created `ProfileEditorViewModel` with MVVM pattern
+  - Profile list management (New/Duplicate/Delete)
+  - All profile properties with data binding
+  - Status messages for user feedback
+- ✅ Built comprehensive `ProfileEditorWindow` UI in Avalonia
+  - Left sidebar: Profile list with descriptions
+  - Right panel: Scrollable editor with 7 sections
+  - Bottom bar: Export/Import/Reset/Preview/Save buttons
+  - Full data binding to all 30+ profile properties
+- ✅ Integrated profile selector into MainWindow
+  - Dropdown combobox in toolbar for instant switching
+  - ⚙ Edit button to open full ProfileEditorWindow
+  - Real-time profile application to DisplayWindow
+- ✅ Enhanced DisplayWindow with dynamic profile application
+  - Typography: Font family, sizes, weight, line height, spacing
+  - Colors: Background, text, title, label with opacity
+  - Background images: Load from path with stretch modes
+  - Layout: Margins, text/vertical alignment
+  - Effects: Shadow and outline rendering
+  - **Fixed OBS transparent background bug** (was making everything black)
+- ✅ Wrote 19 comprehensive unit tests for DisplayProfileService
+  - CRUD operations, validation, error handling
+  - Active profile switching, duplicate, import/export
+  - All tests passing
+- ✅ Updated MainWindowViewModel tests for new profile service dependency
+- ✅ All 86 tests passing (68 existing + 18 new)
+
+**Technical Decisions:**
+- Used Avalonia-compatible syntax (TextBlock labels instead of Header property)
+- Background images with opacity and stretch modes (Fill/Fit/Stretch/Tile)
+- System profiles cannot be deleted (IsSystemProfile flag)
+- Profile changes apply instantly without restart
+- JSON export for easy profile sharing
+
+**🎯 NEXT SESSION:** Continue Phase 2 - Implement Spec 009 (Service Planner)
 
 **Phase 2 Progress:**
 - ✅ **Spec 006**: Enhanced Control Window - COMPLETE
-- 📋 **Spec 007**: Display Profiles (customizable fonts/colors/backgrounds)
+- ✅ **Spec 007**: Display Profiles - COMPLETE
 - ✅ **Spec 008**: Keyboard Shortcuts - COMPLETE
 - 📋 **Spec 009**: Service Planner (pre-plan services, live mode)
 
