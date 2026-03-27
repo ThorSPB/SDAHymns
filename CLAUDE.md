@@ -6,8 +6,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 SDAHymns is a modern, cross-platform desktop application for displaying hymns in church services, built for the Romanian Seventh Day Adventist Church. This is a **complete rewrite from scratch** of a legacy application, focusing on improved UX, streaming optimization, and automation capabilities.
 
-**Important:** The `Imnuri Azs/` folder contains the old legacy application and is **only kept as a reference for hymn resources** (XML indexes and PowerPoint files). Do not modify or rely on the legacy app code.
-
 ## Spec-Driven Development
 
 This project follows a **specification-driven approach** to manage complexity across multiple development sessions:
@@ -35,7 +33,7 @@ This project uses **GitHub Issues** to track all features, bugs, and tasks. Each
 ### Issue-Driven Development Flow
 
 ```
-Spec File → GitHub Issue → Branch → PR → Merge (closes issue)
+Spec File -> GitHub Issue -> Branch -> PR -> Merge (closes issue)
 ```
 
 **Step-by-Step:**
@@ -62,91 +60,19 @@ Spec File → GitHub Issue → Branch → PR → Merge (closes issue)
 4. **Create Pull Request** (closes issue automatically):
    ```bash
    gh pr create --title "feat: implement auto-updates with Velopack" \
-     --body "Implements auto-update system with Velopack.
-
-   **Changes:**
-   - Added UpdateService with GitHub Releases integration
-   - Created update notification UI in MainWindow
-   - Modified CI/CD to create Velopack packages
-
-   **Testing:**
-   - Tested update check on startup
-   - Verified delta updates work
-   - Tested on Windows 10 and 11
-
-   Closes #6"
+     --body "Closes #6"
    ```
 
-5. **Merge PR** → Issue automatically closes
+5. **Merge PR** -> Issue automatically closes
 
 ### Closing Multiple Issues in One PR
 
-You can close multiple related issues in a single PR:
-
-```markdown
-## Summary
-Refactored CLI command handlers to use consistent DI pattern.
-
-## Changes
-- Updated ImportCommand to use injected services
-- Updated TestPptCommand to use injected parser
-- Removed duplicate GetSolutionRoot() methods
-
-Closes #10, #11, #12
-```
+Use `Closes #10, #11, #12` in the PR description body.
 
 **Supported Keywords:**
 - `Closes #123` or `Fixes #123` (case-insensitive)
 - Can use on separate lines or comma-separated
 - Works in PR description or commit messages
-
-### Issue Labels (Recommended)
-
-**Standard Labels:**
-- `enhancement` - New features
-- `bug` - Bug fixes
-- `documentation` - Docs updates
-- `spec:XXX` - Links to specific spec (e.g., `spec:006`)
-- `priority: high` / `priority: medium` / `priority: low`
-- `phase:1`, `phase:2`, etc. - Development phase
-
-**Create Labels:**
-```bash
-# Create spec labels
-gh label create "spec:006" --color "0075ca" --description "Related to Spec 006"
-
-# Create priority labels
-gh label create "priority: high" --color "d73a4a" --description "High priority"
-gh label create "priority: medium" --color "fbca04" --description "Medium priority"
-gh label create "priority: low" --color "0e8a16" --description "Low priority"
-```
-
-### Useful gh CLI Commands
-
-```bash
-# List all open issues
-gh issue list
-
-# View specific issue
-gh issue view 6
-
-# Assign issue to yourself
-gh issue edit 6 --add-assignee @me
-
-# Add labels
-gh issue edit 6 --add-label "priority: high,spec:010"
-
-# Close issue manually
-gh issue close 6 --comment "Completed in PR #42"
-
-# Search issues
-gh issue list --label "enhancement"
-gh issue list --state "closed"
-gh issue list --assignee "@me"
-
-# Create issue from template (if you create .github/ISSUE_TEMPLATE/)
-gh issue create --template feature_request.md
-```
 
 ### Best Practices
 
@@ -157,41 +83,20 @@ gh issue create --template feature_request.md
 5. **Keep Issues Focused** - Large features should be broken into multiple issues
 6. **Use Draft PRs** - Mark PRs as draft while work is in progress
 
-### Example: Full Feature Implementation
-
-```bash
-# 1. Check spec and issue
-cat .claude/spec/010-auto-updates.md
-gh issue view 6
-
-# 2. Create branch
-git checkout -b feature/auto-updates-#6
-
-# 3. Implement (multiple commits)
-git commit -m "feat: add UpdateService with Velopack (#6)"
-git commit -m "feat: add update notification UI (#6)"
-git commit -m "ci: update workflow for Velopack packages (#6)"
-git commit -m "test: add UpdateService tests (#6)"
-
-# 4. Push and create PR
-git push -u origin feature/auto-updates-#6
-gh pr create --title "feat: implement auto-updates with Velopack" \
-  --body "Full implementation of Spec 010.
-
-Closes #6"
-
-# 5. After merge, update spec
-# Edit .claude/spec/_context.md: Change status to ✅ Implemented
-```
-
 ## Technology Stack
 
-- **Language:** C# (.NET 10 LTS)
-- **UI Framework:** Avalonia UI (cross-platform XAML-based)
-- **Database:** SQLite with Entity Framework Core 10
-- **Audio:** NAudio (piano recording playback)
-- **CLI:** CommandLineParser
-- **Updates:** Velopack (or custom GitHub Releases integration)
+- **Language:** C# (.NET 10)
+- **UI Framework:** Avalonia UI 11.3.x (cross-platform XAML-based)
+- **MVVM:** CommunityToolkit.Mvvm 8.4.0 (`[ObservableProperty]`, `[RelayCommand]`, etc.)
+- **Database:** SQLite with Entity Framework Core 10 (`Microsoft.EntityFrameworkCore.Sqlite`)
+- **Audio:** NAudio 2.2.1 (piano recording playback)
+- **PowerPoint Parsing:** DocumentFormat.OpenXml 3.3.0 (verse extraction from .pptx)
+- **CLI:** CommandLineParser 2.9.1
+- **Updates:** Velopack 0.0.1298 (auto-updates via GitHub Releases)
+- **DI:** Microsoft.Extensions.DependencyInjection
+- **Testing:** xUnit 2.5.3, FluentAssertions 8.8.0, Moq 4.20.72, EF Core InMemory provider
+- **Code Quality:** .editorconfig, .NET Analyzers (Directory.Build.props), pre-commit hooks
+- **CI/CD:** GitHub Actions (`ci.yml`, `release.yml`)
 - **License:** AGPL-3.0
 
 ## Target Platforms
@@ -201,311 +106,330 @@ Closes #6"
 - macOS ARM (M1/M2/M3)
 - macOS Intel (support comes automatically with Avalonia)
 
-## Core Features
-
-### 1. Hymn Display & Projection
-- Dual-window system: Control window + full-screen display window
-- Display hymns on projector/second screen
-- Navigate through verses/slides
-- Fully customizable display styling (fonts, colors, opacity, backgrounds)
-
-### 2. CLI Support (Critical)
-- Full command-line interface for automation and scripting
-- Enable AI integration and programmatic control
-- Control all app functions via CLI
-- Uses IPC to communicate with running GUI instance
-
-### 3. Auto-Updates
-- Seamless update mechanism for users
-- Check for updates from GitHub Releases
-- One-click update installation
-- No manual downloads required
-
-### 4. Piano Recordings
-- Audio playback of piano accompaniment for hymns
-- Recorded from church services (CQ-16 mixer)
-- Bundled with application (compressed MP3/Opus)
-- Playback controls (play, pause, speed adjustment)
-- Community contributions possible
-
-### 5. OBS/Streaming Optimization
-- Dedicated output mode for streaming
-- Customizable text rendering (not just PowerPoint)
-- Background opacity, color, font customization
-- Transparent background support
-- Multiple display profiles (Projector vs OBS Stream vs Practice)
-
-### 6. Keyboard-Driven Workflow
-- Full hotkey support (productivity-focused)
-- Navigate without touching mouse
-- Configurable keyboard shortcuts
-- Quick hymn lookup and switching
-
-### 7. Additional Features
-- **Service Planner:** Pre-plan hymn order for services
-- **Verse Selection:** Choose specific verses to display
-- **Display Profiles:** Save/load different display configurations
-- **Statistics:** Track hymn usage frequency
-- **Remote Control:** Web/mobile interface for remote operation
-- **Export:** Generate PDFs/images for bulletins
-- **Offline-First:** Fully functional without internet
-
 ## Architecture
 
-### Project Structure
+### Solution Structure
 ```
 SDAHymns/
-├── SDAHymns.Desktop/          # Main Avalonia GUI application
-│   ├── Views/                 # XAML view files
-│   │   ├── ControlWindow.axaml       # Main control interface
-│   │   ├── DisplayWindow.axaml       # Full-screen hymn display
-│   │   ├── SettingsWindow.axaml      # Configuration
-│   │   └── ServicePlannerView.axaml  # Service planning
-│   ├── ViewModels/            # MVVM view models
-│   ├── Models/                # UI-specific models
-│   ├── Services/              # UI services
-│   └── Assets/                # Images, icons, resources
-├── SDAHymns.CLI/              # Command-line interface
-│   ├── Commands/              # CLI command handlers
-│   └── Program.cs             # CLI entry point
-├── SDAHymns.Core/             # Shared business logic
-│   ├── Data/                  # Database context and models
-│   │   ├── HymnsContext.cs           # EF Core DbContext
-│   │   ├── Models/
-│   │   │   ├── Hymn.cs               # Hymn entity
-│   │   │   ├── Verse.cs              # Verse/slide entity
-│   │   │   ├── HymnCategory.cs       # Category (companioni, crestine, etc.)
-│   │   │   ├── AudioRecording.cs     # Piano recording metadata
-│   │   │   ├── DisplayProfile.cs     # Display configuration
-│   │   │   └── ServicePlan.cs        # Service planning
-│   │   └── Migrations/
-│   ├── Services/              # Core business logic
-│   │   ├── HymnService.cs            # Hymn data operations
-│   │   ├── AudioService.cs           # Audio playback management
-│   │   ├── DisplayService.cs         # Display rendering logic
-│   │   ├── ConfigService.cs          # App configuration
-│   │   ├── UpdateService.cs          # Auto-update logic
-│   │   ├── ExportService.cs          # PDF/image export
-│   │   └── StatisticsService.cs      # Usage tracking
-│   └── Utilities/             # Helper classes
-├── SDAHymns.Tests/            # Unit and integration tests
-├── Resources/                 # Application resources
-│   ├── hymns.db                      # SQLite database (generated)
-│   ├── audio/                        # Piano recordings
-│   │   ├── companioni/
-│   │   │   ├── 001.mp3
-│   │   │   └── 001.metadata.json    # Tempo, date, etc.
-│   │   ├── crestine/
-│   │   ├── exploratori/
-│   │   ├── licurici/
-│   │   └── tineret/
-│   ├── config/
-│   │   ├── display-profiles.json    # Saved display configs
-│   │   └── user-settings.json       # User preferences
-│   └── legacy/                       # Reference only
-│       └── Imnuri Azs/              # Old app (DO NOT USE)
-└── docs/                      # Documentation
+├── SDAHymns.sln                  # Solution file (4 projects)
+├── Directory.Build.props         # Shared build settings (version, analyzers, UTF-8)
+├── .editorconfig                 # Code style rules
+├── Makefile                      # Primary build/dev commands
+├── setup.sh / setup.ps1          # First-time setup scripts
+├── SETUP.md                      # Setup instructions
+├── Resources/
+│   └── hymns.db                  # SQLite database (1,254 hymns, 4,629 verses)
+├── scripts/
+│   ├── pre-commit                # Git pre-commit hook (format check + build)
+│   ├── install-hooks.sh          # Hook installer (Linux/macOS)
+│   └── install-hooks.ps1         # Hook installer (Windows)
+├── .github/workflows/
+│   ├── ci.yml                    # CI pipeline
+│   └── release.yml               # Release pipeline
+├── docs/
+│   ├── RELEASING.md              # Release process documentation
+│   ├── CI-CD.md                  # CI/CD pipeline documentation
+│   ├── INSTALLATION.md           # Installation guide
+│   └── spec/                     # Feature specifications
+│       ├── _context.md           # Spec status tracker (check first!)
+│       ├── 001-project-structure.md
+│       ├── 002-data-layer.md
+│       ├── ... (specs 003-019)
+│       └── 019-compact-remote-widget.md
+├── src/
+│   ├── SDAHymns.Core/            # Shared business logic library
+│   ├── SDAHymns.Desktop/         # Avalonia GUI application
+│   └── SDAHymns.CLI/             # Command-line interface
+└── tests/
+    └── SDAHymns.Tests/           # Unit and integration tests (xUnit)
+```
+
+### SDAHymns.Core (Class Library)
+Shared business logic, data layer, and services. No UI dependencies.
+
+```
+SDAHymns.Core/
+├── Data/
+│   ├── HymnsContext.cs                 # EF Core DbContext
+│   ├── DesignTimeDbContextFactory.cs   # For EF migrations
+│   └── Models/
+│       ├── Hymn.cs                     # Hymn entity (title, number, category, favorites, access tracking)
+│       ├── Verse.cs                    # Verse/slide entity (text, order, IsContinuation, IsInline)
+│       ├── HymnCategory.cs            # Category entity (crestine, companioni, etc.)
+│       ├── AudioRecording.cs           # Piano recording metadata
+│       ├── DisplayProfile.cs           # Display configuration (30+ properties)
+│       ├── ServicePlan.cs              # Service planning
+│       ├── ServicePlanItem.cs          # Individual items in a service plan
+│       ├── UsageStatistic.cs           # Hymn usage tracking
+│       ├── AppSetting.cs               # Key-value app settings entity
+│       └── AppSettings.cs              # Strongly-typed settings model
+├── Models/
+│   ├── AudioPackageManifest.cs         # Audio download manifest model
+│   └── RemoteWidgetSettings.cs         # Remote widget position/state
+├── Services/
+│   ├── HymnDisplayService.cs           # Hymn data operations (load, navigate)
+│   ├── SearchService.cs                # Smart search (diacritic/case-insensitive)
+│   ├── DisplayProfileService.cs        # Profile CRUD, import/export JSON
+│   ├── HotKeyManager.cs               # Keyboard shortcuts (string-based, UI-agnostic)
+│   ├── SettingsService.cs              # App configuration persistence
+│   ├── AudioPlayerService.cs           # NAudio playback management
+│   ├── AudioLibraryService.cs          # Audio file library management
+│   ├── AudioDownloadService.cs         # HTTP download with SHA256 verification
+│   ├── HymnSynchronizer.cs            # Audio-verse sync engine
+│   ├── TimingRecorder.cs              # Record verse timing maps
+│   ├── AutoPlayCountdown.cs           # Countdown before auto-advancing verses
+│   ├── UpdateService.cs               # Velopack auto-update logic
+│   ├── LegacyXmlImportService.cs      # Parse legacy XML hymn indexes
+│   ├── VerseImportService.cs          # Import verses from PowerPoint files
+│   ├── PowerPointParserService.cs     # Parse .ppt/.pptx via OpenXml + LibreOffice
+│   ├── ImportResult.cs                # Import operation result model
+│   ├── I*.cs                          # Interfaces for all services above
+│   └── UpdateOptions.cs               # Update configuration options
+└── Migrations/                         # EF Core migration files
+```
+
+### SDAHymns.Desktop (Avalonia WinExe)
+The GUI application. References SDAHymns.Core.
+
+```
+SDAHymns.Desktop/
+├── Program.cs                          # Entry point, Velopack init
+├── App.axaml / App.axaml.cs            # App startup, DI configuration
+├── ViewLocator.cs                      # Avalonia view resolution
+├── Assets/
+│   └── avalonia-logo.ico               # App icon
+├── ViewModels/
+│   ├── ViewModelBase.cs                # Base class (ReactiveObject)
+│   ├── MainWindowViewModel.cs          # Main control window logic
+│   ├── ProfileEditorViewModel.cs       # Display profile editor logic
+│   ├── SettingsWindowViewModel.cs      # Settings dialog logic
+│   ├── ShortcutsWindowViewModel.cs     # Keyboard shortcuts display/edit
+│   ├── RecorderModeViewModel.cs        # Audio timing recorder
+│   └── RemoteWidgetViewModel.cs        # Compact remote widget logic
+└── Views/
+    ├── MainWindow.axaml(.cs)           # Main control interface (advanced mode)
+    ├── DisplayWindow.axaml(.cs)        # Full-screen projection display
+    ├── ProfileEditorWindow.axaml(.cs)  # Display profile editor
+    ├── SettingsWindow.axaml(.cs)       # Settings dialog (General/Audio/Display tabs)
+    ├── ShortcutsWindow.axaml(.cs)      # F1 keyboard shortcuts overlay + editor
+    ├── RecorderModeWindow.axaml(.cs)   # Verse timing recorder UI
+    └── RemoteWidget.axaml(.cs)         # Compact remote widget (default GUI)
+```
+
+### SDAHymns.CLI (Console App)
+Command-line interface for data import and testing. References SDAHymns.Core.
+
+```
+SDAHymns.CLI/
+├── Program.cs                          # CLI entry point (CommandLineParser verbs)
+└── Commands/
+    ├── ImportCommand.cs                # Import hymns from legacy XML
+    ├── ImportVersesCommand.cs          # Import verses from PowerPoint files
+    ├── ImportOrphanPptCommand.cs       # Import orphan PPT files (no XML entry)
+    ├── TestPptCommand.cs               # Test PowerPoint parsing
+    └── TestVerseExtractionCommand.cs   # Test verse extraction logic
+```
+
+### SDAHymns.Tests (xUnit Test Project)
+References both Core and Desktop projects.
+
+```
+SDAHymns.Tests/
+├── UnitTest1.cs
+├── ViewModels/
+│   └── MainWindowViewModelTests.cs
+└── Services/
+    ├── SearchServiceTests.cs
+    ├── DisplayProfileServiceTests.cs
+    ├── HotKeyManagerTests.cs
+    ├── HymnDisplayServiceTests.cs
+    ├── AutoPlayCountdownTests.cs
+    ├── TimingRecorderTests.cs
+    └── UpdateServiceTests.cs
 ```
 
 ### Dual-Window System
 
-**Control Window (Primary):**
-- Search and browse hymns
-- Select verses to display
-- Control audio playback
-- Manage service planner
-- Configure display profiles
-- Access settings
+**RemoteWidget (Default GUI):**
+- Compact, widget-style window (launches by default)
+- Custom title bar with menu, minimize, close
+- Hymn number input with optional number pad
+- SHOW/BLANK buttons, verse navigation
+- Lockable position, always-on-top toggle
+- PowerPoint-style keyboard controls (Space/arrows for navigation, Esc/B to blank)
+- Color scheme: #1E1E2E background, #6366F1 accent, #2A2A3C surface
 
-**Display Window (Secondary):**
+**MainWindow (Advanced Mode):**
+- Full control interface (launch with `--advanced` flag)
+- Search and browse hymns (real-time, diacritic-insensitive)
+- Recent hymns bar, favorites
+- Audio controls (play/pause, stop, seek, volume, record, auto-advance)
+- Display profile selector with editor
+- Verse preview with auto-scaling
+
+**DisplayWindow (Projection):**
 - Full-screen on projector/second monitor
-- Renders hymn verses with custom styling
-- Receives commands from control window
-- Independent of control window visibility
-- Can run in OBS-optimized mode
+- Dynamic profile application (fonts, colors, backgrounds, effects)
+- Auto-scaling content
+- Countdown overlay for auto-advance
+- Transparent background support for OBS
 
 ### Data Flow
 
-1. **Startup:** Parse legacy XML files → Populate SQLite database (first run only)
-2. **Search:** User searches hymn → Query SQLite → Display results
-3. **Select:** User selects hymn → Load verses from DB → Send to display window
-4. **Display:** Display window renders verses with active profile styling
-5. **Navigate:** Hotkeys/buttons → Update current verse → Refresh display
-6. **Audio:** Play audio → Load MP3 from resources → Stream to audio output
-
-### CLI Architecture
-
-CLI communicates with GUI via:
-- **IPC (Inter-Process Communication):** Named pipes or HTTP localhost server
-- **Shared Core Logic:** Both GUI and CLI use `SDAHymns.Core` services
-- **Commands:** `show`, `search`, `next`, `prev`, `play-audio`, `config`, `setlist`
+1. **Import (first run):** Parse legacy XML files + PowerPoint files -> Populate SQLite database
+2. **Search:** User searches hymn -> Query SQLite (SearchService) -> Display results
+3. **Select:** User selects hymn -> Load verses from DB (HymnDisplayService) -> Send to display window
+4. **Display:** Display window renders verses with active DisplayProfile styling
+5. **Navigate:** Hotkeys/buttons -> Update current verse -> Refresh display
+6. **Audio:** Play audio -> Load MP3 via AudioPlayerService (NAudio) -> Optional auto-advance with HymnSynchronizer
 
 ## Development Commands
 
-### Build and Run
+### Using the Makefile (recommended)
+
 ```bash
-# Restore dependencies
+make help            # Show all available commands
+
+# Setup (first time)
+make setup           # Restore + build + install git hooks
+
+# Development
+make restore         # Restore NuGet packages
+make build           # Build solution (Debug)
+make build-release   # Build solution (Release)
+make test            # Run all tests
+make test-verbose    # Run tests with detailed output
+make run             # Run desktop app (dotnet run --project src/SDAHymns.Desktop)
+make run-cli         # Run CLI app
+make watch           # Watch mode (auto-rebuild on changes)
+
+# Code Quality
+make format          # Auto-format all code (dotnet format)
+make format-check    # Check formatting without modifying
+make lint            # Run code analysis (via build)
+
+# Database
+make db-update       # Apply EF Core migrations
+make db-migration NAME=YourName  # Create new migration
+
+# Publishing
+make publish-win     # Publish self-contained Windows x64
+make publish-mac     # Publish self-contained macOS ARM64
+make publish-linux   # Publish self-contained Linux x64
+
+# Release Management
+make version-bump VERSION=1.0.0  # Bump version in Directory.Build.props and commit
+make release VERSION=1.0.0       # Create git tag and push (triggers GitHub Actions)
+
+# Cleanup
+make clean           # Remove build artifacts
+make clean-all       # Deep clean (removes bin, obj directories)
+```
+
+### Direct dotnet Commands
+
+```bash
 dotnet restore
-
-# Build solution
 dotnet build
-
-# Run desktop app
-dotnet run --project SDAHymns.Desktop
-
-# Run CLI
-dotnet run --project SDAHymns.CLI -- show 123
-
-# Run tests
 dotnet test
+dotnet run --project src/SDAHymns.Desktop
+dotnet run --project src/SDAHymns.CLI -- <verb> [options]
+dotnet ef migrations add MigrationName --project src/SDAHymns.Core
+dotnet ef database update --project src/SDAHymns.Core
+dotnet publish src/SDAHymns.Desktop -c Release -r win-x64 --self-contained
 ```
 
-### Database Management
+### CLI Verbs (Data Import Tools)
+
 ```bash
-# Create migration
-dotnet ef migrations add MigrationName --project SDAHymns.Core
+# Import hymns from legacy XML index files
+dotnet run --project src/SDAHymns.CLI -- import --path <xml-folder>
 
-# Update database
-dotnet ef database update --project SDAHymns.Core
+# Import verses from PowerPoint files
+dotnet run --project src/SDAHymns.CLI -- import-verses --category <name> [--start-from <id>] [--limit <n>]
 
-# Generate hymns.db from legacy XML (custom command)
-dotnet run --project SDAHymns.Desktop -- --import-legacy
+# Import orphan PPT files (not in XML index)
+dotnet run --project src/SDAHymns.CLI -- import-orphan-ppt --path <folder>
+
+# Test PowerPoint parsing
+dotnet run --project src/SDAHymns.CLI -- test-ppt --path <file.pptx>
+
+# Test verse extraction
+dotnet run --project src/SDAHymns.CLI -- test-verse-extraction --path <file.pptx>
 ```
 
-### Publishing
-```bash
-# Publish self-contained Windows
-dotnet publish -c Release -r win-x64 --self-contained
+## Core Features (Implementation Status)
 
-# Publish self-contained macOS ARM
-dotnet publish -c Release -r osx-arm64 --self-contained
+### Implemented
+- **Hymn Display & Projection:** Dual-window system with RemoteWidget (default) and MainWindow (advanced)
+- **Enhanced Search:** Real-time, diacritic/case/punctuation-insensitive, category filtering, recent hymns, favorites
+- **Display Profiles:** 6 preset profiles, full editor UI, 30+ properties (fonts, colors, backgrounds, effects, margins), JSON import/export
+- **Keyboard Shortcuts:** 20+ default shortcuts, F1 overlay, inline editing, conflict detection, JSON persistence
+- **Audio Playback:** NAudio player, verse synchronization, timing recorder, auto-advance countdown, device selector
+- **Audio Download & Settings:** Settings UI with tabs, download manager with SHA256 verification, library migration
+- **Auto-Updates:** Velopack integration with GitHub Releases, delta updates
+- **Compact Remote Widget:** Widget-style default GUI, custom chrome, lockable, always-on-top, number pad, PowerPoint keyboard controls
 
-# Publish with single-file output
-dotnet publish -c Release -r win-x64 --self-contained -p:PublishSingleFile=true
-```
+### Planned (Not Yet Implemented)
+- **Service Planner:** Pre-plan hymn order for services (Spec 009)
+- **Statistics Tracking:** Usage analytics and dashboard (Spec 012)
+- **Export Functionality:** PDF/image generation (Spec 013)
+- **CLI Interface (IPC):** Control running GUI via CLI, headless mode (Spec 014/015)
+- **OBS Integration:** Window capture optimization, browser source (Spec 016)
+- **UI/UX Overhaul:** Modern design system, animations, themes (Spec 017)
+- **Enhanced Slide Formatting:** Verse numbers, chorus styling, transitions (Spec 018)
+- **Remote Control API:** Embedded web server for mobile control (Spec 020)
 
 ## Key Design Decisions
 
 ### Why Parse PowerPoint Files?
-
-Instead of using PowerPoint COM interop (like old app):
-- **Extract text** from .PPT files into SQLite verses
-- **Eliminates Microsoft Office dependency**
+- **Extract text** from .PPT files into SQLite verses (via DocumentFormat.OpenXml + LibreOffice PPT->PPTX conversion)
+- **Eliminates Microsoft Office dependency** at runtime
 - **Full styling control** for OBS/streaming optimization
 - **Faster performance** (no PowerPoint overhead)
-- **Keep originals** in `legacy/` for reference
-
-**Implementation:** Use a library like `NetOffice` or `DocumentFormat.OpenXml` to parse .PPT files during initial import.
 
 ### Display Profile System
-
-Each profile stores:
-```csharp
-public class DisplayProfile
-{
-    public string Name { get; set; }              // "Projector", "OBS Stream"
-    public Color BackgroundColor { get; set; }
-    public double BackgroundOpacity { get; set; } // 0.0 - 1.0
-    public string FontFamily { get; set; }
-    public int FontSize { get; set; }
-    public Color TextColor { get; set; }
-    public bool EnableShadow { get; set; }
-    public bool TransparentBackground { get; set; }
-    public TextAlignment Alignment { get; set; }
-    // ... additional customization
-}
-```
-
-### Audio File Organization
-
-```
-audio/
-├── {category}/
-│   ├── {number}.mp3          # Main audio file
-│   └── {number}.metadata.json # Recording info
-```
-
-**Metadata format:**
-```json
-{
-  "hymnNumber": 123,
-  "category": "crestine",
-  "recordingDate": "2024-11-15",
-  "tempo": "moderato",
-  "durationSeconds": 180,
-  "recordedBy": "Church Name",
-  "notes": "Recorded during Sunday service"
-}
-```
+Each profile stores 30+ properties: typography (font family, sizes, weight, line height, letter spacing), colors (background, text, title, label, accent as hex), background images (path, mode, opacity), layout (text/vertical alignment, margins), and effects (text shadow, text outline). Profiles can be exported/imported as JSON.
 
 ### Offline-First Design
-
-- **All data bundled:** Hymn database, audio files, resources
-- **No external dependencies:** No API calls, no internet required
+- **All data bundled:** Hymn database shipped with app
+- **No external dependencies at runtime:** No API calls, no internet required
 - **Updates only:** Only feature that needs internet is auto-update checking
-- **Self-contained:** Single executable with embedded resources (or app folder with resources/)
 
-### Hotkey System (Productivity Focus)
+### App Launch Modes
+- **Default:** RemoteWidget (compact, widget-style) - best for church operators
+- **`--advanced` flag:** MainWindow (full control interface) - best for setup/configuration
 
-**Default shortcuts:**
+### Keyboard Shortcuts (Productivity Focus)
+All shortcuts stored in Core layer as strings (UI-agnostic). Default shortcuts include:
 - `Ctrl+F`: Focus search
-- `↑/↓`: Navigate hymn list
+- `Up/Down`: Navigate hymn list
 - `Enter`: Display selected hymn
-- `←/→`: Previous/next verse
+- `Left/Right`: Previous/next verse
 - `Space`: Play/pause audio
-- `Ctrl+P`: Open service planner
-- `Ctrl+,`: Open settings
+- `F1`: Show shortcuts overlay
 - `F11`: Toggle fullscreen display
-- `Esc`: Close display window
-- `Ctrl+E`: Export current hymn
+- `Esc`: Close display / blank
+- `Ctrl+1-5`: Load recent hymns
 
-**All shortcuts configurable in settings.**
+RemoteWidget uses PowerPoint-style controls: Space/Right/Down/PgDn/Enter for next, Left/Up/PgUp/Backspace for previous, Esc/B to blank.
 
-## Development Workflow
+## Romanian Hymn Categories
 
-1. **First time setup:**
-   - Clone repository
-   - Run `dotnet restore`
-   - Run app with `--import-legacy` to populate database from XML files
+1. **Imnuri crestine** - Main Christian hymnal (919 hymns, largest collection)
+2. **Imnuri companioni** - Pathfinder/Companion hymns (63 hymns)
+3. **Imnuri exploratori** - Explorer hymns (120 hymns)
+4. **Imnuri licurici** - Firefly hymns/children's songs (83 hymns)
+5. **Imnuri tineret** - Youth hymns (69 hymns)
 
-2. **Daily development:**
-   - Make changes in appropriate project (Desktop/CLI/Core)
-   - Run tests: `dotnet test`
-   - Run app: `dotnet run --project SDAHymns.Desktop`
-
-3. **Adding new hymns:**
-   - Add audio file to `Resources/audio/{category}/{number}.mp3`
-   - Add metadata JSON if available
-   - Run import or manually add to database
-
-4. **Creating releases:**
-   - Update version in `.csproj` files
-   - Build release: `dotnet publish`
-   - Create GitHub Release
-   - App will auto-detect new version and prompt users
+**Total:** 1,254 hymns, 4,629 verses imported (99.6% success rate)
 
 ## Important Notes
 
-- **Romanian text:** Ensure UTF-8 encoding for proper diacritics (ă, â, î, ș, ț)
+- **Romanian text:** Ensure UTF-8 encoding for proper diacritics (a, a, i, s, t)
 - **Multi-monitor:** Test display window on various screen configurations
 - **Performance:** Keep display window rendering smooth (60 FPS target)
 - **Accessibility:** Maintain keyboard navigation for all features
 - **Testing:** Test with real projectors and OBS before releases
-
-## Romanian Hymn Categories
-
-1. **Imnuri crestine** - Main Christian hymnal (largest collection)
-2. **Imnuri companioni** - Pathfinder/Companion hymns
-3. **Imnuri exploratori** - Explorer hymns
-4. **Imnuri licurici** - Firefly hymns (children's songs)
-5. **Imnuri tineret** - Youth hymns
-
-## Future Enhancements (Not Immediate Priority)
-
-- Mobile remote control app
-- Web interface for remote control
-- Cloud sync for service plans (optional)
-- Multiple language support beyond Romanian
-- MIDI integration for electronic keyboards
-- Lyrics video export for YouTube
-- Integration with church management software
+- **Pre-commit hooks:** Format check + build must pass before committing (install with `make install-hooks`)
+- **Version:** Currently 0.1.0 (set in Directory.Build.props)
