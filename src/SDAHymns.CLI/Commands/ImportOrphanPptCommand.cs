@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using SDAHymns.Core.Data;
 using SDAHymns.Core.Data.Models;
 using SDAHymns.Core.Services;
+using SDAHymns.Core.Services.Decks;
 
 namespace SDAHymns.CLI.Commands;
 
@@ -159,7 +160,7 @@ public class ImportOrphanPptCommandHandler
                 Number = hymnNumber,
                 Title = title,
                 CategoryId = category.Id,
-                LegacyPowerPointPath = Path.GetFullPath(filePath)
+                LegacyPowerPointPath = LegacyLibraryPath.ToRelative(filePath)
             };
 
             // Create a single verse placeholder (will be populated later if needed)

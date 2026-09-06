@@ -1,5 +1,6 @@
 using SDAHymns.Core.Data;
 using SDAHymns.Core.Data.Models;
+using SDAHymns.Core.Services.Decks;
 
 namespace SDAHymns.Core.Services;
 
@@ -133,7 +134,9 @@ public class LegacyXmlImportService : ILegacyXmlImportService
         foreach (var imn in imnuriElements)
         {
             var numarStr = imn.Element("Numar")?.Value?.Trim();
-            var titlu = imn.Element("Titlu")?.Value?.Trim();
+            // Titles reach the screen, so they get the same normalisation as lyrics -
+            // index.xml still spells Romanian with the pre-2007 cedilla letters.
+            var titlu = HymnTextNormalizer.Normalize(imn.Element("Titlu")?.Value ?? "");
 
             if (string.IsNullOrEmpty(numarStr) || string.IsNullOrEmpty(titlu))
             {

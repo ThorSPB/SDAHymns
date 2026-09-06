@@ -79,9 +79,15 @@ public class HymnsContext : DbContext
                 .HasMaxLength(50);
 
             entity.HasIndex(v => v.HymnId);
-            entity.HasIndex(v => new { v.HymnId, v.VerseNumber })
+
+            // DisplayOrder is what identifies a section, not VerseNumber. A refrain recurs
+            // between stanzas and every occurrence is a real position in the hymn, so the
+            // old unique index on (HymnId, VerseNumber) made the singing order impossible
+            // to store - all refrains share VerseNumber 0. Keeping only the first
+            // occurrence is what the previous importer had to do to satisfy it.
+            entity.HasIndex(v => new { v.HymnId, v.DisplayOrder })
                 .IsUnique();
-            entity.HasIndex(v => new { v.HymnId, v.DisplayOrder });
+            entity.HasIndex(v => new { v.HymnId, v.VerseNumber });
 
             entity.HasOne(v => v.Hymn)
                 .WithMany(h => h.Verses)

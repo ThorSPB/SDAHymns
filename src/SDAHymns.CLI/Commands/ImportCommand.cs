@@ -2,6 +2,7 @@ using CommandLine;
 using Microsoft.EntityFrameworkCore;
 using SDAHymns.Core.Data;
 using SDAHymns.Core.Services;
+using SDAHymns.Core.Services.Decks;
 
 namespace SDAHymns.CLI.Commands;
 
@@ -13,6 +14,10 @@ public class ImportOptions
 
     [Option('s', "stats", Required = false, Default = false, HelpText = "Show import statistics only")]
     public bool ShowStats { get; set; }
+
+    [Option("refresh-titles", Required = false, Default = false,
+        HelpText = "Re-apply text normalisation to the titles already in the database")]
+    public bool RefreshTitles { get; set; }
 }
 
 public class ImportCommandHandler
@@ -26,11 +31,42 @@ public class ImportCommandHandler
         _importService = importService;
     }
 
+    /// <summary>
+    /// Rewrites stored titles through <see cref="HymnTextNormalizer"/>. Existing rows were
+    /// imported before titles were normalised, so they still carry the cedilla spellings
+    /// while the lyrics beneath them use the comma ones.
+    /// </summary>
+    private async Task<int> RefreshTitlesAsync()
+    {
+        var hymns = await _context.Hymns.ToListAsync();
+        var changed = 0;
+
+        foreach (var hymn in hymns)
+        {
+            var normalized = HymnTextNormalizer.Normalize(hymn.Title);
+            if (normalized.Length > 0 && normalized != hymn.Title)
+            {
+                hymn.Title = normalized;
+                hymn.UpdatedAt = DateTime.UtcNow;
+                changed++;
+            }
+        }
+
+        await _context.SaveChangesAsync();
+        Console.WriteLine($"Normalised {changed} of {hymns.Count} titles.");
+        return 0;
+    }
+
     public async Task<int> ExecuteAsync(ImportOptions options)
     {
         if (options.ShowStats)
         {
             return await ShowStatisticsAsync();
+        }
+
+        if (options.RefreshTitles)
+        {
+            return await RefreshTitlesAsync();
         }
 
         Console.WriteLine("SDA Hymns - Legacy XML Import");

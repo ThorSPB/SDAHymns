@@ -29,7 +29,9 @@ public class HymnDisplayServiceTests : IDisposable
 
         // Assert
         Assert.NotNull(hymn);
-        Assert.Equal("Spre slava Ta uniţi", hymn.Title);
+        // Comma-below "ți", not the pre-2007 cedilla "ţi" that index.xml still uses:
+        // titles are normalised on import so they match the lyrics beneath them.
+        Assert.Equal("Spre slava Ta uniți", hymn.Title);
         Assert.NotNull(hymn.Verses);
         Assert.NotEmpty(hymn.Verses);
     }

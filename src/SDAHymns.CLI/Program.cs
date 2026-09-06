@@ -50,11 +50,12 @@ services.AddScoped<ImportCommandHandler>();
 services.AddScoped<ImportOrphanPptCommandHandler>();
 services.AddScoped<TestPptCommandHandler>();
 services.AddScoped<TestVerseExtractionCommandHandler>();
+services.AddScoped<SnapshotDecksCommandHandler>();
 
 var serviceProvider = services.BuildServiceProvider();
 
 // Parse command-line arguments and execute
-return await Parser.Default.ParseArguments<ImportOptions, ImportOrphanPptCommand, TestPptCommand, TestVerseExtractionCommand, ImportVersesCommand>(args)
+return await Parser.Default.ParseArguments<ImportOptions, ImportOrphanPptCommand, TestPptCommand, TestVerseExtractionCommand, ImportVersesCommand, SnapshotDecksCommand>(args)
     .MapResult(
         async (ImportOptions opts) =>
         {
@@ -85,5 +86,11 @@ return await Parser.Default.ParseArguments<ImportOptions, ImportOrphanPptCommand
             using var scope = serviceProvider.CreateScope();
             var importService = scope.ServiceProvider.GetRequiredService<IVerseImportService>();
             return await ImportVersesCommand.ExecuteAsync(cmd, importService);
+        },
+        async (SnapshotDecksCommand cmd) =>
+        {
+            using var scope = serviceProvider.CreateScope();
+            var handler = scope.ServiceProvider.GetRequiredService<SnapshotDecksCommandHandler>();
+            return await Task.FromResult(handler.Execute(cmd));
         },
         errs => Task.FromResult(1));
