@@ -117,7 +117,8 @@ public partial class DisplayWindow : Window
             HymnTitleText.Foreground = new SolidColorBrush(Color.Parse(profile.TitleColor));
             HymnTitleText.FontWeight = ParseFontWeight(profile.FontWeight);
             HymnTitleText.TextAlignment = ParseTextAlignment(profile.TextAlignment);
-            HymnTitleText.IsVisible = profile.ShowHymnTitle;
+            // Whether the title appears at all is now decided by the view model, which
+            // gives it a slide of its own instead of a band above every stanza.
         }
 
         // Apply to verse label

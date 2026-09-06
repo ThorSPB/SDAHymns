@@ -260,8 +260,24 @@
                     Height="{Binding DisplayHeight}"
                     Background="Black">
                 <Grid RowDefinitions="*,Auto">
+                    <!-- Opening slide, mirroring what is projected -->
+                    <Viewbox Grid.Row="0" Stretch="Uniform" StretchDirection="DownOnly"
+                             IsVisible="{Binding IsTitleSlide}">
+                        <TextBlock Text="{Binding HymnTitle}"
+                                   FontSize="60"
+                                   FontWeight="Bold"
+                                   MaxWidth="900"
+                                   Margin="80,50"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   TextAlignment="Center"
+                                   TextWrapping="Wrap"
+                                   Foreground="White"/>
+                    </Viewbox>
+
                     <!-- Verse Content -->
-                    <Viewbox Grid.Row="0" Stretch="Uniform" StretchDirection="DownOnly">
+                    <Viewbox Grid.Row="0" Stretch="Uniform" StretchDirection="DownOnly"
+                             IsVisible="{Binding !IsTitleSlide}">
                         <StackPanel VerticalAlignment="Center"
                                    HorizontalAlignment="Left"
                                    Width="1000"
