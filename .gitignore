@@ -418,6 +418,7 @@ FodyWeavers.xsd
 *.msp
 
 Imnuri Azs
+.imnuri-pre-sync-backup/
 
 # Database (committed to repo - needed for CI/CD)
 # Resources/hymns.db  -- COMMITTED

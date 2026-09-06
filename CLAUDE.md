@@ -181,7 +181,13 @@ SDAHymns.Core/
 │   ├── UpdateService.cs               # Velopack auto-update logic
 │   ├── LegacyXmlImportService.cs      # Parse legacy XML hymn indexes
 │   ├── VerseImportService.cs          # Import verses from PowerPoint files
-│   ├── PowerPointParserService.cs     # Parse .ppt/.pptx via OpenXml + LibreOffice
+│   ├── PowerPointParserService.cs     # Verse/refrain classification (legacy path)
+│   ├── Decks/                          # Deck reading - no LibreOffice, no subprocess
+│   │   ├── DeckReader.cs               # Dispatches on magic bytes, not extension
+│   │   ├── Ppt97Reader.cs              # PowerPoint 97-2003 binary records
+│   │   ├── OoxmlDeckReader.cs          # OOXML packages (incl. those named .PPT)
+│   │   ├── HymnTextNormalizer.cs       # Diacritics, quotes, verse-number spacing
+│   │   └── DeckSnapshot.cs             # Golden-file rendering
 │   ├── ImportResult.cs                # Import operation result model
 │   ├── I*.cs                          # Interfaces for all services above
 │   └── UpdateOptions.cs               # Update configuration options
@@ -226,6 +232,7 @@ SDAHymns.CLI/
     ├── ImportCommand.cs                # Import hymns from legacy XML
     ├── ImportVersesCommand.cs          # Import verses from PowerPoint files
     ├── ImportOrphanPptCommand.cs       # Import orphan PPT files (no XML entry)
+    ├── SnapshotDecksCommand.cs         # Regenerate the golden-file snapshots
     ├── TestPptCommand.cs               # Test PowerPoint parsing
     └── TestVerseExtractionCommand.cs   # Test verse extraction logic
 ```
@@ -350,6 +357,10 @@ dotnet run --project src/SDAHymns.CLI -- import-verses --category <name> [--star
 
 # Import orphan PPT files (not in XML index)
 dotnet run --project src/SDAHymns.CLI -- import-orphan-ppt --path <folder>
+
+# Regenerate the deck golden files (read the git diff before committing)
+dotnet run --project src/SDAHymns.CLI -- snapshot-decks \
+    --path "Imnuri Azs/Resurse" --out tests/SDAHymns.Tests/Fixtures/decks
 
 # Test PowerPoint parsing
 dotnet run --project src/SDAHymns.CLI -- test-ppt --path <file.pptx>

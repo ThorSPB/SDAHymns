@@ -15,8 +15,9 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.*" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.*" />
     <PackageReference Include="NAudio" Version="2.2.1" />
+    <PackageReference Include="OpenMcdf" Version="3.3.0" />
     <PackageReference Include="Velopack" Version="0.0.1298" />
   </ItemGroup>
 
