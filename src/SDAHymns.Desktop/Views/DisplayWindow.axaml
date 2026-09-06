@@ -23,24 +23,29 @@
                 Background="Black">
             <Grid>
                 <!-- Main Content -->
-                <Grid RowDefinitions="Auto,*">
-                    <!-- Hymn Title -->
-                    <Border Grid.Row="0"
-                            x:Name="TitleBorder"
+                <Grid>
+                    <!-- Opening slide: number and title alone, as in the decks -->
+                    <Border x:Name="TitleBorder"
                             Background="Black"
-                            Padding="40,30">
-                        <TextBlock x:Name="HymnTitleText"
-                                   Text="{Binding HymnTitle}"
-                                   FontSize="36"
-                                   FontWeight="Bold"
-                                   HorizontalAlignment="Center"
-                                   TextAlignment="Center"
-                                   Foreground="White"
-                                   TextWrapping="Wrap"/>
+                            Padding="80,60"
+                            IsVisible="{Binding IsTitleSlide}">
+                        <Viewbox Stretch="Uniform" StretchDirection="DownOnly">
+                            <TextBlock x:Name="HymnTitleText"
+                                       Text="{Binding HymnTitle}"
+                                       FontSize="72"
+                                       FontWeight="Bold"
+                                       MaxWidth="1600"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       TextAlignment="Center"
+                                       Foreground="White"
+                                       TextWrapping="Wrap"/>
+                        </Viewbox>
                     </Border>
 
                     <!-- Verse Content -->
-                    <Viewbox Grid.Row="1" Stretch="Uniform" StretchDirection="DownOnly">
+                    <Viewbox Stretch="Uniform" StretchDirection="DownOnly"
+                             IsVisible="{Binding !IsTitleSlide}">
                         <StackPanel x:Name="ContentPanel"
                                    VerticalAlignment="Center"
                                    HorizontalAlignment="Left"
