@@ -2,6 +2,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using SDAHymns.Core.Data;
 using SDAHymns.Core.Data.Models;
+using SDAHymns.Core.Services.Decks;
 
 namespace SDAHymns.Core.Services;
 
@@ -58,7 +59,10 @@ public class VerseImportService : IVerseImportService
             return result;
         }
 
-        if (!File.Exists(hymn.LegacyPowerPointPath))
+        // Rows hold either form - repo-relative from the XML importer, absolute from the
+        // older orphan importer - and a relative one must not depend on the caller's cwd.
+        var deckPath = LegacyLibraryPath.Resolve(hymn.LegacyPowerPointPath);
+        if (!File.Exists(deckPath))
         {
             result.SkippedHymns++;
             result.Warnings.Add($"Hymn #{hymn.Number}: File not found: {hymn.LegacyPowerPointPath}");
@@ -68,7 +72,7 @@ public class VerseImportService : IVerseImportService
         try
         {
             // Extract verses from PowerPoint
-            var versesData = await _parserService.ExtractVersesAsync(hymn.LegacyPowerPointPath);
+            var versesData = await _parserService.ExtractVersesAsync(deckPath);
 
             if (!versesData.Any())
             {

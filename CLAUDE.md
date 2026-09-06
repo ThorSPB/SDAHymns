@@ -186,6 +186,9 @@ SDAHymns.Core/
 │   │   ├── DeckReader.cs               # Dispatches on magic bytes, not extension
 │   │   ├── Ppt97Reader.cs              # PowerPoint 97-2003 binary records
 │   │   ├── OoxmlDeckReader.cs          # OOXML packages (incl. those named .PPT)
+│   │   ├── HymnStructureParser.cs      # Verses/refrains/numbering from slide text
+│   │   ├── LegacyHymnIndex.cs          # index.xml number -> title
+│   │   ├── LegacyLibraryPath.cs        # Portable deck paths (case-tolerant)
 │   │   ├── HymnTextNormalizer.cs       # Diacritics, quotes, verse-number spacing
 │   │   └── DeckSnapshot.cs             # Golden-file rendering
 │   ├── ImportResult.cs                # Import operation result model
@@ -357,6 +360,9 @@ dotnet run --project src/SDAHymns.CLI -- import-verses --category <name> [--star
 
 # Import orphan PPT files (not in XML index)
 dotnet run --project src/SDAHymns.CLI -- import-orphan-ppt --path <folder>
+
+# Re-apply text normalisation to titles already in the database
+dotnet run --project src/SDAHymns.CLI -- import --refresh-titles
 
 # Regenerate the deck golden files (read the git diff before committing)
 dotnet run --project src/SDAHymns.CLI -- snapshot-decks \

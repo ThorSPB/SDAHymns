@@ -16,6 +16,70 @@ public static class DeckSnapshot
     /// <summary>Bumped whenever the snapshot layout itself changes, so stale files are obvious.</summary>
     public const string FormatVersion = "1";
 
+    /// <summary>
+    /// Renders the classified structure of one hymn: what the parser decided each block
+    /// of text is, which is the part that actually reaches the screen.
+    /// </summary>
+    public static string RenderStructure(string name, ParsedHymn hymn)
+    {
+        var builder = new StringBuilder();
+        builder.Append("### ").Append(name)
+               .Append(" | #").Append(hymn.Number)
+               .Append(" | ").Append(hymn.Title)
+               .Append(" | title-from=").Append(hymn.Source)
+               .Append('\n');
+
+        foreach (var note in hymn.Notes)
+        {
+            builder.Append("note: ").Append(note).Append('\n');
+        }
+
+        foreach (var section in hymn.Sections)
+        {
+            builder.Append("--- ").Append(section.DisplayOrder).Append(' ').Append(section.Kind);
+            if (section.Kind == SectionKind.Verse)
+            {
+                builder.Append(' ').Append(section.Number);
+                if (!section.WasNumbered)
+                {
+                    builder.Append(" (inferred)");
+                }
+            }
+            else if (section.Kind == SectionKind.Refrain && !section.WasLabelled)
+            {
+                builder.Append(" (by repetition)");
+            }
+
+            builder.Append('\n').Append(section.Content).Append('\n');
+        }
+
+        return builder.ToString();
+    }
+
+    /// <summary>Renders the classified structure of every deck in one category.</summary>
+    public static string RenderStructureCategory(string categoryPath, DeckReader reader)
+    {
+        var parser = new HymnStructureParser(LegacyHymnIndex.Load(categoryPath));
+        var builder = new StringBuilder();
+        builder.Append("# snapshot-format ").Append(FormatVersion.AsSpan()).Append('\n');
+        builder.Append("# category ").Append(Path.GetFileName(categoryPath)).Append('\n');
+
+        foreach (var file in DeckFiles(categoryPath))
+        {
+            var name = Path.GetFileName(file);
+            try
+            {
+                builder.Append(RenderStructure(name, parser.Parse(reader.Read(file))));
+            }
+            catch (Exception ex)
+            {
+                builder.Append(RenderFailure(name, ex));
+            }
+        }
+
+        return builder.ToString();
+    }
+
     /// <summary>Renders one deck. <paramref name="name"/> identifies it in the snapshot.</summary>
     public static string Render(string name, SlideDeck deck)
     {
@@ -48,18 +112,11 @@ public static class DeckSnapshot
     /// </summary>
     public static string RenderCategory(string categoryPath, DeckReader reader)
     {
-        var pptDirectory = Path.Combine(categoryPath, "ppt");
-        var directory = Directory.Exists(pptDirectory) ? pptDirectory : categoryPath;
-
-        var files = Directory.EnumerateFiles(directory)
-            .Where(IsDeck)
-            .OrderBy(Path.GetFileName, StringComparer.Ordinal);
-
         var builder = new StringBuilder();
-        builder.Append("# snapshot-format ").Append(FormatVersion).Append('\n');
+        builder.Append("# snapshot-format ").Append(FormatVersion.AsSpan()).Append('\n');
         builder.Append("# category ").Append(Path.GetFileName(categoryPath)).Append('\n');
 
-        foreach (var file in files)
+        foreach (var file in DeckFiles(categoryPath))
         {
             var name = Path.GetFileName(file);
             try
@@ -73,6 +130,17 @@ public static class DeckSnapshot
         }
 
         return builder.ToString();
+    }
+
+    /// <summary>Decks in a stable order, so output never depends on filesystem enumeration.</summary>
+    private static IEnumerable<string> DeckFiles(string categoryPath)
+    {
+        var pptDirectory = Path.Combine(categoryPath, "ppt");
+        var directory = Directory.Exists(pptDirectory) ? pptDirectory : categoryPath;
+
+        return Directory.EnumerateFiles(directory)
+            .Where(IsDeck)
+            .OrderBy(Path.GetFileName, StringComparer.Ordinal);
     }
 
     private static bool IsDeck(string path)

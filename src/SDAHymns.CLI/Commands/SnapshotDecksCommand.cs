@@ -24,7 +24,10 @@ public class SnapshotDecksCommandHandler
             return 1;
         }
 
-        Directory.CreateDirectory(options.OutputPath);
+        var textDirectory = Path.Combine(options.OutputPath, "text");
+        var structureDirectory = Path.Combine(options.OutputPath, "structure");
+        Directory.CreateDirectory(textDirectory);
+        Directory.CreateDirectory(structureDirectory);
         var reader = new DeckReader();
         var stopwatch = Stopwatch.StartNew();
         var total = 0;
@@ -35,16 +38,20 @@ public class SnapshotDecksCommandHandler
         foreach (var category in categories)
         {
             var name = Path.GetFileName(category);
-            var snapshot = DeckSnapshot.RenderCategory(category, reader);
-            var target = Path.Combine(options.OutputPath, Slug(name) + ".txt");
+            var fileName = Slug(name) + ".txt";
+
+            var text = DeckSnapshot.RenderCategory(category, reader);
+            var structure = DeckSnapshot.RenderStructureCategory(category, reader);
 
             // '\n' throughout, so the snapshots diff identically on Windows and Linux.
-            File.WriteAllText(target, snapshot);
+            File.WriteAllText(Path.Combine(textDirectory, fileName), text);
+            File.WriteAllText(Path.Combine(structureDirectory, fileName), structure);
 
-            var decks = snapshot.Split("\n### ").Length - 1;
-            var errors = snapshot.Split(" | ERROR\n").Length - 1;
+            var decks = text.Split("\n### ").Length - 1;
+            var errors = text.Split(" | ERROR\n").Length - 1;
+            var notes = structure.Split("\nnote: ").Length - 1;
             total += decks;
-            Console.WriteLine($"{name,-22} {decks,5} decks  {errors,3} errors  -> {Path.GetFileName(target)}");
+            Console.WriteLine($"{name,-22} {decks,5} decks  {errors,3} errors  {notes,5} notes  -> {fileName}");
         }
 
         Console.WriteLine($"\n{total} decks in {stopwatch.Elapsed.TotalSeconds:F1}s");

@@ -33,28 +33,40 @@ public class DeckSnapshotGoldenTests
         { "Imnuri tineret", "tineret.txt" },
     };
 
+    /// <summary>The text each deck yields - guards the readers.</summary>
     [Theory]
     [MemberData(nameof(Categories))]
-    public void Category_matches_its_committed_snapshot(string categoryFolder, string fixtureName)
+    public void Slide_text_matches_its_committed_snapshot(string categoryFolder, string fixtureName) =>
+        AssertSnapshot("text", fixtureName, categoryFolder,
+            (path, reader) => DeckSnapshot.RenderCategory(path, reader));
+
+    /// <summary>What the parser decides that text means - guards the classifier.</summary>
+    [Theory]
+    [MemberData(nameof(Categories))]
+    public void Hymn_structure_matches_its_committed_snapshot(string categoryFolder, string fixtureName) =>
+        AssertSnapshot("structure", fixtureName, categoryFolder,
+            (path, reader) => DeckSnapshot.RenderStructureCategory(path, reader));
+
+    private static void AssertSnapshot(
+        string set, string fixtureName, string categoryFolder, Func<string, DeckReader, string> render)
     {
         if (!HymnLibrary.IsAvailable)
         {
             return;   // see HymnLibrary.SkipReason
         }
 
-        var fixturePath = Path.Combine(FixtureDirectory, fixtureName);
-        File.Exists(fixturePath).Should().BeTrue($"snapshot '{fixtureName}' should be committed");
+        var fixturePath = Path.Combine(FixtureDirectory, set, fixtureName);
+        File.Exists(fixturePath).Should().BeTrue($"snapshot '{set}/{fixtureName}' should be committed");
 
         var expected = File.ReadAllText(fixturePath).Replace("\r\n", "\n");
-        var actual = DeckSnapshot.RenderCategory(
-            Path.Combine(HymnLibrary.ResoursePath!, categoryFolder), new DeckReader());
+        var actual = render(Path.Combine(HymnLibrary.ResoursePath!, categoryFolder), new DeckReader());
 
         if (actual == expected)
         {
             return;
         }
 
-        FirstDifference(expected, actual, fixtureName)
+        FirstDifference(expected, actual, $"{set}/{fixtureName}")
             .Should().BeNull("the parser output should match the committed snapshot");
     }
 

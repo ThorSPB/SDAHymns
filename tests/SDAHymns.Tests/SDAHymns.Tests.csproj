@@ -29,9 +29,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="Fixtures\decks\*.txt">
+    <None Include="Fixtures\decks\**\*.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Link>Fixtures\decks\%(Filename)%(Extension)</Link>
+      <Link>Fixtures\decks\%(RecursiveDir)%(Filename)%(Extension)</Link>
     </None>
   </ItemGroup>
 
