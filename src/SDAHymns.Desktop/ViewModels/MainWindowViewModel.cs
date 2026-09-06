@@ -200,9 +200,9 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     public string AspectRatioLabel => IsAspectRatio43 ? "4:3" : "16:9";
 
     public string VerseIndicator =>
-        Verses.Any()
-            ? $"Verse {CurrentVerseIndex + 1} of {Verses.Count}"
-            : "No verses loaded";
+        !Verses.Any() ? "No verses loaded"
+        : IsTitleSlide ? "Title"
+        : $"Verse {CurrentVerseIndex + 1} of {Verses.Count}";
 
     partial void OnIsAspectRatio43Changed(bool value)
     {
@@ -234,22 +234,71 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         OnPropertyChanged(nameof(VerseIndicator));
     }
 
-    public string? CurrentVerseContent =>
-        Verses.Any() && CurrentVerseIndex >= 0 && CurrentVerseIndex < Verses.Count
-            ? Verses[CurrentVerseIndex].Content
-            : null;
+    public string? CurrentVerseContent => IsTitleSlide ? null : CurrentVerse?.Content;
 
-    public string? CurrentVerseLabel =>
+    /// <summary>
+    /// The caption above the lyrics: "Refren" for a refrain, "1." for a stanza, nothing
+    /// for a stanza that carries on from the slide before.
+    /// </summary>
+    /// <remarks>
+    /// Stanza numbers used to be part of the lyrics text, so they appeared on screen by
+    /// accident. They are now a field of their own and have to be rendered deliberately,
+    /// which is also what lets a profile turn them off.
+    /// </remarks>
+    public string? CurrentVerseLabel
+    {
+        get
+        {
+            if (IsTitleSlide || CurrentVerse is null)
+            {
+                return null;
+            }
+
+            if (!string.IsNullOrEmpty(CurrentVerse.Label))
+            {
+                return CurrentVerse.Label;
+            }
+
+            return CurrentVerse.VerseNumber > 0 && !CurrentVerse.IsContinuation
+                ? $"{CurrentVerse.VerseNumber}."
+                : null;
+        }
+    }
+
+    private Verse? CurrentVerse =>
         Verses.Any() && CurrentVerseIndex >= 0 && CurrentVerseIndex < Verses.Count
-            ? Verses[CurrentVerseIndex].Label
+            ? Verses[CurrentVerseIndex]
             : null;
 
     public string? HymnTitle => CurrentHymn != null
         ? $"{CurrentHymn.Number}. {CurrentHymn.Title}"
         : null;
 
-    public bool CanGoNext => CurrentVerseIndex < Verses.Count - 1;
-    public bool CanGoPrevious => CurrentVerseIndex > 0;
+    /// <summary>
+    /// True while the opening slide - number and title, nothing else - is on screen.
+    /// </summary>
+    /// <remarks>
+    /// Every deck in the library starts with a title slide and then shows lyrics alone.
+    /// The display used to keep the title band up for the whole hymn, which is not what
+    /// the congregation is used to seeing.
+    /// </remarks>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(NextVerseCommand))]
+    [NotifyCanExecuteChangedFor(nameof(PreviousVerseCommand))]
+    private bool _isTitleSlide;
+
+    /// <summary>A profile can drop the title slide; the hymn then opens on stanza 1.</summary>
+    private bool ShowsTitleSlide => ActiveProfile?.ShowHymnTitle ?? true;
+
+    partial void OnIsTitleSlideChanged(bool value)
+    {
+        OnPropertyChanged(nameof(CurrentVerseContent));
+        OnPropertyChanged(nameof(CurrentVerseLabel));
+        OnPropertyChanged(nameof(VerseIndicator));
+    }
+
+    public bool CanGoNext => IsTitleSlide ? Verses.Any() : CurrentVerseIndex < Verses.Count - 1;
+    public bool CanGoPrevious => !IsTitleSlide && (CurrentVerseIndex > 0 || ShowsTitleSlide);
 
     [RelayCommand]
     public async Task LoadHymnAsync()
@@ -264,6 +313,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
             {
                 Verses = await _hymnService.GetVersesForHymnAsync(CurrentHymn.Id);
                 CurrentVerseIndex = 0;
+                IsTitleSlide = ShowsTitleSlide;
 
                 OnPropertyChanged(nameof(CurrentVerseContent));
                 OnPropertyChanged(nameof(CurrentVerseLabel));
@@ -304,6 +354,10 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
             Verses = await _hymnService.GetVersesForHymnAsync(hymn.Id);
             CurrentVerseIndex = Math.Min(verseIndex, Verses.Count - 1);
 
+            // Opening a hymn starts at its title slide; asking for a particular stanza
+            // goes straight there.
+            IsTitleSlide = verseIndex == 0 && ShowsTitleSlide;
+
             OnPropertyChanged(nameof(CurrentVerseContent));
             OnPropertyChanged(nameof(CurrentVerseLabel));
             OnPropertyChanged(nameof(HymnTitle));
@@ -322,19 +376,35 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     [RelayCommand(CanExecute = nameof(CanGoNext))]
     public void NextVerse()
     {
-        if (CanGoNext)
+        if (!CanGoNext)
         {
-            CurrentVerseIndex++;
+            return;
         }
+
+        if (IsTitleSlide)
+        {
+            IsTitleSlide = false;   // the title slide sits before stanza 1, not on it
+            return;
+        }
+
+        CurrentVerseIndex++;
     }
 
     [RelayCommand(CanExecute = nameof(CanGoPrevious))]
     public void PreviousVerse()
     {
-        if (CanGoPrevious)
+        if (!CanGoPrevious)
         {
-            CurrentVerseIndex--;
+            return;
         }
+
+        if (CurrentVerseIndex == 0)
+        {
+            IsTitleSlide = true;
+            return;
+        }
+
+        CurrentVerseIndex--;
     }
 
     // Search methods
@@ -400,6 +470,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
             {
                 Verses = await _hymnService.GetVersesForHymnAsync(CurrentHymn.Id);
                 CurrentVerseIndex = 0;
+                IsTitleSlide = ShowsTitleSlide;
 
                 // Track recent access
                 await _searchService.AddToRecentAsync(CurrentHymn.Id);
@@ -573,6 +644,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         if (index >= 0)
         {
             CurrentVerseIndex = index;
+            IsTitleSlide = false;
             StatusMessage = $"Auto-advanced to verse {verseNumber}";
         }
     }
